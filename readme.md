@@ -33,6 +33,7 @@ running k8s on top.
 
 - Evaluate **SOPS** for encrypting secrets committed to git (GitOps-friendly secret management)
 - Compare against OpenBao for anything needing dynamic secrets / a running service
+- Working example: [sops-example/](sops-example/)
 
 ## Open questions
 
