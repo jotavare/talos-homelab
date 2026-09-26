@@ -119,7 +119,7 @@ together.
 | Area | Already used | Candidate |
 |------|--------------|-----------|
 | SSO | Authentik, Keycloak | **Kanidm** / **Zitadel** / **Authelia** |
-| Secrets | HashiCorp Vault | **SOPS** + **age** / **OpenBao** / **SecretSpec** |
+| Secrets | HashiCorp Vault | **SOPS** + **age** (build) + **OpenBao** + **External Secrets Operator** (apps) |
 | Policy | Kyverno | **Kyverno** / **OPA Gatekeeper** / **Kubewarden** |
 | Runtime security | Falco | **Falco** / **Tetragon** |
 | Brute-force protection | None | **CrowdSec** + **Envoy Gateway** rate limits |
@@ -167,6 +167,7 @@ with the tools, the options chosen and why.
 | [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install, planned VMs |
 | [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, hardening |
 | [03. Ansible](docs/03-ansible.md) | Proxmox host configuration as a playbook |
+| [04. Secrets](docs/04-secrets.md) | SOPS and age for build secrets, OpenBao plan for apps |
 
 ## Backlog
 
@@ -219,10 +220,10 @@ phase page.
 - [ ] Talos system extensions: `qemu-guest-agent`, and for Longhorn
       `iscsi-tools` and `util-linux-tools`.
 - [ ] VM settings in OpenTofu: memory ballooning off, guest agent on.
-- [ ] Secrets tool chosen and bootstrapped (age key, SOPS rules, key
-      backup) before the first Talos config or Flux manifest is committed.
-- [ ] Flux bootstrap: which git remote, which credential, and the one
-      manual step that puts the decryption key in the cluster.
+- [ ] OpenBao and External Secrets Operator in the cluster: Raft
+      snapshots off the host, unseal keys in Bitwarden and offline, a
+      documented unseal procedure after restarts.
+- [ ] Flux bootstrap: which git remote and which credential.
 - [ ] Where OpenTofu keeps its state and how it is backed up.
 - [ ] PBS VM sizing: RAM, vCPU and a datastore disk.
 - [ ] Rollout order: core platform first (Cilium, Flux, cert-manager,

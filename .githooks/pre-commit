@@ -1,0 +1,9 @@
+#!/bin/sh
+status=0
+for f in $(git diff --cached --name-only --diff-filter=ACM | grep -E '(^|/)[^/]+\.sops\.ya?ml$'); do
+  if ! git show ":$f" | grep -q '^sops:' || ! git show ":$f" | grep -q 'ENC\['; then
+    echo "pre-commit: $f is not encrypted, run: sops encrypt -i $f" >&2
+    status=1
+  fi
+done
+exit $status
