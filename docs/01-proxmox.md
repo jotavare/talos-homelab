@@ -139,19 +139,66 @@ ssh root@192.168.1.10 hostname  # prints "pve" without a password prompt
 Local credentials for scripts live in a `.env` at the repo root, which is
 in `.gitignore` and never committed.
 
+### Repositories and upgrade
+
+Proxmox 9 keeps its apt sources as deb822 `.sources` files in
+`/etc/apt/sources.list.d/`. After the install:
+
+- `pve-enterprise.sources` and `ceph.sources`: the paid enterprise
+  repositories, set to `Enabled: false` (no subscription here).
+- `debian.sources`: Debian trixie main, updates and security. Left as is.
+
+Added the free no-subscription repository, the same file that
+**pve → Updates → Repositories → Add → No-Subscription** creates:
+
+```
+# /etc/apt/sources.list.d/proxmox.sources
+Types: deb
+URIs: http://download.proxmox.com/debian/pve
+Suites: trixie
+Components: pve-no-subscription
+Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
+```
+
+No Ceph no-subscription repository: Ceph is not in use.
+
+Then upgraded and rebooted, since the upgrade brought a new kernel:
+
+```bash
+apt update
+apt full-upgrade
+reboot
+```
+
+Check afterwards:
+
+```bash
+pveversion       # pve-manager/9.2.20, running kernel 7.0.14-19-pve
+apt list --upgradable   # empty
+```
+
+### Network check
+
+After the reboot the bridge still has its static address, on the pinned
+interface name:
+
+```
+# /etc/network/interfaces
+iface nic0 inet manual
+
+iface vmbr0 inet static
+	address 192.168.1.10/24
+	gateway 192.168.1.1
+	bridge-ports nic0
+```
+
+The address is static on the host itself (`inet static`, no DHCP client
+running), and `.10` sits outside the router's DHCP pool (`.100` to
+`.254`), so no reservation on the router is needed.
+
 ### Next
 
-1. **pve → Updates → Repositories:** disable the enterprise repositories
-   (PVE and Ceph), then **Add → No-Subscription**.
-2. **pve → Updates → Refresh → Upgrade.** Reboot if the kernel changed.
-3. **pve → System → Network:** confirm `vmbr0` has the static address.
-4. Tailscale on the host, so the web UI is reachable over the tailnet only.
-5. Create a dedicated user and API token for OpenTofu (`bpg/proxmox`).
-
-### Known issue: e1000e hardware unit hang
-
-The I219-LM (`e1000e` driver) can log `Detected Hardware Unit Hang` and
-drop the link under load. The usual fix is turning off TSO/GSO offload on
-the NIC. Only applied if the problem shows up.
+1. Tailscale on the host, so the web UI is reachable over the tailnet only.
+2. Create a dedicated user and API token for OpenTofu (`bpg/proxmox`).
 
 [Back to the build log](../README.md#work-in-progress)
