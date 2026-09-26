@@ -104,8 +104,8 @@ IPv4.
 |-------|-------|
 | Interface | `nic0` (Intel I219-LM, `e1000e` driver) |
 | Hostname | `pve` |
-| IP | `<lan>.10/24` |
-| Gateway | `<lan>.1` (the ISP router) |
+| IP | `192.168.1.10/24` |
+| Gateway | `192.168.1.1` (the ISP router) |
 | DNS | `1.1.1.1` |
 | Pin interface names | Enabled |
 
@@ -117,7 +117,7 @@ The address plan behind these values is in the
 
 ## Post-install
 
-1. Open `https://<lan>.10:8006` and log in as `root`, realm **Linux PAM**.
+1. Open `https://192.168.1.10:8006` and log in as `root`, realm **Linux PAM**.
    The certificate warning and the "no subscription" popup are expected.
 2. **pve → Updates → Repositories:** disable the enterprise repositories
    (PVE and Ceph), then **Add → No-Subscription**.
