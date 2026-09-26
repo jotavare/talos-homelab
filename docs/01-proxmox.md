@@ -440,6 +440,31 @@ Two trade-offs, accepted on purpose:
   compromised host could send data anywhere. Inbound is what the firewall
   guards here.
 
+### Unused services
+
+`rpcbind` (port `111`, on every interface) comes enabled with Proxmox but
+is only needed to mount NFSv3 storage on the host. There is no NFS here,
+so it is off, even though the firewall already dropped the port:
+
+```bash
+systemctl disable --now rpcbind.socket rpcbind
+# back on, if a NAS is ever mounted on the host over NFSv3:
+systemctl enable --now rpcbind.socket rpcbind
+```
+
+NFSv4 storage does not need it, and neither do Talos VMs mounting NFS
+themselves: they use their own network stack.
+
+What still listens (`ss -tulpn`):
+
+| Port | Service | Reachable from |
+|------|---------|----------------|
+| `22` | SSH | tailnet only (firewall) |
+| `8006` | Web UI (`pveproxy`) | tailnet only (firewall) |
+| `3128` | SPICE proxy | tailnet only (firewall) |
+| `udp/41641` | Tailscale direct connections | anywhere, WireGuard authenticated |
+| `25`, `85`, `323` | Postfix, `pvedaemon`, chrony | localhost only |
+
 ### Why no fail2ban
 
 [fail2ban](https://github.com/fail2ban/fail2ban) watches login logs and,
