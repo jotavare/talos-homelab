@@ -16,9 +16,10 @@ hard rule: when something I already know is still the best fit, it stays.
 - **Learn Talos**: API and machine configs only, no SSH.
 - **Try new tools**: open source over what I use at work, unless clearly worse.
 - **Fully public**: every config, decision and dead end, reverted ones too.
-- **No exposed secrets**: encrypted or kept out of git, no real IPs or hostnames.
+- **No exposed secrets**: passwords, keys and tokens encrypted or kept out of git.
 - **Private management**: admin interfaces only over the tailnet.
 - **Reproducible**: rebuild everything from this repo, VMs included.
+- **GitOps and automation**: git is the source of truth, changes land as commits and apply themselves, nothing done by hand twice.
 - **Diagrams**: show how host, VMs, network and secrets connect.
 
 ## Diagram
