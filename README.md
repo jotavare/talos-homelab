@@ -26,7 +26,7 @@ hard rule: when something I already know is still the best fit, it stays.
 ## Diagrams
 
 <p align="center">
-  <img src="diagrams/overview.png" alt="Homelab overview: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs, with admin access only over Tailscale">
+  <img src="diagrams/overview.png" alt="Homelab overview: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs, with admin access from a laptop or phone only over Tailscale">
   <br>
   <sub><b>Overview.</b> One flat LAN, Talos VMs bridged onto it, management over Tailscale only.</sub>
 </p>
@@ -144,6 +144,18 @@ together.
 | Traces | Tempo, OpenTelemetry | **Jaeger** / **VictoriaTraces** |
 | Dashboards | Grafana | **Grafana** / **Perses** |
 
+## POC trade-offs
+
+This is a proof of concept on a single server, with nothing critical on
+it. Where the production way does not fit one box, the right way is
+written down and the homelab knowingly does something simpler.
+
+| Area | Production way | Here, and why |
+|------|----------------|---------------|
+| Control plane | Three control planes, so etcd keeps quorum when one fails | One, to leave RAM for apps. All VMs share one host anyway ([details](docs/01-proxmox.md#planned-vms)) |
+| Block storage | Longhorn with three replicas on separate nodes and disks | Longhorn anyway, but every replica lands on the same QLC NVMe: no real redundancy, and more writes on a drive that wears fast. Use one replica per volume |
+| Backups | Proxmox Backup Server on a separate machine, plus a copy off site | Proxmox Backup Server as a VM on the same host until there is a second machine. It protects against mistakes, not against losing the host |
+
 ## Work in progress
 
 The build, step by step, in the order it was done. One page per phase,
@@ -166,10 +178,15 @@ phase page.
       once monitoring is in place.
 - [ ] UPS with NUT for a clean shutdown on power loss.
 - [ ] Test the web UI over tailnet IPv6 from a phone.
+- [ ] Proxmox host config as an Ansible playbook: the steps in
+      `docs/01-proxmox.md` are manual today, against the Reproducible and
+      Automation goals.
 
 ### Tailscale
 
 - [ ] Sync `tailscale/policy.hujson` to the tailnet from git (GitOps).
+- [ ] Tailscale HTTPS certificate for the Proxmox web UI, instead of the
+      self-signed one.
 
 ### Before Talos
 
@@ -180,6 +197,8 @@ phase page.
 - [ ] Restrict `6443` and `50000` on the VMs.
 - [ ] Lockout runbook with etcd snapshots.
 - [ ] NTP check.
+- [ ] Talos system extensions for Longhorn (`iscsi-tools`,
+      `util-linux-tools`).
 - [ ] Brute-force protection (CrowdSec) for anything exposed to the
       internet through an ingress.
 

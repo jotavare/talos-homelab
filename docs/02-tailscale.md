@@ -13,7 +13,7 @@ opened on the router.
 - **What is trusted:** Tailscale's coordination server decides which
   devices join the tailnet and sees metadata (devices, connection times),
   never traffic. Tailnet Lock removes the ability to add devices without a
-  signature from one of our own nodes.
+  signature from one of my own nodes.
 - **Headscale** (self-hosted coordination server) stays a later
   experiment. Moving to it only means re-joining the devices.
 
@@ -125,7 +125,7 @@ the tailnet.
 
 ## Tailnet Lock
 
-With Tailnet Lock on, a device can only join if one of our own **signing
+With Tailnet Lock on, a device can only join if one of my own **signing
 nodes** signs it. Tailscale approving the login is no longer enough, which
 removes the trust in Tailscale's coordination server to decide membership.
 
