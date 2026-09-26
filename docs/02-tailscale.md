@@ -25,22 +25,82 @@ Directly on each node that needs remote access, not as a subnet router:
 |------|-----|
 | Proxmox host | `tailscaled` on the Debian base system |
 | Admin laptop | Tailscale Windows app (WSL shares its network) |
+| Phone | Tailscale Android app |
 | Talos VMs | Tailscale system extension, in the Talos phase |
 
-## Account and laptop
+## Account and devices
 
-1. Tailscale account, signed in with GitHub, with 2FA enabled on the GitHub
-   account.
-2. Tailscale app on Windows, logged in to the same account.
+- **Account:** signed in with GitHub, which has 2FA enabled. Whoever
+  controls that login controls the tailnet.
+- **Laptop:** Tailscale Windows app. WSL goes
+  through the Windows network, so commands run in WSL reach the tailnet
+  too.
+- **Phone:** Tailscale Android app, for access away from home.
+- **MagicDNS** is on, so every device gets a name under
+  `<tailnet>.ts.net`.
+
+Key expiry stays **on** for the laptop and phone: a lost device loses
+access on its own.
 
 ## Proxmox host
 
-1. Add Tailscale's apt repository for Debian trixie and install
-   `tailscale`.
-2. `tailscale up --hostname=pve`, approve the login in the browser.
-3. Disable key expiry for `pve` in the admin console, so the server does
-   not drop off the tailnet after 180 days.
-4. Check the web UI over the tailnet: `https://pve.<tailnet>.ts.net:8006`.
+Installed from Tailscale's official apt repository, in the same deb822
+format as the Proxmox one. Signing key fingerprint:
+`2596 A99E AAB3 3821 893C 0A79 458C A832 957F 5868`.
+
+```bash
+curl -fsSL https://pkgs.tailscale.com/stable/debian/trixie.noarmor.gpg \
+  -o /usr/share/keyrings/tailscale-archive-keyring.gpg
+```
+
+```
+# /etc/apt/sources.list.d/tailscale.sources
+Types: deb
+URIs: https://pkgs.tailscale.com/stable/debian
+Suites: trixie
+Components: main
+Signed-By: /usr/share/keyrings/tailscale-archive-keyring.gpg
+```
+
+```bash
+apt update && apt install tailscale
+tailscale up --hostname=pve   # prints a login URL, approved in the browser
+```
+
+Then, in the [admin console](https://login.tailscale.com/admin/machines),
+**⋯ → Disable key expiry** on `pve`. A server should not drop off the
+tailnet when its key expires (180 days by default).
+
+Check from the laptop:
+
+```bash
+tailscale status                          # pve listed with a 100.x address
+curl -sk -o /dev/null -w '%{http_code}\n' https://pve.<tailnet>.ts.net:8006   # 200
+```
+
+The web UI is now at `https://pve.<tailnet>.ts.net:8006` from any device on
+the tailnet.
+
+## Useful commands
+
+| Command | What it does |
+|---------|--------------|
+| `tailscale status` | Devices on the tailnet, their IPs, and whether traffic is flowing |
+| `tailscale ip -4` | This device's tailnet IPv4 address |
+| `tailscale ping pve` | Pings over the tailnet and says whether the path is direct or via a DERP relay |
+| `tailscale netcheck` | NAT type, UDP reachability and latency to each DERP region |
+| `tailscale whois 100.x.y.z` | Which device and user own a tailnet IP |
+| `tailscale up --hostname=NAME` | Joins the tailnet (first time) or changes settings |
+| `tailscale down` | Disconnects without logging out |
+| `tailscale logout` | Leaves the tailnet; the device must be approved again |
+| `tailscale set --hostname=NAME` | Changes one setting without re-running `up` |
+| `tailscale version` | Client version |
+| `tailscale debug prefs` | The current settings in full |
+| `systemctl status tailscaled` | The daemon on Linux |
+| `journalctl -u tailscaled -f` | Follow the daemon's logs |
+
+`tailscale ping` is the one to reach for first when something is slow:
+"via DERP" means traffic is relayed rather than direct.
 
 ## Hardening
 
