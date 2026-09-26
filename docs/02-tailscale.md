@@ -200,13 +200,19 @@ pasted into admin console → **Access controls**:
 - **`tag:server`** on `pve` (Machines → ⋯ → **Edit ACL tags**). Tagged
   devices belong to the tailnet, not a person, and never expire. The tag
   must exist in the policy (`tagOwners`) before it can be assigned.
-- **My devices** (`autogroup:member`: laptop, phone) reach `tag:server` on
-  `22`, `8006`, `6443` and `50000` only. The last two are for the Talos
-  VMs later.
+- **My devices** (user `jotavare@github`: laptop, phone) reach
+  `tag:server` on `22`, `8006`, `6443` and `50000` only. The last two are
+  for the Talos VMs later.
 - **Nothing in the other direction:** a compromised server cannot start a
   connection to the laptop.
 - **`tests`** run on every save, so a broken rule is rejected before it
-  applies.
+  applies. They check both directions: my user reaches `22` and `8006`
+  but not other ports, and `tag:server` reaches none of my devices.
+
+The grant names my user, not `autogroup:member`. That group means every
+user in the tailnet, so anyone invited later (family, a friend) would get
+the same admin ports on every server. With the user named, a new member
+gets nothing until a rule says otherwise.
 
 Rules target users or tags, not a single personal device. Tagging the
 laptop to make it "the only admin device" would strip its owner and key

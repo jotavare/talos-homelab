@@ -5,7 +5,7 @@
 
   "grants": [
     {
-      "src": ["autogroup:member"],
+      "src": ["jotavare@github"],
       "dst": ["tag:server"],
       "ip":  ["tcp:22", "tcp:8006", "tcp:6443", "tcp:50000"],
     },
@@ -16,6 +16,10 @@
       "src":    "jotavare@github",
       "accept": ["tag:server:22", "tag:server:8006"],
       "deny":   ["tag:server:80", "tag:server:3389"],
+    },
+    {
+      "src":  "tag:server",
+      "deny": ["jotavare@github:22", "jotavare@github:443"],
     },
   ],
 }
