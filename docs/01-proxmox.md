@@ -168,6 +168,10 @@ straight over the LAN.
   random one from the password manager (Bitwarden, item
   "Proxmox VE · pve · root"). Changed under **Datacenter → Permissions →
   Users → root → Password**.
+- **Web UI 2FA:** TOTP for `root@pam` (**Datacenter → Permissions → Two
+  Factor → Add → TOTP**), scanned into an authenticator app, plus a set of
+  one-time **recovery keys** (**Add → Recovery Keys**) stored in Bitwarden
+  with the login. The login page now asks for a code after the password.
 - **SSH key login:** an Ed25519 key generated on the admin laptop, with
   the private key backed up in Bitwarden as an SSH key item
   ("SSH key · jotavare · WSL laptop").
@@ -289,8 +293,19 @@ systemctl stop fw-deadman.timer
 | Tailscale | still direct over the LAN, not relayed |
 | `pve` → internet (apt) | allowed |
 
-Locked out? From the physical console (keyboard and monitor on the host),
-log in as `root` and run `pve-firewall stop`.
+### Lockout recovery
+
+The physical console (keyboard and monitor on the host) is the way back in
+for every lock added here. It needs only the root password: no network, no
+2FA, no SSH key.
+
+| Locked out of | Fix |
+|---------------|-----|
+| Everything over the network (firewall) | Console: `pve-firewall stop`, fix the rules, then `pve-firewall start` |
+| Web UI 2FA (lost authenticator) | Use one of the recovery keys from Bitwarden in place of the code |
+| Web UI 2FA, recovery keys lost too | Console: `pveum user tfa delete root@pam` removes 2FA, then set it up again |
+| SSH (lost key) | Console, or the web UI shell: add a new public key to `/root/.ssh/authorized_keys` |
+| Tailscale down | Console: `tailscale status`, `systemctl restart tailscaled`; or `pve-firewall stop` to reach the UI from the LAN |
 
 ### Next
 
