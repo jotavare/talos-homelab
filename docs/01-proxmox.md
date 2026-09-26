@@ -171,7 +171,7 @@ straight over the LAN.
 - **Web UI 2FA:** TOTP for `root@pam` (**Datacenter → Permissions → Two
   Factor → Add → TOTP**), scanned into an authenticator app, plus a set of
   one-time **recovery keys** (**Add → Recovery Keys**) stored in Bitwarden
-  with the login. The login page now asks for a code after the password.
+  with the login, plus a printed copy kept offline. The login page now asks for a code after the password.
 - **SSH key login:** an Ed25519 key generated on the admin laptop, with
   the private key backed up in Bitwarden as an SSH key item
   ("SSH key · jotavare · WSL laptop").

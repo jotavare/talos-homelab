@@ -49,8 +49,10 @@ where the device is, not which device it is.
 
 ## Account and devices
 
-- **Account:** signed in with GitHub, which has 2FA enabled. Whoever
-  controls that login controls the tailnet.
+- **Account:** signed in with GitHub, protected by a passkey or security
+  key rather than codes that can be phished. Whoever controls that login
+  controls the tailnet: Tailnet Lock stops it from adding devices, but
+  not from editing the policy or removing devices.
 - **Laptop:** Tailscale Windows app. WSL goes
   through the Windows network, so commands run in WSL reach the tailnet
   too.
@@ -165,7 +167,8 @@ removes the trust in Tailscale's coordination server to decide membership.
   every device already in the tailnet.
 - **Disablement secrets:** init prints 10, shown only once. One is needed
   to ever turn the lock off; losing all of them makes the tailnet
-  unrecoverable. Stored in Bitwarden. None was sent to Tailscale support,
+  unrecoverable. Stored in Bitwarden, plus a printed copy kept offline in
+  case the vault itself is lost. None was sent to Tailscale support,
   since that would let Tailscale undo the lock.
 - **Init was run by hand** in a terminal, so the secrets were never
   written to any file or log.
