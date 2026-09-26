@@ -39,8 +39,9 @@ Directly on each node that needs remote access, not as a subnet router:
 - **MagicDNS** is on, so every device gets a name under
   `<tailnet>.ts.net`.
 
-Key expiry stays **on** for the laptop and phone: a lost device loses
-access on its own.
+Key expiry is set to **30 days** for the tailnet (default 180), so the
+laptop and phone log in again once a month and a lost device loses access
+on its own. Servers are exempt (see below).
 
 ## Proxmox host
 
@@ -69,7 +70,7 @@ tailscale up --hostname=pve   # prints a login URL, approved in the browser
 
 Then, in the [admin console](https://login.tailscale.com/admin/machines),
 **⋯ → Disable key expiry** on `pve`. A server should not drop off the
-tailnet when its key expires (180 days by default).
+tailnet when its key expires.
 
 Check from the laptop:
 
@@ -102,12 +103,70 @@ the tailnet.
 `tailscale ping` is the one to reach for first when something is slow:
 "via DERP" means traffic is relayed rather than direct.
 
+## Tailnet Lock
+
+With Tailnet Lock on, a device can only join if one of our own **signing
+nodes** signs it. Tailscale approving the login is no longer enough, which
+removes the trust in Tailscale's coordination server to decide membership.
+
+- **Signing nodes:** `pve` and the laptop. At least two are required.
+  Android cannot sign, but the phone was signed at setup and keeps working.
+- **Enabled from** admin console → **Settings → Device management → Enable
+  Tailnet Lock**, picking the two signing nodes. It generates a
+  `tailscale lock init …` command, run once on a signing node. Init signs
+  every device already in the tailnet.
+- **Disablement secrets:** init prints 10, shown only once. One is needed
+  to ever turn the lock off; losing all of them makes the tailnet
+  unrecoverable. Stored in Bitwarden. None was sent to Tailscale support,
+  since that would let Tailscale undo the lock.
+- **Init was run by hand** in a terminal, so the secrets were never
+  written to any file or log.
+
+### Reading `tailscale lock status`
+
+```
+Tailnet Lock is ENABLED.
+
+This node is accessible under Tailnet Lock. Node signature:
+SigKind: direct
+Pubkey: [UYAWt]
+KeyID: tlpub:6734…
+WrappingPubkey: tlpub:c684…
+
+This node's tailnet-lock key: tlpub:c684…
+
+Trusted signing keys:
+	tlpub:c684…	1	(self)
+	tlpub:6734…	1
+```
+
+| Line | Meaning |
+|------|---------|
+| `accessible under Tailnet Lock` | This node has a valid signature, so other nodes talk to it |
+| `SigKind: direct` | Signed directly by a trusted signing key |
+| `Pubkey` | Short form of the node key being vouched for (the WireGuard identity) |
+| `KeyID` | Which trusted key signed it (here the laptop, which ran `init`) |
+| `WrappingPubkey` | The node's own lock key, so it can re-sign its node key when that rotates |
+| `This node's tailnet-lock key` | This node's signing key; the private half never leaves it |
+| `Trusted signing keys` | Keys allowed to sign new devices; the `1` is each key's vote when changing this list |
+
+### Adding a device later
+
+A new device logs in as usual, then shows as locked out until a signing
+node signs it:
+
+```bash
+tailscale lock status              # on the new device: prints its node key
+tailscale lock sign nodekey:… tlpub:…   # on pve or the laptop
+```
+
+The Windows app can also sign from a link shown in the admin console.
+
 ## Hardening
 
-1. Enable Tailnet Lock once the laptop and `pve` have joined.
-2. Access rules so only the admin laptop reaches `:8006`, `:6443` and
+1. Access rules so only the admin laptop reaches `:8006`, `:6443` and
    `:50000`.
-3. Proxmox firewall so `:8006` is no longer open to the whole LAN.
+2. Proxmox firewall so `:8006` is no longer open to the whole LAN.
 
 ## References
 
