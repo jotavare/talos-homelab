@@ -1,0 +1,98 @@
+# Ansible
+
+The Proxmox host configuration as code: one playbook that brings a
+freshly installed host to the state described in
+[01. Proxmox](01-proxmox.md) and [02. Tailscale](02-tailscale.md).
+
+## Why Ansible
+
+The host steps were done by hand first, to learn them. Doing them by hand
+again after a reinstall goes against two goals, Reproducible and
+Automation. Ansible is already a tool I know from work, and it fits here:
+the host is a normal Debian system with SSH, and the playbook only needs
+SSH and Python on it.
+
+Talos VMs are a different story: no SSH, no shell, configured through
+their API. They come later with OpenTofu, not Ansible.
+
+## Install
+
+Ansible runs on the laptop (WSL). Installed with
+[uv](https://docs.astral.sh/uv/), which needs no root and no
+`python3-venv` package:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv tool install ansible-core
+uv tool install ansible-lint
+```
+
+## Layout
+
+| Path | What it is |
+|------|------------|
+| [ansible/ansible.cfg](../ansible/ansible.cfg) | Settings: inventory, roles path, YAML output |
+| [ansible/inventory.yml](../ansible/inventory.yml) | The host `pve`. Its address comes from `PROXMOX_HOST` in the local `.env`, so the tailnet name stays out of git |
+| [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook |
+| [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | The tasks and handlers |
+| [proxmox/](../proxmox/) | The config files the role copies. Each file lives in one place and is explained in 01. Proxmox |
+
+## What it covers
+
+| Covered by the playbook | Still manual |
+|-------------------------|--------------|
+| Enterprise repos off, no-subscription and Tailscale repos on | Installing Proxmox, the network settings |
+| Tailscale signing key, checked by SHA256 | Root password, web UI 2FA and recovery keys |
+| `unattended-upgrades` and its drop-in | Copying the SSH key (`ssh-copy-id`) |
+| SSH hardening drop-in, validated with `sshd -t` before it is written | Full upgrade and reboot after the install |
+| IPv6 sysctl, smartd config | `tailscale up` login, tag, key expiry, Tailnet Lock |
+| `rpcbind` off | SMTP notification target (holds a password) |
+| Tailscale `--accept-dns=false --auto-update` | |
+| Firewall files, behind a dead-man switch | |
+
+The manual column is either a one-time install step or something that
+creates or holds a secret. Those stay by hand on purpose.
+
+## Firewall safety
+
+A firewall change is the one task that can lock the host out. The
+playbook applies it the same way as the manual procedure in
+[01. Proxmox, Firewall](01-proxmox.md#firewall):
+
+1. Compare the repo files with the host. If nothing changed, skip the
+   rest.
+2. Arm `fw-deadman`: `pve-firewall stop` in 5 minutes.
+3. Copy `cluster.fw` and `host.fw`, wait for `pve-firewall` to load them.
+4. Open a brand new SSH connection from the laptop, not the one Ansible
+   already has open (that one would survive a bad rule).
+5. Only if that works, stop the timer. Otherwise the firewall switches
+   itself off and the host is reachable again.
+
+This path has not run for real yet: it only runs when a firewall file
+changes.
+
+## Running it
+
+```bash
+set -a && . ./.env && set +a
+cd ansible
+ansible-lint proxmox.yml                      # production profile passes
+ansible-playbook proxmox.yml --check --diff   # what would change
+ansible-playbook proxmox.yml                  # apply
+```
+
+Ansible in this terminal needs its output sent to a file or pipe that
+blocks (`> out.txt 2>&1`), otherwise it refuses to start with
+"Ansible requires blocking IO". A normal terminal does not need this.
+
+On the current host the check run reports `changed=0`: the playbook and
+the host agree.
+
+## References
+
+- [Ansible documentation](https://docs.ansible.com/)
+- [ansible-lint](https://docs.ansible.com/projects/lint/)
+- [uv](https://docs.astral.sh/uv/)
+- [Proxmox VE firewall](https://pve.proxmox.com/wiki/Firewall)
+
+[Back to the build log](../README.md#work-in-progress)

@@ -164,8 +164,9 @@ with the tools, the options chosen and why.
 
 | Phase | Covers |
 |-------|--------|
-| [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install, Ansible, planned VMs |
+| [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install, planned VMs |
 | [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, hardening |
+| [03. Ansible](docs/03-ansible.md) | Proxmox host configuration as a playbook |
 
 ## Backlog
 
