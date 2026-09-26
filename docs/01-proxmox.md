@@ -304,6 +304,50 @@ printf "Subject: pve root mail test\n\ntest\n" | sendmail root
 
 Both should arrive in the Proton inbox.
 
+### Disk health alerts
+
+The only disk is an Intel 670p, a QLC NVMe. QLC wears faster than other
+flash, so its health is worth watching. `smartmontools` comes with
+Proxmox and `smartd` already runs, but the default rule scans every disk,
+USB sticks included, and never runs a self-test.
+
+Starting point, from `smartctl -a /dev/nvme0`:
+
+| Field | Value |
+|-------|-------|
+| Temperature | 44 C idle, drive warning at 83 C, critical at 88 C |
+| Percentage used | 2% |
+| Available spare | 100%, drive alarm below 10% |
+| Health | PASSED, critical warning `0x00`, no media errors |
+
+Replaced `/etc/smartd.conf` with a single rule for the NVMe,
+[`proxmox/smartd/smartd.conf`](../proxmox/smartd/smartd.conf):
+
+```
+/dev/nvme0 -a -W 5,70,80 -s (S/../.././02|L/../../6/03) -m root -M exec /usr/share/smartmontools/smartd-runner
+```
+
+- `-a`: health, new error log entries and the drive's critical warning,
+  which covers spare below its threshold and "reliability degraded".
+- `-W 5,70,80`: log a 5 C jump, log above 70 C, mail above 80 C.
+- `-s`: short self-test daily at 02:00, long self-test Saturday at 03:00.
+- `-m root`: mail root, which goes out through
+  [Email notifications](#email-notifications).
+
+Tested the mail path once with `-M test`, which sends a test mail on
+start, then restarted with the real config:
+
+```bash
+sed "s|-M exec|-M test -M exec|" /etc/smartd.conf > /tmp/smartd-test.conf
+smartd -q onecheck -c /tmp/smartd-test.conf   # test mail arrives
+systemctl restart smartd
+journalctl -u smartd   # "Monitoring ... 1 NVMe devices"
+smartctl -l selftest /dev/nvme0   # self-test results
+```
+
+`smartd` has no threshold for "percentage used", so an early wear warning
+waits for the monitoring stack.
+
 ### Network check
 
 After the reboot the bridge still has its static address, on the pinned
