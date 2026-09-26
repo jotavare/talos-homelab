@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: (^|/)[^/]+\.sops\.ya?ml$
+    age: age1jwptrsrtlw2j6u5s23dscnhqvkc8zf88atvvehqnwww6vs764ynqnp65gg
