@@ -92,6 +92,19 @@ Then, in the [admin console](https://login.tailscale.com/admin/machines),
 **⋯ → Disable key expiry** on `pve`. A server should not drop off the
 tailnet when its key expires.
 
+MagicDNS is turned off **on `pve` only**:
+
+```bash
+tailscale set --accept-dns=false
+```
+
+By default Tailscale rewrites `/etc/resolv.conf` to its own resolver
+(`100.100.100.100`). Every name lookup on the host, for apt, the email
+alerts and NTP, would then depend on `tailscaled` running. With it off,
+the host keeps the `1.1.1.1` set in the installer, so updates and alerts
+keep working even when Tailscale is down. The host never needs to look up
+other tailnet names; the laptop and phone still use MagicDNS.
+
 Check from the laptop:
 
 ```bash
@@ -115,6 +128,7 @@ the tailnet.
 | `tailscale down` | Disconnects without logging out |
 | `tailscale logout` | Leaves the tailnet; the device must be approved again |
 | `tailscale set --hostname=NAME` | Changes one setting without re-running `up` |
+| `tailscale set --accept-dns=false` | Stops Tailscale from managing this device's DNS |
 | `tailscale version` | Client version |
 | `tailscale debug prefs` | The current settings in full |
 | `systemctl status tailscaled` | The daemon on Linux |
