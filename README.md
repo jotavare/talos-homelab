@@ -34,6 +34,15 @@ hard rule: when something I already know is still the best fit, it stays.
 
 A single mini PC running Proxmox VE, with the Talos nodes as VMs on top.
 
+| Component | Detail |
+|-----------|--------|
+| Model | HP Pro Mini 400 G9 |
+| CPU | Intel Core i5-12500T, 6 cores / 12 threads, 35 W |
+| RAM | 32 GB DDR4-3200 (2 x 16 GB, both slots used, max 64 GB) |
+| Storage | Intel 670p 512 GB NVMe |
+| Network | Intel I219-LM gigabit, single port, no Wi-Fi |
+| GPU | Intel UHD Graphics 770 (integrated) |
+
 ## Core stack
 
 What I already know, from work, earlier homelabs or elsewhere, and what
@@ -42,8 +51,8 @@ together.
 
 ### Infrastructure
 
-| Area | Already used | Candidate here |
-|------|--------------|----------------|
+| Area | Already used | Candidate |
+|------|--------------|-----------|
 | Hypervisor | vSphere, XCP-ng, Proxmox VE | **Proxmox VE** |
 | Kubernetes | GKE, AKS, RKE2 | **Talos** |
 | IaC | Terraform | **OpenTofu** |
@@ -52,50 +61,52 @@ together.
 
 ### Delivery
 
-| Area | Already used | Candidate here |
-|------|--------------|----------------|
+| Area | Already used | Candidate |
+|------|--------------|-----------|
 | Git and CI/CD | GitHub, GitLab, Jenkins, Azure DevOps | **Forgejo** / **Gitea** |
 | GitOps | Argo CD | **Flux** |
 | Container registry | JFrog Artifactory, Nexus | **Harbor** / **Zot** |
 | Dependency updates | Renovate | **Renovate** |
 
-### Cluster networking
+### Cluster Components
 
-| Area | Already used | Candidate here |
-|------|--------------|----------------|
+| Area | Already used | Candidate |
+|------|--------------|-----------|
 | CNI | Canal (Calico + Flannel) | **Cilium** |
 | Service mesh | Istio | **Cilium** |
 | Load balancer | kube-vip, GKE and AKS cloud load balancers | **Cilium** / **MetalLB** |
 | Ingress | Traefik, Istio | **Envoy Gateway** / **Cilium** |
 | Certificates | cert-manager, step-ca, Traefik ACME, Istio CA (mTLS) | **cert-manager** + **step-ca** |
+| Autoscaling | KEDA | **KEDA** |
 
 ### Security
 
-| Area | Already used | Candidate here |
-|------|--------------|----------------|
+| Area | Already used | Candidate |
+|------|--------------|-----------|
 | SSO | Authentik, Keycloak | **Kanidm** / **Zitadel** / **Authelia** |
 | Secrets | HashiCorp Vault | **SOPS** + **age** / **OpenBao** / **SecretSpec** |
-| Policy | Kyverno | **Kyverno** / **Kubewarden** |
+| Policy | Kyverno | **Kyverno** / **OPA Gatekeeper** / **Kubewarden** |
 | Runtime security | Falco | **Falco** / **Tetragon** |
+| Vulnerability scanning | Trivy | **Trivy** / **Grype** |
+| SBOM | CycloneDX, Dependency-Track | **Syft** + **Dependency-Track** |
 
 ### Storage and data
 
-| Area | Already used | Candidate here |
-|------|--------------|----------------|
+| Area | Already used | Candidate |
+|------|--------------|-----------|
 | Block storage | local-path-provisioner, GKE and AKS managed disks | **Longhorn** |
 | Object storage | MinIO, Google Cloud Storage, Azure Blob Storage | **Garage** / **SeaweedFS** / **RustFS** / **Ceph** |
 | Databases | Postgres, managed cloud and on-prem | **CloudNativePG** |
 | Backup | Cloud-managed Postgres backups | **Velero** + **Talos etcd snapshots** + **Proxmox Backup Server** |
 
-### Observability and scaling
+### Observability
 
-| Area | Already used | Candidate here |
-|------|--------------|----------------|
+| Area | Already used | Candidate |
+|------|--------------|-----------|
 | Metrics | Prometheus | **VictoriaMetrics** |
 | Logs | Loki | **VictoriaLogs** |
 | Traces | Tempo, OpenTelemetry | **Jaeger** / **VictoriaTraces** |
 | Dashboards | Grafana | **Grafana** / **Perses** |
-| Autoscaling | KEDA | **KEDA** |
 
 ## Open questions
 
