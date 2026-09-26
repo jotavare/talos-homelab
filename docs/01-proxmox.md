@@ -178,8 +178,20 @@ ssh-copy-id root@192.168.1.10   # appends the public key to /root/.ssh/authorize
 ssh root@192.168.1.10 hostname  # prints "pve" without a password prompt
 ```
 
-The key was installed while the LAN was still open, so `192.168.1.10`
-above. Local credentials for scripts live in a `.env` at the repo root,
+The key was installed while the LAN was still open, which is why the
+commands above use `192.168.1.10`. With the key in place, SSH password login is turned off for root:
+[proxmox/ssh/10-hardening.conf](../proxmox/ssh/10-hardening.conf), copied
+to `/etc/ssh/sshd_config.d/`. A drop-in survives upgrades better than
+editing `sshd_config`, and it wins because the `Include` line sits at the
+top of the main file (first value wins).
+
+```bash
+sshd -t && systemctl reload ssh      # validate, then reload; open sessions stay up
+ssh root@pve.<tailnet>.ts.net hostname                       # key: works
+ssh -o PubkeyAuthentication=no root@pve.<tailnet>.ts.net     # Permission denied (publickey)
+```
+
+Local credentials for scripts live in a `.env` at the repo root,
 which is in `.gitignore` and never committed.
 
 ### Repositories and upgrade
