@@ -26,6 +26,11 @@ hard rule: when something I already know is still the best fit, it stays.
 A single mini PC running Proxmox VE, with the Talos nodes as VMs on top,
 plus the home network it sits on.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="diagrams/network-dark.png">
+  <img alt="Homelab network: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs, with admin access only over Tailscale" src="diagrams/network.png">
+</picture>
+
 ### Proxmox host
 
 | Component | Detail |
@@ -44,13 +49,15 @@ plus the home network it sits on.
 | Router | ISP-provided, gateway and DHCP server |
 | Access point | Cudy router running OpenWrt 25.12, DHCP disabled |
 
+LAN `192.168.1.0/24`:
+
 | Range | Type | Use |
 |-------|------|-----|
-| `.1` | Static | ISP router |
-| `.2` | Static | Access point |
-| `.10` | Static | Proxmox |
-| `.11` to `.99` | Static | Talos nodes and other lab machines |
-| `.100` to `.254` | Dynamic (DHCP) | Phones, laptops and other clients |
+| `192.168.1.1` | Static | ISP router |
+| `192.168.1.2` | Static | Access point |
+| `192.168.1.10` | Static | Proxmox |
+| `192.168.1.11` to `.99` | Static | Talos nodes and other lab machines |
+| `192.168.1.100` to `.254` | Dynamic (DHCP) | Phones, laptops and other clients |
 
 ## Core stack
 

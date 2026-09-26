@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homelab network</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper: #2d3142;
+      --color-ink: #f5f5f5;
+      --color-muted: #bfc0c0;
+      --font-sans: 'Geist', system-ui, sans-serif;
+      --font-serif: 'Instrument Serif', serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+    }
+    body { font-family: var(--font-sans); background: var(--color-paper); color: var(--color-ink);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    .eyebrow { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--color-muted); margin-bottom: 0.5rem; }
+    h1 { font-family: var(--font-serif); font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem); font-weight: 400;
+      letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink); margin-bottom: 1.5rem; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · talos-homelab</p>
+    <h1>Homelab network</h1>
+
+    <svg viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="network-dark-title network-dark-desc">
+      <title id="network-dark-title">Homelab network</title>
+      <desc id="network-dark-desc">Network overview showing the ISP router serving a home LAN with a Wi-Fi access point and a Proxmox host that runs the Talos Kubernetes VMs, with admin access to the host and cluster only over Tailscale.</desc>
+      <defs>
+        <marker id="network-dark-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker>
+        <marker id="network-dark-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#6a95d8"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#2d3142"/>
+
+      <!-- Zones -->
+      <rect x="192" y="72" width="792" height="416" rx="8" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.10)" stroke-width="0.8"/>
+      <rect x="208" y="76" width="140" height="12" rx="2" fill="#2d3142"/>
+      <text x="278.0" y="85" fill="rgba(245,245,245,0.45)" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">HOME LAN · 192.168.1.0/24</text>
+      <rect x="424" y="280" width="544" height="192" rx="8" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.10)" stroke-width="0.8"/>
+      <rect x="440" y="284" width="196" height="12" rx="2" fill="#2d3142"/>
+      <text x="538.0" y="293" fill="rgba(245,245,245,0.45)" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">PROXMOX HOST · HP PRO MINI 400 G9</text>
+
+      <!-- Arrows (behind nodes) -->
+      <line x1="160" y1="232" x2="216" y2="232" stroke="#6a95d8" stroke-width="1.2" marker-end="url(#network-dark-arrow-link)"/>
+      <path d="M 376,216 H 392 Q 400,216 400,208 V 152 Q 400,144 408,144 H 424" fill="none" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#network-dark-arrow)"/>
+      <path d="M 376,248 H 392 Q 400,248 400,256 V 336 Q 400,344 408,344 H 448" fill="none" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#network-dark-arrow)"/>
+      <line x1="584" y1="144" x2="632" y2="144" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#network-dark-arrow)"/>
+      <line x1="784" y1="344" x2="832" y2="344" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#network-dark-arrow)"/>
+      <line x1="96" y1="264" x2="96" y2="392" stroke="#6a95d8" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#network-dark-arrow-link)"/>
+      <path d="M 160,404 H 512 Q 520,404 520,396 V 376" fill="none" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#network-dark-arrow)"/>
+      <path d="M 160,440 H 704 Q 712,440 712,432 V 376" fill="none" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#network-dark-arrow)"/>
+
+      <!-- Arrow labels -->
+      <rect x="168" y="212" width="40" height="12" rx="2" fill="#2d3142"/>
+      <text x="188.0" y="221" fill="#6a95d8" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">WAN</text>
+      <rect x="340" y="170" width="52" height="12" rx="2" fill="#2d3142"/>
+      <text x="366.0" y="179" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STATIC .2</text>
+      <rect x="336" y="290" width="56" height="12" rx="2" fill="#2d3142"/>
+      <text x="364.0" y="299" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STATIC .10</text>
+      <rect x="588" y="124" width="40" height="12" rx="2" fill="#2d3142"/>
+      <text x="608.0" y="133" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">WI-FI</text>
+      <rect x="788" y="324" width="40" height="12" rx="2" fill="#2d3142"/>
+      <text x="808.0" y="333" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PODS</text>
+      <rect x="104" y="322" width="60" height="12" rx="2" fill="#2d3142"/>
+      <text x="134.0" y="331" fill="#6a95d8" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">WIREGUARD</text>
+      <rect x="224" y="384" width="56" height="12" rx="2" fill="#2d3142"/>
+      <text x="252.0" y="393" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">UI :8006</text>
+      <rect x="224" y="420" width="68" height="12" rx="2" fill="#2d3142"/>
+      <text x="258.0" y="429" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CLUSTER API</text>
+
+      <!-- Nodes -->
+      <rect x="32" y="200" width="128" height="64" rx="6" fill="#2d3142"/>
+      <rect x="32" y="200" width="128" height="64" rx="6" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.30)" stroke-width="1"/>
+      <rect x="40" y="208" width="26" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.22)" stroke-width="0.8"/>
+      <text x="53.0" y="217" fill="#8e98ac" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">WAN</text>
+      <text x="96.0" y="238" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Internet</text>
+      <text x="96.0" y="254" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">ISP uplink</text>
+      <rect x="216" y="200" width="160" height="64" rx="6" fill="#2d3142"/>
+      <rect x="216" y="200" width="160" height="64" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+      <rect x="224" y="208" width="20" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.40)" stroke-width="0.8"/>
+      <text x="234.0" y="217" fill="#f5f5f5" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">GW</text>
+      <text x="296.0" y="238" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">ISP router</text>
+      <text x="296.0" y="254" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">192.168.1.1 · DHCP</text>
+      <rect x="424" y="112" width="160" height="64" rx="6" fill="#2d3142"/>
+      <rect x="424" y="112" width="160" height="64" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+      <rect x="432" y="120" width="20" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.40)" stroke-width="0.8"/>
+      <text x="442.0" y="129" fill="#f5f5f5" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">AP</text>
+      <text x="504.0" y="150" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Cudy access point</text>
+      <text x="504.0" y="166" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">192.168.1.2 · OpenWrt 25.12</text>
+      <rect x="632" y="112" width="160" height="64" rx="6" fill="#2d3142"/>
+      <rect x="632" y="112" width="160" height="64" rx="6" fill="rgba(191,192,192,0.10)" stroke="#8e98ac" stroke-width="1"/>
+      <rect x="640" y="120" width="26" height="12" rx="2" fill="transparent" stroke="rgba(191,192,192,0.40)" stroke-width="0.8"/>
+      <text x="653.0" y="129" fill="#8e98ac" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">USR</text>
+      <text x="712.0" y="150" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Wi-Fi clients</text>
+      <text x="712.0" y="166" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">DHCP .100–.254</text>
+      <rect x="448" y="312" width="144" height="64" rx="6" fill="#2d3142"/>
+      <rect x="448" y="312" width="144" height="64" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+      <rect x="456" y="320" width="20" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.40)" stroke-width="0.8"/>
+      <text x="466.0" y="329" fill="#f5f5f5" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">HV</text>
+      <text x="520.0" y="350" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Proxmox VE</text>
+      <text x="520.0" y="366" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">vmbr0 · 192.168.1.10</text>
+      <rect x="640" y="312" width="144" height="64" rx="6" fill="#2d3142"/>
+      <rect x="640" y="312" width="144" height="64" rx="6" fill="rgba(240,138,89,0.08)" stroke="#f08a59" stroke-width="1"/>
+      <rect x="648" y="320" width="26" height="12" rx="2" fill="transparent" stroke="rgba(240,138,89,0.50)" stroke-width="0.8"/>
+      <text x="661.0" y="329" fill="#f08a59" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">K8S</text>
+      <text x="712.0" y="350" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Talos control plane</text>
+      <text x="712.0" y="366" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">static .11–.99</text>
+      <rect x="832" y="312" width="112" height="64" rx="6" fill="#2d3142"/>
+      <rect x="832" y="312" width="112" height="64" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+      <rect x="840" y="320" width="26" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.40)" stroke-width="0.8"/>
+      <text x="853.0" y="329" fill="#f5f5f5" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">K8S</text>
+      <text x="888.0" y="350" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Talos workers</text>
+      <text x="888.0" y="366" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">static .11–.99</text>
+      <rect x="32" y="392" width="128" height="64" rx="6" fill="#2d3142"/>
+      <rect x="32" y="392" width="128" height="64" rx="6" fill="rgba(240,138,89,0.05)" stroke="rgba(240,138,89,0.50)" stroke-width="1" stroke-dasharray="4,4"/>
+      <rect x="40" y="400" width="26" height="12" rx="2" fill="transparent" stroke="rgba(240,138,89,0.50)" stroke-width="0.8"/>
+      <text x="53.0" y="409" fill="#f08a59" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">VPN</text>
+      <text x="96.0" y="430" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Tailscale</text>
+      <text x="96.0" y="446" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">admin access only</text>
+
+      <!-- Legend -->
+      <line x1="32" y1="504" x2="968" y2="504" stroke="rgba(245,245,245,0.10)" stroke-width="0.8"/>
+      <text x="32" y="520" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+      <rect x="32" y="532" width="14" height="10" rx="2" fill="rgba(240,138,89,0.08)" stroke="#f08a59" stroke-width="1"/>
+      <text x="52" y="540" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Focal: Kubernetes control plane</text>
+      <rect x="228" y="532" width="14" height="10" rx="2" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+      <text x="248" y="540" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Host / network device</text>
+      <rect x="384" y="532" width="14" height="10" rx="2" fill="rgba(191,192,192,0.10)" stroke="#8e98ac" stroke-width="1"/>
+      <text x="404" y="540" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Clients</text>
+      <rect x="468" y="532" width="14" height="10" rx="2" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.30)" stroke-width="1"/>
+      <text x="488" y="540" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">External</text>
+      <rect x="556" y="532" width="14" height="10" rx="2" fill="rgba(240,138,89,0.05)" stroke="rgba(240,138,89,0.50)" stroke-width="1" stroke-dasharray="3,2"/>
+      <text x="576" y="540" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Access boundary</text>
+      <line x1="680" y1="537" x2="708" y2="537" stroke="#6a95d8" stroke-width="1.2" marker-end="url(#network-dark-arrow-link)"/>
+      <text x="716" y="540" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Internet traffic</text>
+      <line x1="800" y1="537" x2="828" y2="537" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#network-dark-arrow)"/>
+      <text x="836" y="540" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Over the tailnet</text>
+    </svg>
+  </div>
+</body>
+</html>
