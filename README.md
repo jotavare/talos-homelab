@@ -34,7 +34,7 @@ hard rule: when something I already know is still the best fit, it stays.
 <p align="center">
   <img src="diagrams/proxmox.png" alt="Proxmox host plan: 32 GB of RAM split between the host, one control plane and three workers on the vmbr0 bridge, and the NVMe split into VM disks, ISOs and swap">
   <br>
-  <sub><b>Proxmox host.</b> Planned split of RAM and disk between the host, one control plane and three workers.</sub>
+  <sub><b>Proxmox.</b> Planned split of RAM and disk between the host, one control plane and three workers. Production needs three control planes for etcd quorum; one is used here to leave more room for apps (<a href="docs/01-proxmox.md#planned-vms">why</a>).</sub>
 </p>
 
 <p align="center">
