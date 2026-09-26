@@ -23,9 +23,19 @@ hard rule: when something I already know is still the best fit, it stays.
 - **Automation**: nothing done by hand twice.
 - **Diagrams**: show how host, VMs, network and secrets connect.
 
-## Diagram
+## Diagrams
 
-![Homelab network: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs, with admin access only over Tailscale](diagrams/network.png)
+<p align="center">
+  <img src="diagrams/network.png" alt="Homelab network: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs, with admin access only over Tailscale">
+  <br>
+  <sub><b>Network.</b> One flat home LAN. The Proxmox host bridges the Talos VMs onto it, and management is only reachable over Tailscale.</sub>
+</p>
+
+<p align="center">
+  <img src="diagrams/tailscale.png" alt="Tailscale traffic: direct over the LAN at home, direct over the internet when away, DERP relay as a fallback, coordination server for keys and policy only">
+  <br>
+  <sub><b>Tailscale.</b> At home traffic stays on the LAN; away it goes direct over the internet, with an encrypted relay as fallback. The coordination server only hands out keys.</sub>
+</p>
 
 ## Hardware
 
