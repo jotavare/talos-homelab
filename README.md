@@ -152,7 +152,8 @@ phase page.
 ### Proxmox host
 
 - [ ] Back up `/etc/pve` off the host (firewall, users, 2FA, VM configs).
-- [ ] SMART, temperature and NVMe wear alerts by email.
+- [ ] Early NVMe wear alert on "percentage used" (for example 80%),
+      once monitoring is in place.
 - [ ] UPS with NUT for a clean shutdown on power loss.
 - [ ] Maybe fail2ban. Low value while SSH is tailnet only and key only.
 - [ ] Test the web UI over tailnet IPv6 from a phone.
