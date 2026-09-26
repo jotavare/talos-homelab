@@ -121,3 +121,7 @@
       ansible.builtin.systemd_service:
         name: fw-deadman.timer
         state: stopped
+
+- name: Verify the host
+  ansible.builtin.import_tasks: verify.yml
+  tags: [verify]

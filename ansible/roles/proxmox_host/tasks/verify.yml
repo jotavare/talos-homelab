@@ -1,0 +1,102 @@
+- name: Collect host state
+  ansible.builtin.command: "{{ item.cmd }}"
+  loop:
+    - { key: sshd, cmd: sshd -T }
+    - { key: firewall, cmd: pve-firewall status }
+    - { key: mgmt4, cmd: ipset list PVEFW-0-management-v4 }
+    - { key: mgmt6, cmd: ipset list PVEFW-0-management-v6 }
+    - { key: tfa, cmd: pvesh get /access/tfa/root@pam --output-format json }
+    - { key: lock, cmd: tailscale lock status }
+    - { key: ts, cmd: tailscale status --json }
+    - { key: prefs, cmd: tailscale debug prefs }
+    - { key: resolv, cmd: cat /etc/resolv.conf }
+    - { key: notify, cmd: cat /etc/pve/notifications.cfg }
+    - { key: sysctl, cmd: sysctl -n net.ipv6.conf.vmbr0.accept_ra net.ipv6.conf.vmbr0.autoconf }
+  loop_control:
+    label: "{{ item.key }}"
+  register: proxmox_host_state
+  changed_when: false
+  check_mode: false
+
+- name: Index the results
+  ansible.builtin.set_fact:
+    proxmox_host_s: "{{ dict(proxmox_host_state.results | map(attribute='item.key') | zip(proxmox_host_state.results | map(attribute='stdout'))) }}"
+
+- name: Check services
+  ansible.builtin.command: systemctl is-active {{ item }}
+  loop: [ssh, pve-firewall, tailscaled, smartmontools, apt-daily-upgrade.timer]
+  changed_when: false
+  check_mode: false
+
+- name: Check that rpcbind and the dead-man timer are not running
+  ansible.builtin.command: systemctl is-active {{ item }}
+  loop: [rpcbind.socket, rpcbind.service, fw-deadman.timer]
+  register: proxmox_host_inactive
+  changed_when: false
+  failed_when: proxmox_host_inactive.stdout == "active"
+  check_mode: false
+
+- name: Check SSH is key-only with login limits
+  ansible.builtin.assert:
+    that:
+      - proxmox_host_s.sshd is search('(?m)^permitrootlogin (without-password|prohibit-password)$')
+      - proxmox_host_s.sshd is search('(?m)^passwordauthentication no$')
+      - proxmox_host_s.sshd is search('(?m)^kbdinteractiveauthentication no$')
+      - proxmox_host_s.sshd is search('(?m)^maxauthtries 3$')
+    quiet: true
+    fail_msg: sshd allows more than key-only root login, see docs/01-proxmox.md#access
+
+- name: Check the firewall is on and management is tailnet only
+  ansible.builtin.assert:
+    that:
+      - proxmox_host_s.firewall is search('enabled/running')
+      - proxmox_host_s.mgmt4 is search('(?m)^100\.64\.0\.0/10$')
+      - proxmox_host_s.mgmt4.split('Members:')[1].split() == ['100.64.0.0/10']
+      - proxmox_host_s.mgmt6.split('Members:')[1].split() == ['fd7a:115c:a1e0::/48']
+    quiet: true
+    fail_msg: firewall off or management set wider than the tailnet, see docs/01-proxmox.md#firewall
+
+- name: Check web UI 2FA for root
+  ansible.builtin.assert:
+    that:
+      - "'totp' in (proxmox_host_s.tfa | from_json | map(attribute='type') | list)"
+      - "'recovery' in (proxmox_host_s.tfa | from_json | map(attribute='type') | list)"
+    quiet: true
+    fail_msg: root@pam is missing TOTP or recovery keys, see docs/01-proxmox.md#access
+
+- name: Check Tailscale (lock, tag, DNS, auto-update)
+  ansible.builtin.assert:
+    that:
+      - proxmox_host_s.lock is search('Tailnet Lock is ENABLED')
+      - "'tag:server' in ((proxmox_host_s.ts | from_json).Self.Tags | default([]))"
+      - not (proxmox_host_s.prefs | from_json).CorpDNS
+      - (proxmox_host_s.prefs | from_json).AutoUpdate.Apply
+      - proxmox_host_s.resolv is search('(?m)^nameserver 1\.1\.1\.1$')
+    quiet: true
+    fail_msg: Tailscale drifted from docs/02-tailscale.md
+
+- name: Check IPv6 autoconf is off and alerts go out by SMTP
+  ansible.builtin.assert:
+    that:
+      - proxmox_host_s.sysctl.split() == ['0', '0']
+      - "proxmox_host_s.notify is search('(?ms)^matcher: default-matcher.*?^\\s+target gmail$')"
+    quiet: true
+    fail_msg: IPv6 autoconf is on or alerts do not use the SMTP target, see docs/01-proxmox.md
+
+- name: Check for pending upgrades and reboots
+  ansible.builtin.shell: |
+    set -o pipefail
+    apt list --upgradable 2>/dev/null | tail -n +2 | wc -l
+    test -f /var/run/reboot-required && echo reboot || echo no-reboot
+  args:
+    executable: /bin/bash
+  register: proxmox_host_pending
+  changed_when: false
+  check_mode: false
+
+- name: Report pending upgrades and reboots
+  ansible.builtin.debug:
+    msg: >-
+      {{ proxmox_host_pending.stdout_lines[0] }} package(s) to upgrade
+      (apt full-upgrade), {{ proxmox_host_pending.stdout_lines[1] }}
+  when: proxmox_host_pending.stdout_lines[0] != '0' or proxmox_host_pending.stdout_lines[1] == 'reboot'
