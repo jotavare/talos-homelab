@@ -130,13 +130,16 @@ with the tools, the options chosen and why.
 | Phase | Covers |
 |-------|--------|
 | [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install |
-| [02. Talos](docs/02-talos.md) | VM template |
+| [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, hardening |
 
 ## Open questions
 
 - Can Talos run **fully in-memory** (diskless boot)? Understand how that actually works before committing to it as a design constraint.
 
 ## References
+
+General inspiration and reference repos. Links for a specific phase live
+at the end of its page in [docs/](docs/).
 
 - [Talos + Tailscale walkthrough (YouTube)](https://www.youtube.com/watch?v=3VpOYn_GfAY)
 - [ironicbadger/infra](https://github.com/ironicbadger/infra): reference homelab infra repo
