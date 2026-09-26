@@ -452,9 +452,21 @@ It would also cost something:
   key bans my own laptop.
 
 Brute-force protection comes back once something in the cluster is
-exposed to the internet through an ingress. For that,
-[CrowdSec](https://www.crowdsec.net/) fits better: it shares lists of
-known attacker IPs between users and has a Kubernetes integration.
+exposed to the internet through an ingress, and it lives in the cluster,
+not on the nodes:
+
+- Talos nodes cannot run fail2ban at all: no package manager, no SSH, no
+  shell. Their only way in is the Talos API, which takes a client
+  certificate (mTLS), so there is no password to guess. On a distribution
+  like RKE2 on Ubuntu, the host has SSH and packages, so fail2ban on the
+  node still makes sense there.
+- Istio, Cilium and Envoy Gateway block fixed IP ranges and rate limit
+  requests, but none of them bans an IP after repeated failures.
+- [CrowdSec](https://www.crowdsec.net/) does. Its agent runs as pods and
+  reads ingress logs, adds a shared list of known attacker IPs, and a
+  bouncer in the ingress (Envoy `ext_authz`) enforces the bans.
+- Envoy Gateway rate limits and the SSO's own account lockout cover the
+  rest.
 
 ### Lockout recovery
 
