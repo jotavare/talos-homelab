@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Homelab network</title>
+  <title>Homelab overview</title>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -15,10 +15,10 @@
 </head>
 <body>
   <div class="frame">
-    <svg viewBox="0 0 1000 456" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="network-title network-desc">
-      <title id="network-title">Homelab network</title>
-      <desc id="network-desc">Flat home LAN with the ISP router, a Wi-Fi access point and a Proxmox host whose vmbr0 bridge carries the Talos Kubernetes VMs; an admin laptop reaches Proxmox and the cluster over Tailscale WireGuard tunnels, with Tailscale's coordination server only exchanging keys.</desc>
-      <defs><marker id="network-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker><marker id="network-a-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#7ea6e6"/></marker><marker id="network-a-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#6fd3c1"/></marker></defs>
+    <svg viewBox="0 0 1000 456" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="overview-title overview-desc">
+      <title id="overview-title">Homelab overview</title>
+      <desc id="overview-desc">Flat home LAN with the ISP router, a Wi-Fi access point and a Proxmox host whose vmbr0 bridge carries the Talos Kubernetes VMs; an admin laptop reaches Proxmox and the cluster over Tailscale WireGuard tunnels, with Tailscale's coordination server only exchanging keys.</desc>
+      <defs><marker id="overview-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker><marker id="overview-a-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#7ea6e6"/></marker><marker id="overview-a-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#6fd3c1"/></marker></defs>
 
       <rect width="100%" height="100%" fill="#2d3142"/>
 
@@ -32,7 +32,7 @@
       <rect x="240" y="192" width="704" height="20" rx="4" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1"/>
       <text x="256" y="206" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" letter-spacing="0.06em">vmbr0 bridge · nic0</text>
 
-      <line x1="184" y1="92" x2="222" y2="92" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#network-a-link)"/>
+      <line x1="184" y1="92" x2="222" y2="92" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#overview-a-link)"/>
       <line x1="448" y1="92" x2="496" y2="92" stroke="#bfc0c0" stroke-width="1.4"/>
       <line x1="736" y1="92" x2="784" y2="92" stroke="#bfc0c0" stroke-width="1.4"/>
       <line x1="472" y1="92" x2="472" y2="192" stroke="#bfc0c0" stroke-width="1.4"/>
@@ -41,13 +41,13 @@
       <line x1="592" y1="212" x2="592" y2="236" stroke="#bfc0c0" stroke-width="1.4"/>
       <line x1="856" y1="212" x2="856" y2="236" stroke="#bfc0c0" stroke-width="1.4"/>
 
-      <line x1="768" y1="272" x2="682" y2="272" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#network-a)"/>
+      <line x1="768" y1="272" x2="682" y2="272" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#overview-a)"/>
 
-      <line x1="104" y1="262" x2="104" y2="318" stroke="#6fd3c1" stroke-width="1.2" stroke-dasharray="2,3" marker-start="url(#network-a-tail)" marker-end="url(#network-a-tail)"/>
+      <line x1="104" y1="262" x2="104" y2="318" stroke="#6fd3c1" stroke-width="1.2" stroke-dasharray="2,3" marker-start="url(#overview-a-tail)" marker-end="url(#overview-a-tail)"/>
 
-      <path d="M 184,356 H 848 Q 856,356 856,348 V 310" fill="none" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#network-a-tail)"/>
-      <line x1="328" y1="356" x2="328" y2="310" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#network-a-tail)"/>
-      <line x1="592" y1="356" x2="592" y2="310" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#network-a-tail)"/>
+      <path d="M 184,356 H 848 Q 856,356 856,348 V 310" fill="none" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#overview-a-tail)"/>
+      <line x1="328" y1="356" x2="328" y2="310" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#overview-a-tail)"/>
+      <line x1="592" y1="356" x2="592" y2="310" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#overview-a-tail)"/>
       <circle cx="328" cy="356" r="3" fill="#6fd3c1"/>
       <circle cx="592" cy="356" r="3" fill="#6fd3c1"/>
 
@@ -121,9 +121,9 @@
       <text x="454.0" y="434" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Runs tailscaled</text>
       <line x1="581.3" y1="430" x2="609.3" y2="430" stroke="#bfc0c0" stroke-width="1.4"/>
       <text x="617.3" y="434" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">LAN</text>
-      <line x1="689.1" y1="430" x2="717.1" y2="430" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#network-a-tail)"/>
+      <line x1="689.1" y1="430" x2="717.1" y2="430" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#overview-a-tail)"/>
       <text x="725.1" y="434" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Tailnet (WireGuard)</text>
-      <line x1="870.5" y1="430" x2="898.5" y2="430" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="2,3" marker-start="url(#network-a-tail)" marker-end="url(#network-a-tail)"/>
+      <line x1="870.5" y1="430" x2="898.5" y2="430" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="2,3" marker-start="url(#overview-a-tail)" marker-end="url(#overview-a-tail)"/>
       <text x="906.5" y="434" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Key exchange</text>
     </svg>
   </div>

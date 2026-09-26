@@ -26,15 +26,15 @@ hard rule: when something I already know is still the best fit, it stays.
 ## Diagrams
 
 <p align="center">
-  <img src="diagrams/network.png" alt="Homelab network: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs, with admin access only over Tailscale">
+  <img src="diagrams/overview.png" alt="Homelab overview: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs, with admin access only over Tailscale">
   <br>
-  <sub><b>Network.</b> One flat home LAN. The Proxmox host bridges the Talos VMs onto it, and management is only reachable over Tailscale.</sub>
+  <sub><b>Overview.</b> One flat LAN, Talos VMs bridged onto it, management over Tailscale only.</sub>
 </p>
 
 <p align="center">
   <img src="diagrams/tailscale.png" alt="Tailscale traffic: direct over the LAN at home, direct over the internet when away, DERP relay as a fallback, coordination server for keys and policy only">
   <br>
-  <sub><b>Tailscale.</b> At home traffic stays on the LAN; away it goes direct over the internet, with an encrypted relay as fallback. The coordination server only hands out keys.</sub>
+  <sub><b>Tailscale.</b> Direct on the LAN at home, direct over the internet away, relay as fallback.</sub>
 </p>
 
 ## Hardware
