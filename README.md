@@ -21,15 +21,20 @@ hard rule: when something I already know is still the best fit, it stays.
 - **Reproducible**: rebuild everything from this repo, VMs included.
 - **Diagrams**: show how host, VMs, network and secrets connect.
 
-## Hardware
+## Overview
 
-A single mini PC running Proxmox VE, with the Talos nodes as VMs on top,
-plus the home network it sits on.
+One mini PC on the home LAN runs Proxmox VE, and the Talos Kubernetes
+nodes run as VMs on it. Management (the Proxmox UI and the cluster APIs)
+is reachable only over Tailscale, never from the public internet.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="diagrams/network-dark.png">
   <img alt="Homelab network: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs, with admin access only over Tailscale" src="diagrams/network.png">
 </picture>
+
+## Hardware
+
+The host and the home network it sits on.
 
 ### Proxmox host
 
