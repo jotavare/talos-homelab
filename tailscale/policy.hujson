@@ -1,0 +1,21 @@
+{
+  "tagOwners": {
+    "tag:server": ["autogroup:admin"],
+  },
+
+  "grants": [
+    {
+      "src": ["autogroup:member"],
+      "dst": ["tag:server"],
+      "ip":  ["tcp:22", "tcp:8006", "tcp:6443", "tcp:50000"],
+    },
+  ],
+
+  "tests": [
+    {
+      "src":    "jotavare@github",
+      "accept": ["tag:server:22", "tag:server:8006"],
+      "deny":   ["tag:server:80", "tag:server:3389"],
+    },
+  ],
+}
