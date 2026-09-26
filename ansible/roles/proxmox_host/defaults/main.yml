@@ -1,0 +1,2 @@
+proxmox_host_files: "{{ playbook_dir }}/../proxmox"
+proxmox_host_deadman_minutes: 5

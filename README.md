@@ -164,7 +164,7 @@ with the tools, the options chosen and why.
 
 | Phase | Covers |
 |-------|--------|
-| [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install, planned VMs |
+| [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install, Ansible, planned VMs |
 | [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, hardening |
 
 ## Backlog
@@ -183,9 +183,6 @@ phase page.
       check "percentage used" monthly at first.
 - [ ] UPS with NUT for a clean shutdown on power loss.
 - [ ] Test the web UI over tailnet IPv6 from a phone.
-- [ ] Proxmox host config as an Ansible playbook: the steps in
-      `docs/01-proxmox.md` are manual today, against the Reproducible and
-      Automation goals.
 
 ### Tailscale
 
