@@ -171,11 +171,43 @@ tailscale lock sign nodekey:… tlpub:…   # on pve or the laptop
 
 The Windows app can also sign from a link shown in the admin console.
 
+## Access rules
+
+The default policy lets every device reach every other device on every
+port. Replaced with [tailscale/policy.hujson](../tailscale/policy.hujson),
+pasted into admin console → **Access controls**:
+
+- **`tag:server`** on `pve` (Machines → ⋯ → **Edit ACL tags**). Tagged
+  devices belong to the tailnet, not a person, and never expire. The tag
+  must exist in the policy (`tagOwners`) before it can be assigned.
+- **My devices** (`autogroup:member`: laptop, phone) reach `tag:server` on
+  `22`, `8006`, `6443` and `50000` only. The last two are for the Talos
+  VMs later.
+- **Nothing in the other direction:** a compromised server cannot start a
+  connection to the laptop.
+- **`tests`** run on every save, so a broken rule is rejected before it
+  applies.
+
+Rules target users or tags, not a single personal device. Tagging the
+laptop to make it "the only admin device" would strip its owner and key
+expiry, so the phone is allowed too.
+
+Checked from the laptop after the change:
+
+| Path | Result |
+|------|--------|
+| laptop → `pve:8006` over the tailnet | allowed |
+| laptop → `pve:22` over the tailnet | allowed |
+| laptop → `pve:111` over the tailnet | blocked |
+| `pve` → laptop over the tailnet | blocked |
+
+The repo file is the reference copy. Syncing it automatically from git
+(Tailscale's GitOps action) comes with the CI setup.
+
 ## Hardening
 
-1. Access rules so only the admin laptop reaches `:8006`, `:6443` and
-   `:50000`.
-2. Proxmox firewall so `:8006` is no longer open to the whole LAN.
+1. Proxmox firewall so `:8006` and other ports are no longer open to the
+   whole LAN.
 
 ## References
 
@@ -185,6 +217,9 @@ The Windows app can also sign from a link shown in the admin console.
 - [Key expiry](https://tailscale.com/kb/1028/key-expiry)
 - [Tailnet Lock](https://tailscale.com/kb/1226/tailnet-lock)
 - [Access control (ACLs)](https://tailscale.com/kb/1018/acls)
+- [Grants](https://tailscale.com/kb/1324/grants)
+- [Tags](https://tailscale.com/kb/1068/tags)
+- [GitOps for the policy file](https://tailscale.com/kb/1204/gitops-acls)
 - [MagicDNS](https://tailscale.com/kb/1081/magicdns)
 - [HTTPS certificates](https://tailscale.com/kb/1153/enabling-https)
 - [Headscale](https://github.com/juanfont/headscale)
