@@ -236,6 +236,38 @@ pveversion       # pve-manager/9.2.20, running kernel 7.0.14-19-pve
 apt list --upgradable   # empty
 ```
 
+### Automatic security updates
+
+Debian security fixes install on their own every day through
+`unattended-upgrades`. Everything else stays manual:
+
+- **Proxmox packages** (`pve-no-subscription`): Proxmox asks for
+  `apt full-upgrade`, and a plain unattended upgrade can leave them half
+  upgraded. Run the upgrade above by hand from time to time.
+- **Debian point releases**: also by hand, together with the Proxmox
+  upgrade.
+- **Reboots**: never automatic. A new kernel waits for a planned reboot.
+
+```bash
+apt install unattended-upgrades
+```
+
+The settings live in one drop-in,
+[`proxmox/apt/52unattended-upgrades-local`](../proxmox/apt/52unattended-upgrades-local),
+copied to `/etc/apt/apt.conf.d/`. It turns on the daily run, limits the
+allowed origins to `trixie-security` (the Debian default also allows
+point releases), turns off automatic reboots and mails root only when an
+upgrade fails. Proxmox forwards root's mail to the address set in the
+installer.
+
+Check it:
+
+```bash
+unattended-upgrade --dry-run --debug 2>&1 | grep "Allowed origins"
+# Allowed origins are: origin=Debian,codename=trixie-security,label=Debian-Security
+less /var/log/unattended-upgrades/unattended-upgrades.log   # what ran
+```
+
 ### Network check
 
 After the reboot the bridge still has its static address, on the pinned
