@@ -198,7 +198,15 @@ running), and `.10` sits outside the router's DHCP pool (`.100` to
 
 ### Next
 
-1. Tailscale on the host, so the web UI is reachable over the tailnet only.
+1. Tailscale on the host: see [02. Tailscale](02-tailscale.md).
 2. Create a dedicated user and API token for OpenTofu (`bpg/proxmox`).
+
+## References
+
+- [Proxmox VE downloads](https://www.proxmox.com/en/downloads)
+- [Prepare installation media](https://pve.proxmox.com/wiki/Prepare_Installation_Media)
+- [Rufus](https://rufus.ie/)
+- [Package repositories](https://pve.proxmox.com/wiki/Package_Repositories)
+- [Network configuration](https://pve.proxmox.com/wiki/Network_Configuration)
 
 [Back to the build log](../README.md#work-in-progress)
