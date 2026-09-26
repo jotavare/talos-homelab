@@ -160,15 +160,7 @@ phase page.
 
 ### Tailscale
 
-- [ ] Policy test for the reverse direction: `tag:server` to members is
-      denied.
-- [ ] Note that `autogroup:member` assumes a single-user tailnet.
 - [ ] Sync `tailscale/policy.hujson` to the tailnet from git (GitOps).
-
-### Firewall
-
-- [ ] Note that the `local_network` override breaks Proxmox clustering.
-- [ ] Note that `policy_out: ACCEPT` is an accepted risk.
 
 ### Before Talos
 

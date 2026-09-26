@@ -425,6 +425,19 @@ systemctl stop fw-deadman.timer
 | Tailscale | still direct over the LAN, not relayed |
 | `pve` → internet (apt) | allowed |
 
+Two trade-offs, accepted on purpose:
+
+- **Single node only.** Proxmox also uses `local_network` to allow
+  cluster traffic (corosync) between nodes. With the alias pointing at the
+  tailnet, a second Proxmox node on the LAN could not join. Adding one
+  means putting the LAN back in `local_network`, or adding explicit
+  corosync rules (`udp/5405-5412`) for the new node.
+- **Outbound is open** (`policy_out: ACCEPT`). The host needs apt, DNS,
+  NTP, Tailscale (coordination and DERP) and SMTP, and a tight outbound
+  list breaks every time one of those changes address. The cost: a
+  compromised host could send data anywhere. Inbound is what the firewall
+  guards here.
+
 ### Why no fail2ban
 
 [fail2ban](https://github.com/fail2ban/fail2ban) watches login logs and,
