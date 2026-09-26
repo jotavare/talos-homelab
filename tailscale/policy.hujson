@@ -14,8 +14,8 @@
   "tests": [
     {
       "src":    "jotavare@github",
-      "accept": ["tag:server:22", "tag:server:8006"],
-      "deny":   ["tag:server:80", "tag:server:3389"],
+      "accept": ["tag:server:22", "tag:server:8006", "tag:server:6443", "tag:server:50000"],
+      "deny":   ["tag:server:80", "tag:server:3389", "tag:server:9100"],
     },
     {
       "src":  "tag:server",

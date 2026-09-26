@@ -182,6 +182,9 @@ ssh-copy-id root@192.168.1.10   # appends the public key to /root/.ssh/authorize
 ssh root@192.168.1.10 hostname  # prints "pve" without a password prompt
 ```
 
+`authorized_keys` also holds an `ssh-rsa` key: the host's own root key,
+which Proxmox adds itself. It is expected.
+
 The key was installed while the LAN was still open, which is why the
 commands above use `192.168.1.10`. With the key in place, SSH password
 login is turned off for root:
@@ -265,7 +268,9 @@ copied to `/etc/apt/apt.conf.d/`. It turns on the daily run, limits the
 allowed origins to `trixie-security` (the Debian default also allows
 point releases), turns off automatic reboots and mails root only when an
 upgrade fails. Root's mail goes out through the notification system (see
-[Email notifications](#email-notifications)).
+[Email notifications](#email-notifications)). The package's own
+`20auto-upgrades` sets the same two `APT::Periodic` lines; the drop-in is
+the one kept in the repo.
 
 Check it:
 
@@ -392,7 +397,7 @@ Tailscale assigns itself.
 
 ### Firewall
 
-Only the tailnet can reach the management ports. Config in
+Only the tailnet can reach the management ports of the host. Config in
 [proxmox/firewall/](../proxmox/firewall/), copied to
 `/etc/pve/firewall/cluster.fw` and `/etc/pve/nodes/pve/host.fw`.
 
@@ -430,6 +435,11 @@ systemctl stop fw-deadman.timer
 | LAN → ping | allowed |
 | Tailscale | still direct over the LAN, not relayed |
 | `pve` → internet (apt) | allowed |
+
+These rules protect the Proxmox host only. Traffic to the VMs on
+`vmbr0` goes through a separate firewall per VM (`firewall=1` on the VM's
+network card plus its own `<vmid>.fw`). Until that is set up, a VM's ports
+are open to the whole LAN.
 
 Two trade-offs, accepted on purpose:
 

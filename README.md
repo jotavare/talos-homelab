@@ -153,6 +153,7 @@ written down and the homelab knowingly does something simpler.
 | Area | Production way | Here, and why |
 |------|----------------|---------------|
 | Control plane | Three control planes, so etcd keeps quorum when one fails | One, to leave RAM for apps. All VMs share one host anyway ([details](docs/01-proxmox.md#planned-vms)) |
+| Control plane size | Enough RAM for headroom, 8 GB or more | 4 GB, tight for etcd, the API server and the Cilium agent. Watch memory and take RAM from a worker if needed |
 | Block storage | Longhorn with three replicas on separate nodes and disks | Longhorn anyway, but every replica lands on the same QLC NVMe: no real redundancy, and more writes on a drive that wears fast. Use one replica per volume |
 | Backups | Proxmox Backup Server on a separate machine, plus a copy off site | Proxmox Backup Server as a VM on the same host until there is a second machine. It protects against mistakes, not against losing the host |
 
@@ -174,8 +175,12 @@ phase page.
 ### Proxmox host
 
 - [ ] Back up `/etc/pve` off the host (firewall, users, 2FA, VM configs).
-- [ ] Early NVMe wear alert on "percentage used" (for example 80%),
-      once monitoring is in place.
+- [ ] Interim NVMe wear alert: a daily cron job that reads "percentage
+      used" with `smartctl` and mails through the notification target.
+- [ ] NVMe wear alert in the monitoring stack, replacing the cron job.
+- [ ] QLC wear budget: etcd, metrics and log retention, database WAL and
+      Longhorn all write to the same drive. Keep retention short and
+      check "percentage used" monthly at first.
 - [ ] UPS with NUT for a clean shutdown on power loss.
 - [ ] Test the web UI over tailnet IPv6 from a phone.
 - [ ] Proxmox host config as an Ansible playbook: the steps in
@@ -200,11 +205,26 @@ phase page.
 - [ ] API access: VIP, `certSANs`, multi-endpoint `talosconfig`, DNS name.
 - [ ] VM network: IPv6 RA off, KubeSpan off, Cilium devices pinned to the
       LAN NIC.
-- [ ] Restrict `6443` and `50000` on the VMs.
-- [ ] Lockout runbook with etcd snapshots.
+- [ ] Restrict `6443` and `50000` on the VMs with the per-VM Proxmox
+      firewall (`firewall=1` and `<vmid>.fw`), plus `tag:server` for the
+      Talos nodes in the tailnet.
+- [ ] Tailnet-only access for app admin UIs on the LoadBalancer pool
+      (subnet router, `tailscale serve` or per-VM firewall), before any UI
+      goes live.
+- [ ] Lockout and upgrade runbook: etcd snapshot before every upgrade,
+      copied off the host.
 - [ ] NTP check.
-- [ ] Talos system extensions for Longhorn (`iscsi-tools`,
-      `util-linux-tools`).
+- [ ] Talos system extensions: `qemu-guest-agent`, and for Longhorn
+      `iscsi-tools` and `util-linux-tools`.
+- [ ] VM settings in OpenTofu: memory ballooning off, guest agent on.
+- [ ] Secrets tool chosen and bootstrapped (age key, SOPS rules, key
+      backup) before the first Talos config or Flux manifest is committed.
+- [ ] Flux bootstrap: which git remote, which credential, and the one
+      manual step that puts the decryption key in the cluster.
+- [ ] Where OpenTofu keeps its state and how it is backed up.
+- [ ] PBS VM sizing: RAM, vCPU and a datastore disk.
+- [ ] Rollout order: core platform first (Cilium, Flux, cert-manager,
+      storage, metrics), then one app at a time while watching RAM.
 - [ ] Brute-force protection (CrowdSec) for anything exposed to the
       internet through an ingress.
 
