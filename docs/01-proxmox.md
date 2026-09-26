@@ -119,8 +119,17 @@ The address plan behind these values is in the
 
 ### Access
 
-Web UI at `https://192.168.1.10:8006`, user `root`, realm **Linux PAM**.
-The certificate warning and the "no subscription" popup are expected.
+Web UI, user `root`, realm **Linux PAM**. The certificate warning and the
+"no subscription" popup are expected.
+
+| | Before the firewall | Now |
+|--|--|--|
+| Web UI | `https://192.168.1.10:8006` | `https://pve.<tailnet>.ts.net:8006` |
+| SSH | `ssh root@192.168.1.10` | `ssh root@pve.<tailnet>.ts.net` |
+
+Since the [firewall](#firewall), management only answers over the tailnet
+([02. Tailscale](02-tailscale.md)). At home the tailnet path still goes
+straight over the LAN.
 
 - **Root password:** replaced the one set in the installer with a long
   random one from the password manager (Bitwarden, item
@@ -136,8 +145,9 @@ ssh-copy-id root@192.168.1.10   # appends the public key to /root/.ssh/authorize
 ssh root@192.168.1.10 hostname  # prints "pve" without a password prompt
 ```
 
-Local credentials for scripts live in a `.env` at the repo root, which is
-in `.gitignore` and never committed.
+The key was installed while the LAN was still open, so `192.168.1.10`
+above. Local credentials for scripts live in a `.env` at the repo root,
+which is in `.gitignore` and never committed.
 
 ### Repositories and upgrade
 

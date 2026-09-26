@@ -28,6 +28,22 @@ Directly on each node that needs remote access, not as a subnet router:
 | Phone | Tailscale Android app |
 | Talos VMs | Tailscale system extension, in the Talos phase |
 
+## How traffic flows
+
+![Tailscale traffic: direct over the LAN at home, direct over the internet when away, DERP relay as a fallback, coordination server for keys and policy only](../diagrams/tailscale.png)
+
+- **At home:** laptop and `pve` talk directly over the LAN. Packets never
+  leave the house (`tailscale ping pve` shows a `192.168.1.x` address and
+  about 1 ms).
+- **Away:** the phone reaches `pve` directly over the internet. Both sides
+  connect outward at the same time ("hole punching"), so no port is
+  forwarded on the router.
+- **Fallback:** when a direct path is impossible (strict NAT, blocked UDP),
+  traffic goes through a Tailscale **DERP relay**. Still WireGuard
+  encrypted end to end: the relay only passes packets it cannot read.
+- **Coordination server:** hands out keys, the device list and the policy.
+  It never carries traffic.
+
 ## Account and devices
 
 - **Account:** signed in with GitHub, which has 2FA enabled. Whoever
@@ -41,7 +57,8 @@ Directly on each node that needs remote access, not as a subnet router:
 
 Key expiry is set to **30 days** for the tailnet (default 180), so the
 laptop and phone log in again once a month and a lost device loses access
-on its own. Servers are exempt (see below).
+on its own. `pve` is exempt: expiry disabled by hand, and tagged devices
+never expire anyway.
 
 ## Proxmox host
 
@@ -208,6 +225,8 @@ The repo file is the reference copy. Syncing it automatically from git
 
 The tailnet rules only cover traffic over Tailscale. The LAN side is
 closed by the Proxmox firewall: see [01. Proxmox, Firewall](01-proxmox.md#firewall).
+It still allows Tailscale's own UDP port (`41641`) from the LAN, so direct
+connections at home keep working.
 
 ## References
 

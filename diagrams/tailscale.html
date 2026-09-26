@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tailscale traffic paths</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Geist', system-ui, sans-serif; background: #2d3142; color: #f5f5f5;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <svg viewBox="0 0 1000 508" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="tailscale-title tailscale-desc">
+      <title id="tailscale-title">Tailscale traffic paths</title>
+      <desc id="tailscale-desc">At home the laptop reaches the Proxmox host directly over the LAN; away from home the phone reaches it directly over the internet through the ISP router without port forwarding, with a Tailscale DERP relay as an encrypted fallback; the coordination server only hands out keys, the device list and the policy.</desc>
+      <defs><marker id="tailscale-a-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#6fd3c1"/></marker></defs>
+
+      <rect width="100%" height="100%" fill="#2d3142"/>
+
+      <rect x="24" y="24" width="952" height="112" rx="8" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <rect x="40" y="17" width="128" height="14" rx="2" fill="#2d3142"/>
+      <text x="104.0" y="27.5" fill="#a3abbd" font-size="9.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">TAILSCALE CLOUD</text>
+      <rect x="24" y="176" width="480" height="264" rx="8" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <rect x="184" y="169" width="196" height="14" rx="2" fill="#2d3142"/>
+      <text x="282.0" y="179.5" fill="#a3abbd" font-size="9.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">HOME LAN · 192.168.1.0/24</text>
+
+      <line x1="160" y1="122" x2="160" y2="214" stroke="#6fd3c1" stroke-width="1.2" stroke-dasharray="2,3" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
+
+      <line x1="160" y1="290" x2="160" y2="342" stroke="#6fd3c1" stroke-width="1.6" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
+
+      <line x1="274" y1="252" x2="312" y2="252" stroke="#6fd3c1" stroke-width="1.6" marker-start="url(#tailscale-a-tail)"/>
+      <line x1="488" y1="252" x2="782" y2="252" stroke="#6fd3c1" stroke-width="1.6" marker-end="url(#tailscale-a-tail)"/>
+
+      <line x1="880" y1="122" x2="880" y2="214" stroke="#6fd3c1" stroke-width="1.2" stroke-dasharray="5,4" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
+      <path d="M 816,122 V 148 Q 816,156 808,156 H 408 Q 400,156 400,164 V 214" fill="none" stroke="#6fd3c1" stroke-width="1.2" stroke-dasharray="5,4" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
+
+      <rect x="168" y="145" width="98" height="14" rx="2" fill="#2d3142"/>
+      <text x="174" y="155.5" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" letter-spacing="0.06em">KEYS · POLICY</text>
+      <rect x="168" y="309" width="177" height="14" rx="2" fill="#2d3142"/>
+      <text x="174" y="319.5" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" letter-spacing="0.06em">DIRECT · STAYS ON THE LAN</text>
+      <rect x="550.0" y="230" width="170" height="14" rx="2" fill="#2d3142"/>
+      <text x="635" y="240.5" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">DIRECT OVER THE INTERNET</text>
+      <rect x="888" y="161" width="45" height="14" rx="2" fill="#2d3142"/>
+      <text x="894" y="171.5" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" letter-spacing="0.06em">RELAY</text>
+
+      <rect x="48" y="48" width="224" height="72" rx="6" fill="#2d3142"/>
+      <rect x="48" y="48" width="224" height="72" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <g transform="translate(62,72) scale(1.0)" aria-hidden="true"><path d="M24 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm-9 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm0-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm6-6a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM3 24a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm18 .5a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM6 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm9-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm-3 2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM6 3a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM3 5.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" fill="#f5f5f5"/></g>
+      <text x="96" y="81" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Coordination</text>
+      <text x="96" y="100" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">keys · no traffic</text>
+      <rect x="736" y="48" width="224" height="72" rx="6" fill="#2d3142"/>
+      <rect x="736" y="48" width="224" height="72" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <g transform="translate(750,72) scale(1.0)" fill="none" stroke="#7ea6e6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878" /></g>
+      <text x="784" y="81" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">DERP relay</text>
+      <text x="784" y="100" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">fallback · encrypted</text>
+      <rect x="48" y="216" width="224" height="72" rx="6" fill="#2d3142"/>
+      <rect x="48" y="216" width="224" height="72" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <g transform="translate(62,240) scale(1.0)" aria-hidden="true"><path d="M4.928 1.825c-1.09.553-1.09.64-.07 1.78 5.655 6.295 7.004 7.782 7.107 7.782.139.017 7.971-8.542 8.058-8.801.034-.07-.208-.312-.519-.536-.415-.312-.864-.433-1.712-.467-1.59-.104-2.144.242-4.115 2.455-.899 1.003-1.66 1.833-1.66 1.833-.017 0-.76-.813-1.642-1.798S8.473 2.1 8.127 1.91c-.796-.45-2.421-.484-3.2-.086zM1.297 4.367C.45 4.695 0 5.007 0 5.248c0 .121 1.331 1.678 2.94 3.459 1.625 1.78 2.939 3.268 2.939 3.302 0 .035-1.331 1.522-2.94 3.303C1.314 17.11.017 18.683.035 18.822c.086.467 1.504 1.055 2.541 1.055 1.678-.018 2.058-.312 5.603-4.202 1.78-1.954 3.233-3.614 3.233-3.666 0-.069-1.435-1.694-3.199-3.63-2.3-2.508-3.423-3.632-3.96-3.874-.812-.398-2.126-.467-2.956-.138zm18.467.12c-.502.26-1.764 1.505-3.943 3.891-1.763 1.937-3.199 3.562-3.199 3.631 0 .07 1.453 1.712 3.234 3.666 3.544 3.89 3.925 4.184 5.602 4.202 1.038 0 2.455-.588 2.542-1.055.017-.156-1.28-1.712-2.905-3.493-1.608-1.78-2.94-3.285-2.94-3.32 0-.034 1.332-1.539 2.94-3.32C22.72 6.91 24.017 5.352 24 5.214c-.087-.45-1.366-.968-2.473-1.038-.795-.034-1.21.035-1.763.312zM7.954 16.973c-2.144 2.369-3.908 4.374-3.943 4.46-.034.07.208.312.52.537.414.311.864.432 1.711.467 1.574.103 2.161-.26 4.15-2.508.864-.968 1.608-1.78 1.625-1.78s.761.812 1.643 1.798c2.023 2.248 2.559 2.576 4.132 2.49.848-.035 1.297-.156 1.712-.467.311-.225.553-.467.519-.536-.087-.26-7.92-8.819-8.058-8.801-.069 0-1.867 1.954-4.011 4.34z" fill="#E57000"/></g>
+      <text x="96" y="249" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">pve</text>
+      <text x="96" y="268" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">tag:server · lock signer</text>
+      <rect x="312" y="216" width="176" height="72" rx="6" fill="#2d3142"/>
+      <rect x="312" y="216" width="176" height="72" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <g transform="translate(326,240) scale(1.0)" fill="none" stroke="#f5f5f5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -4" /> <path d="M17 17l0 .01" /> <path d="M13 17l0 .01" /> <path d="M15 13l0 -2" /> <path d="M11.75 8.75a4 4 0 0 1 6.5 0" /> <path d="M8.5 6.5a8 8 0 0 1 13 0" /></g>
+      <text x="360" y="249" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">ISP Router</text>
+      <text x="360" y="268" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">no port forwards</text>
+      <rect x="48" y="344" width="224" height="72" rx="6" fill="#2d3142"/>
+      <rect x="48" y="344" width="224" height="72" rx="6" fill="#2d3142" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4"/>
+      <g transform="translate(62,368) scale(1.0)" fill="none" stroke="#6fd3c1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 19l18 0" /> <path d="M5 7a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1l0 -8" /></g>
+      <text x="96" y="377" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Laptop</text>
+      <text x="96" y="396" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">at home · lock signer</text>
+      <rect x="784" y="216" width="192" height="72" rx="6" fill="#2d3142"/>
+      <rect x="784" y="216" width="192" height="72" rx="6" fill="#2d3142" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4"/>
+      <g transform="translate(798,240) scale(1.0)" fill="none" stroke="#6fd3c1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2v-14" /> <path d="M11 4h2" /> <path d="M12 17v.01" /></g>
+      <text x="832" y="249" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Phone</text>
+      <text x="832" y="268" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">away · mobile data</text>
+
+      <line x1="24" y1="460" x2="976" y2="460" stroke="rgba(245,245,245,0.14)" stroke-width="0.8"/>
+      <line x1="24" y1="482" x2="52" y2="482" stroke="#6fd3c1" stroke-width="1.4" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
+      <text x="60" y="486" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Direct (WireGuard)</text>
+      <line x1="381.0" y1="482" x2="409.0" y2="482" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
+      <text x="417.0" y="486" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Relay fallback (still encrypted)</text>
+      <line x1="804.0" y1="482" x2="832.0" y2="482" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="2,3" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
+      <text x="840.0" y="486" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Keys, device list, policy</text>
+    </svg>
+  </div>
+</body>
+</html>
