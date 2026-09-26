@@ -124,6 +124,9 @@ removes the trust in Tailscale's coordination server to decide membership.
 
 ### Reading `tailscale lock status`
 
+Think of it as a guest list. Two devices hold the pen (the signing
+nodes), and every device on the list carries a signed pass.
+
 ```
 Tailnet Lock is ENABLED.
 
@@ -140,15 +143,21 @@ Trusted signing keys:
 	tlpub:6734…	1
 ```
 
-| Line | Meaning |
-|------|---------|
-| `accessible under Tailnet Lock` | This node has a valid signature, so other nodes talk to it |
-| `SigKind: direct` | Signed directly by a trusted signing key |
-| `Pubkey` | Short form of the node key being vouched for (the WireGuard identity) |
-| `KeyID` | Which trusted key signed it (here the laptop, which ran `init`) |
-| `WrappingPubkey` | The node's own lock key, so it can re-sign its node key when that rotates |
-| `This node's tailnet-lock key` | This node's signing key; the private half never leaves it |
-| `Trusted signing keys` | Keys allowed to sign new devices; the `1` is each key's vote when changing this list |
+- **`ENABLED`**: the lock is on for the whole tailnet.
+- **`accessible under Tailnet Lock`**: this device has a valid pass, so
+  the others talk to it. A device without one is ignored.
+- **Node signature**: the pass itself.
+  - `SigKind: direct`: signed directly by one of the pens.
+  - `Pubkey`: short form of the identity the pass is for (this device).
+  - `KeyID`: which pen signed it. Here `6734…`, the laptop, because the
+    laptop ran `init` and signed everyone.
+  - `WrappingPubkey`: this device's own pen, so it can renew its own pass
+    when its identity rotates, without asking anyone.
+- **`This node's tailnet-lock key`**: this device's pen. `c684…` is
+  `pve`. Its private half never leaves the device.
+- **`Trusted signing keys`**: the list of pens: `c684…` (`pve`, marked
+  `self`) and `6734…` (the laptop). Only these can sign in a new device.
+  The `1` is a vote, used only when changing this list.
 
 ### Adding a device later
 
