@@ -248,6 +248,8 @@ Debian security fixes install on their own every day through
 - **Debian point releases**: also by hand, together with the Proxmox
   upgrade.
 - **Reboots**: never automatic. A new kernel waits for a planned reboot.
+- **Tailscale**: not covered here. It updates itself, see
+  [02. Tailscale](02-tailscale.md#proxmox-host).
 
 ```bash
 apt install unattended-upgrades
