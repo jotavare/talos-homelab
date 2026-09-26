@@ -196,10 +196,50 @@ The address is static on the host itself (`inet static`, no DHCP client
 running), and `.10` sits outside the router's DHCP pool (`.100` to
 `.254`), so no reservation on the router is needed.
 
+### Firewall
+
+Only the tailnet can reach the management ports. Config in
+[proxmox/firewall/](../proxmox/firewall/), copied to
+`/etc/pve/firewall/cluster.fw` and `/etc/pve/nodes/pve/host.fw`.
+
+With the firewall on, Proxmox automatically allows the web UI (`8006`),
+SSH (`22`), console (`5900-5999`) and SPICE (`3128`) from the
+**management** IP set, and it always adds `local_network` to that set.
+`local_network` is auto-detected as the LAN (`192.168.1.0/24`), so turning
+the firewall on alone keeps the LAN open. Overriding the alias is what
+closes it:
+
+- `local_network` alias set to the tailnet range `100.64.0.0/10`.
+- `management` IP set: the tailnet range only.
+- `policy_in: DROP`, `policy_out: ACCEPT`.
+- Host rules: Tailscale direct connections (`udp/41641`) and ping from the
+  LAN, for troubleshooting.
+
+Enabled with a dead-man switch, working over the tailnet SSH session so
+blocking the LAN could not cut it:
+
+```bash
+systemd-run --unit=fw-deadman --on-active=5min /usr/sbin/pve-firewall stop
+# set enable: 1 in cluster.fw, then
+pve-firewall restart && pve-firewall status
+# tests pass, so keep it on
+systemctl stop fw-deadman.timer
+```
+
+| Path | Result |
+|------|--------|
+| tailnet → `:8006`, `:22` | allowed |
+| LAN → `:8006`, `:22`, `:111` | blocked |
+| LAN → ping | allowed |
+| Tailscale | still direct over the LAN, not relayed |
+| `pve` → internet (apt) | allowed |
+
+Locked out? From the physical console (keyboard and monitor on the host),
+log in as `root` and run `pve-firewall stop`.
+
 ### Next
 
-1. Tailscale on the host: see [02. Tailscale](02-tailscale.md).
-2. Create a dedicated user and API token for OpenTofu (`bpg/proxmox`).
+1. Create a dedicated user and API token for OpenTofu (`bpg/proxmox`).
 
 ## References
 
@@ -208,5 +248,6 @@ running), and `.10` sits outside the router's DHCP pool (`.100` to
 - [Rufus](https://rufus.ie/)
 - [Package repositories](https://pve.proxmox.com/wiki/Package_Repositories)
 - [Network configuration](https://pve.proxmox.com/wiki/Network_Configuration)
+- [Firewall](https://pve.proxmox.com/wiki/Firewall)
 
 [Back to the build log](../README.md#work-in-progress)

@@ -1,0 +1,10 @@
+[OPTIONS]
+enable: 1
+policy_in: DROP
+policy_out: ACCEPT
+
+[ALIASES]
+local_network 100.64.0.0/10
+
+[IPSET management]
+100.64.0.0/10

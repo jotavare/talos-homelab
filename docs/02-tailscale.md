@@ -206,8 +206,8 @@ The repo file is the reference copy. Syncing it automatically from git
 
 ## Hardening
 
-1. Proxmox firewall so `:8006` and other ports are no longer open to the
-   whole LAN.
+The tailnet rules only cover traffic over Tailscale. The LAN side is
+closed by the Proxmox firewall: see [01. Proxmox, Firewall](01-proxmox.md#firewall).
 
 ## References
 
