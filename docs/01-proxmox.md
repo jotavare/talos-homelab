@@ -6,7 +6,7 @@ The physical host: from an empty mini PC to a running Proxmox VE.
 
 Talos can run on bare metal, but this homelab starts with a single mini
 PC. One machine as one Talos node cannot show the things worth learning:
-etcd quorum, a node failing, rolling upgrades. Running Talos as VMs on
+several nodes, a node failing, rolling upgrades. Running Talos as VMs on
 Proxmox VE turns one box into a multi-node cluster.
 
 Proxmox also has a mature OpenTofu provider
@@ -24,8 +24,7 @@ Specs are in the [Hardware section](../README.md#hardware) of the readme.
   avoids the scheduling quirks mixed-core 12th and 13th gen chips can cause
   under a hypervisor. 35 W is fine to leave running 24/7.
 - **32 GB is enough for a real cluster.** Proxmox takes 1 to 2 GB, leaving
-  room for three control-plane VMs at 2 to 4 GB each plus two or three
-  workers at 4 to 6 GB each.
+  room for a control plane and three workers (see [Planned VMs](#planned-vms)).
 - **All Intel hardware**, supported by the stock Proxmox kernel.
 
 Known limits:
@@ -498,6 +497,46 @@ for every lock added here. It needs only the root password: no network, no
 ### Next
 
 1. Create a dedicated user and API token for OpenTofu (`bpg/proxmox`).
+
+## Planned VMs
+
+The plan for the Talos VMs, drawn before they exist. It changes if the
+numbers turn out wrong once the cluster runs.
+
+![Proxmox host plan: 32 GB of RAM split between the host, one control plane and three workers on the vmbr0 bridge, and the NVMe split into VM disks, ISOs and swap](../diagrams/proxmox.png)
+
+| VM | vCPU | RAM | Disk | IP |
+|----|------|-----|------|----|
+| Control plane | 2 | 4 GB | 32 GB | `192.168.1.11` |
+| Worker 1 to 3 | 4 each | 8 GB each | 80 GB each | `192.168.1.21` to `.23` |
+| Kubernetes API VIP | | | | `192.168.1.20` |
+| Cilium LoadBalancer pool | | | | `192.168.1.50` to `.99` |
+
+- **RAM:** 4 GB stays with the host, 28 GB goes to the VMs. No
+  overcommit, so a busy VM never pushes the host into swap.
+- **vCPU:** 14 on 12 threads. CPU overcommit is fine, the VMs are rarely
+  all busy at once.
+- **Disk:** 272 GB of the 348 GB `local-lvm` thin pool, leaving room for
+  snapshots and an extra VM. `local` (96 GB) keeps the Talos ISO.
+- **API VIP:** with a single control plane the VIP is not needed yet, but
+  pointing clients at it from day one means a second or third control
+  plane can join later without new certificates or kubeconfigs.
+
+**Why one control plane and not three.** Production clusters run three
+control planes, so etcd keeps quorum when one fails, and that is the
+right way to replicate production. This homelab runs one on purpose:
+
+- It is a proof of concept. Nothing critical runs here.
+- All VMs share one physical host, so three control planes would not
+  survive a hardware failure anyway.
+- Every GB saved on control planes goes to workers, and the goal is to
+  run a lot of apps.
+- This is the only server available to test on for now.
+
+The trade-off: if the control plane VM breaks, the cluster API is down
+until it is restored from an etcd snapshot. Workloads that are already
+running keep running. Going to three control planes later is a matter of
+adding two VMs behind the same VIP.
 
 ## References
 

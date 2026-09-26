@@ -32,6 +32,12 @@ hard rule: when something I already know is still the best fit, it stays.
 </p>
 
 <p align="center">
+  <img src="diagrams/proxmox.png" alt="Proxmox host plan: 32 GB of RAM split between the host, one control plane and three workers on the vmbr0 bridge, and the NVMe split into VM disks, ISOs and swap">
+  <br>
+  <sub><b>Proxmox host.</b> Planned split of RAM and disk between the host, one control plane and three workers.</sub>
+</p>
+
+<p align="center">
   <img src="diagrams/tailscale.png" alt="Tailscale traffic: direct over the LAN at home, direct over the internet when away, DERP relay as a fallback, coordination server for keys and policy only">
   <br>
   <sub><b>Tailscale.</b> At home, direct over the LAN. Away from home, direct over the internet, with a relay as fallback.</sub>
@@ -66,7 +72,10 @@ LAN `192.168.1.0/24`:
 | `192.168.1.1` | Static | ISP router |
 | `192.168.1.2` | Static | Access point |
 | `192.168.1.10` | Static | Proxmox |
-| `192.168.1.11` to `.99` | Static | Talos nodes and other lab machines |
+| `192.168.1.11` to `.19` | Static | Talos control plane |
+| `192.168.1.20` | Static | Kubernetes API VIP |
+| `192.168.1.21` to `.49` | Static | Talos workers and other lab machines |
+| `192.168.1.50` to `.99` | Static | Cilium LoadBalancer pool |
 | `192.168.1.100` to `.254` | Dynamic (DHCP) | Phones, laptops and other clients |
 
 ## Core stack
@@ -142,7 +151,7 @@ with the tools, the options chosen and why.
 
 | Phase | Covers |
 |-------|--------|
-| [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install |
+| [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install, planned VMs |
 | [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, hardening |
 
 ## Backlog
@@ -165,9 +174,7 @@ phase page.
 ### Before Talos
 
 - [ ] Dedicated Proxmox user and API token for OpenTofu.
-- [ ] VM and RAM budget for control plane and workers.
 - [ ] API access: VIP, `certSANs`, multi-endpoint `talosconfig`, DNS name.
-- [ ] IP plan inside `.11` to `.99`, including a Cilium LoadBalancer pool.
 - [ ] VM network: IPv6 RA off, KubeSpan off, Cilium devices pinned to the
       LAN NIC.
 - [ ] Restrict `6443` and `50000` on the VMs.
