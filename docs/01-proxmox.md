@@ -183,7 +183,8 @@ ssh root@192.168.1.10 hostname  # prints "pve" without a password prompt
 ```
 
 The key was installed while the LAN was still open, which is why the
-commands above use `192.168.1.10`. With the key in place, SSH password login is turned off for root:
+commands above use `192.168.1.10`. With the key in place, SSH password
+login is turned off for root:
 [proxmox/ssh/10-hardening.conf](../proxmox/ssh/10-hardening.conf), copied
 to `/etc/ssh/sshd_config.d/`. A drop-in survives upgrades better than
 editing `sshd_config`, and it wins because the `Include` line sits at the
@@ -494,10 +495,6 @@ for every lock added here. It needs only the root password: no network, no
 | SSH (lost key) | Console, or the web UI shell: add a new public key to `/root/.ssh/authorized_keys` |
 | Tailscale down | Console: `tailscale status`, `systemctl restart tailscaled`; or `pve-firewall stop` to reach the UI from the LAN |
 
-### Next
-
-1. Create a dedicated user and API token for OpenTofu (`bpg/proxmox`).
-
 ## Planned VMs
 
 The plan for the Talos VMs, drawn before they exist. It changes if the
@@ -537,6 +534,10 @@ The trade-off: if the control plane VM breaks, the cluster API is down
 until it is restored from an etcd snapshot. Workloads that are already
 running keep running. Going to three control planes later is a matter of
 adding two VMs behind the same VIP.
+
+## Next
+
+1. Create a dedicated user and API token for OpenTofu (`bpg/proxmox`).
 
 ## References
 
