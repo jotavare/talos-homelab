@@ -188,6 +188,12 @@ phase page.
 - [ ] Tailscale HTTPS certificate for the Proxmox web UI, instead of the
       self-signed one.
 
+### Repository
+
+- [ ] Security audit pipeline in CI: secret scanning of every push and
+      the full history, plus linting of the config files, before anything
+      reaches the public repo.
+
 ### Before Talos
 
 - [ ] Dedicated Proxmox user and API token for OpenTofu.
