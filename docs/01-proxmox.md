@@ -258,8 +258,8 @@ The settings live in one drop-in,
 copied to `/etc/apt/apt.conf.d/`. It turns on the daily run, limits the
 allowed origins to `trixie-security` (the Debian default also allows
 point releases), turns off automatic reboots and mails root only when an
-upgrade fails. Proxmox forwards root's mail to the address set in the
-installer.
+upgrade fails. Root's mail goes out through the notification system (see
+[Email notifications](#email-notifications)).
 
 Check it:
 
@@ -268,6 +268,41 @@ unattended-upgrade --dry-run --debug 2>&1 | grep "Allowed origins"
 # Allowed origins are: origin=Debian,codename=trixie-security,label=Debian-Security
 less /var/log/unattended-upgrades/unattended-upgrades.log   # what ran
 ```
+
+### Email notifications
+
+Proxmox sends every alert (upgrade failures, disk health, backups)
+through its notification system, and root's local mail goes there too
+(`/root/.forward` pipes it to `proxmox-mail-forward`). Out of the box the
+only target is `mail-to-root`, which hands mail to the local postfix.
+With no relay, that mail never leaves the host or lands in spam.
+
+Added an SMTP target that sends through a Gmail account with an app
+password. The recipient is a Proton address. Proton itself only allows
+SMTP sending on paid plans with a custom domain, so it only receives.
+
+In **Datacenter → Notifications**:
+
+| Field | Value |
+|-------|-------|
+| Endpoint name | `gmail` |
+| Server | `smtp.gmail.com`, TLS, port `465` |
+| Username, from address | the Gmail address |
+| Password | a Gmail [app password](https://myaccount.google.com/apppasswords), kept in Bitwarden |
+| Recipient | `root@pam` (its email is the Proton address) |
+
+Then **Notification Matchers → `default-matcher`**: target `gmail`
+instead of `mail-to-root`. The password is stored apart from the rest, in
+`/etc/pve/priv/notifications.cfg`, readable by root only.
+
+Check both paths, the test button and root's local mail:
+
+```bash
+# Notifications → gmail → Test, then:
+printf "Subject: pve root mail test\n\ntest\n" | sendmail root
+```
+
+Both should arrive in the Proton inbox.
 
 ### Network check
 

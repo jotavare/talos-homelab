@@ -152,8 +152,6 @@ phase page.
 ### Proxmox host
 
 - [ ] Back up `/etc/pve` off the host (firewall, users, 2FA, VM configs).
-- [ ] Outbound mail relay, so root's mail (upgrade failures, alerts)
-      actually arrives.
 - [ ] SMART, temperature and NVMe wear alerts by email.
 - [ ] UPS with NUT for a clean shutdown on power loss.
 - [ ] Maybe fail2ban. Low value while SSH is tailnet only and key only.
