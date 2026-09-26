@@ -32,10 +32,13 @@ Directly on each node that needs remote access, not as a subnet router:
 
 ![Tailscale traffic: direct over the LAN at home, direct over the internet when away, DERP relay as a fallback, coordination server for keys and policy only](../diagrams/tailscale.png)
 
-- **At home:** laptop and `pve` talk directly over the LAN. Packets never
-  leave the house (`tailscale ping pve` shows a `192.168.1.x` address and
-  about 1 ms).
-- **Away:** the phone reaches `pve` directly over the internet. Both sides
+The laptop and the phone can each be at home or away; the path depends on
+where the device is, not which device it is.
+
+- **At home:** the device and `pve` talk directly over the LAN. Packets
+  never leave the house (`tailscale ping pve` shows a `192.168.1.x` address
+  and about 1 ms).
+- **Away:** the device reaches `pve` directly over the internet. Both sides
   connect outward at the same time ("hole punching"), so no port is
   forwarded on the router.
 - **Fallback:** when a direct path is impossible (strict NAT, blocked UDP),
