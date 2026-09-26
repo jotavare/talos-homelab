@@ -146,7 +146,7 @@ with the tools, the options chosen and why.
 
 ## Backlog
 
-Things skipped for now or not to forget. Ticked off as they land in a
+Things skipped for now or not to forget. Removed once they land in a
 phase page.
 
 ### Proxmox host
