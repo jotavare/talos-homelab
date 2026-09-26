@@ -32,16 +32,34 @@ hard rule: when something I already know is still the best fit, it stays.
 
 ## Hardware
 
-A single mini PC running Proxmox VE, with the Talos nodes as VMs on top.
+A single mini PC running Proxmox VE, with the Talos nodes as VMs on top,
+plus the home network it sits on.
+
+### Proxmox host
 
 | Component | Detail |
 |-----------|--------|
 | Model | HP Pro Mini 400 G9 |
 | CPU | Intel Core i5-12500T, 6 cores / 12 threads, 35 W |
 | RAM | 32 GB DDR4-3200 (2 x 16 GB, both slots used, max 64 GB) |
-| Storage | Intel 670p 512 GB NVMe |
+| Storage | Intel 670p 512 GB NVMe (QLC) |
 | Network | Intel I219-LM gigabit, single port, no Wi-Fi |
 | GPU | Intel UHD Graphics 770 (integrated) |
+
+### Network
+
+| Device | Detail |
+|--------|--------|
+| Router | ISP-provided, gateway and DHCP server |
+| Access point | Cudy router running OpenWrt 25.12, DHCP disabled |
+
+| Range | Type | Use |
+|-------|------|-----|
+| `.1` | Static | ISP router |
+| `.2` | Static | Access point |
+| `.10` | Static | Proxmox |
+| `.11` to `.99` | Static | Talos nodes and other lab machines |
+| `.100` to `.254` | Dynamic (DHCP) | Phones, laptops and other clients |
 
 ## Core stack
 
@@ -107,6 +125,16 @@ together.
 | Logs | Loki | **VictoriaLogs** |
 | Traces | Tempo, OpenTelemetry | **Jaeger** / **VictoriaTraces** |
 | Dashboards | Grafana | **Grafana** / **Perses** |
+
+## Work in progress
+
+The build, step by step, in the order it was done. One page per phase,
+with the tools, the options chosen and why.
+
+| Phase | Covers |
+|-------|--------|
+| [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install |
+| [02. Talos](docs/02-talos.md) | VM template |
 
 ## Open questions
 
