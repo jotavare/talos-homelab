@@ -105,6 +105,19 @@ the host keeps the `1.1.1.1` set in the installer, so updates and alerts
 keep working even when Tailscale is down. The host never needs to look up
 other tailnet names; the laptop and phone still use MagicDNS.
 
+Tailscale is the only way in, so it updates itself:
+
+```bash
+tailscale set --auto-update
+```
+
+The host's unattended upgrades only cover Debian security fixes (see
+[01. Proxmox](01-proxmox.md#automatic-security-updates)), so without this
+the Tailscale package from its own apt repository would only update with
+a manual `apt full-upgrade`. An update needs no reboot, only a restart of
+`tailscaled`, which drops tailnet sessions (SSH included) for a few
+seconds.
+
 Check from the laptop:
 
 ```bash
@@ -129,6 +142,7 @@ the tailnet.
 | `tailscale logout` | Leaves the tailnet; the device must be approved again |
 | `tailscale set --hostname=NAME` | Changes one setting without re-running `up` |
 | `tailscale set --accept-dns=false` | Stops Tailscale from managing this device's DNS |
+| `tailscale set --auto-update` | Installs new Tailscale versions automatically |
 | `tailscale version` | Client version |
 | `tailscale debug prefs` | The current settings in full |
 | `systemctl status tailscaled` | The daemon on Linux |
