@@ -188,7 +188,11 @@ login is turned off for root:
 [proxmox/ssh/10-hardening.conf](../proxmox/ssh/10-hardening.conf), copied
 to `/etc/ssh/sshd_config.d/`. A drop-in survives upgrades better than
 editing `sshd_config`, and it wins because the `Include` line sits at the
-top of the main file (first value wins).
+top of the main file (first value wins). The same drop-in also allows at
+most 3 attempts per connection (`MaxAuthTries 3`), gives 20 seconds to log
+in, turns off X11 forwarding, and drops dead sessions after about 10
+minutes (`ClientAliveInterval 300`, `ClientAliveCountMax 2`). TCP
+forwarding stays on, for SSH tunnels.
 
 ```bash
 sshd -t && systemctl reload ssh      # validate, then reload; open sessions stay up
