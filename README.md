@@ -13,22 +13,13 @@ hard rule: when something I already know is still the best fit, it stays.
 
 ## Goals
 
-- **Learn Talos properly**: no SSH, no shell, everything through its API
-  and machine configs.
-- **Use tools new to me**: open source alternatives over what I already
-  use at work (OpenTofu, Forgejo, OpenBao, Headscale and so on), unless
-  the known tool is clearly the better choice.
-- **Fully public**: every config, decision and dead end is in this repo,
-  including the ones that were reverted.
-- **No secrets in the clear**: public does not mean exposed. Secrets are
-  encrypted in git or kept out of it entirely, and nothing maps the real
-  network (IPs, hostnames, serials).
-- **Security by default**: management interfaces are only reachable over
-  a private tailnet, never the public internet.
-- **Reproducible**: the cluster can be rebuilt from this repo, from the
-  VMs up.
-- **Explained with diagrams**: how the pieces connect (host, VMs,
-  network, secrets flow), not just a list of manifests.
+- **Learn Talos**: API and machine configs only, no SSH.
+- **Try new tools**: open source over what I use at work, unless clearly worse.
+- **Fully public**: every config, decision and dead end, reverted ones too.
+- **No exposed secrets**: encrypted or kept out of git, no real IPs or hostnames.
+- **Private management**: admin interfaces only over the tailnet.
+- **Reproducible**: rebuild everything from this repo, VMs included.
+- **Diagrams**: show how host, VMs, network and secrets connect.
 
 ## Hardware
 
