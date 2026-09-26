@@ -425,6 +425,37 @@ systemctl stop fw-deadman.timer
 | Tailscale | still direct over the LAN, not relayed |
 | `pve` → internet (apt) | allowed |
 
+### Why no fail2ban
+
+[fail2ban](https://github.com/fail2ban/fail2ban) watches login logs and,
+after too many failures from one IP (say 5 in 10 minutes), adds a
+firewall rule that blocks that IP for a while. It exists to slow down
+password guessing from the internet. On this host there is nothing for it
+to catch:
+
+| What fail2ban stops | Why it cannot happen here |
+|---------------------|---------------------------|
+| Internet bots guessing SSH passwords | SSH only answers the tailnet, and only takes keys |
+| Password guessing on the web UI | Tailnet only, and needs the password plus TOTP |
+| Someone on the LAN trying logins | The firewall drops LAN traffic to `22` and `8006` |
+
+To even reach a login prompt, an attacker already has to be in the
+tailnet, which means one of my own devices is compromised (Tailnet Lock
+stops new devices from joining). Banning that device's tailnet IP after
+a few failures would come too late to matter.
+
+It would also cost something:
+
+- One more daemon to configure and keep updated.
+- Its own firewall rules next to `pve-firewall`, which can clash.
+- A way to lock myself out, for example a script retrying with a stale
+  key bans my own laptop.
+
+Brute-force protection comes back once something in the cluster is
+exposed to the internet through an ingress. For that,
+[CrowdSec](https://www.crowdsec.net/) fits better: it shares lists of
+known attacker IPs between users and has a Kubernetes integration.
+
 ### Lockout recovery
 
 The physical console (keyboard and monitor on the host) is the way back in
@@ -451,5 +482,10 @@ for every lock added here. It needs only the root password: no network, no
 - [Package repositories](https://pve.proxmox.com/wiki/Package_Repositories)
 - [Network configuration](https://pve.proxmox.com/wiki/Network_Configuration)
 - [Firewall](https://pve.proxmox.com/wiki/Firewall)
+- [User management and two-factor authentication](https://pve.proxmox.com/wiki/User_Management)
+- [Unattended upgrades (Debian wiki)](https://wiki.debian.org/UnattendedUpgrades)
+- [Notifications](https://pve.proxmox.com/wiki/Notifications)
+- [smartd.conf manual](https://manpages.debian.org/trixie/smartmontools/smartd.conf.5.en.html)
+- [fail2ban](https://github.com/fail2ban/fail2ban) and [CrowdSec](https://www.crowdsec.net/)
 
 [Back to the build log](../README.md#work-in-progress)

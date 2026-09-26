@@ -113,6 +113,7 @@ together.
 | Secrets | HashiCorp Vault | **SOPS** + **age** / **OpenBao** / **SecretSpec** |
 | Policy | Kyverno | **Kyverno** / **OPA Gatekeeper** / **Kubewarden** |
 | Runtime security | Falco | **Falco** / **Tetragon** |
+| Brute-force protection | None | **CrowdSec** / **fail2ban** |
 | Vulnerability scanning | Trivy | **Trivy** / **Grype** |
 | SBOM | CycloneDX, Dependency-Track | **Syft** + **Dependency-Track** |
 
@@ -155,7 +156,6 @@ phase page.
 - [ ] Early NVMe wear alert on "percentage used" (for example 80%),
       once monitoring is in place.
 - [ ] UPS with NUT for a clean shutdown on power loss.
-- [ ] Maybe fail2ban. Low value while SSH is tailnet only and key only.
 - [ ] Test the web UI over tailnet IPv6 from a phone.
 
 ### Tailscale
@@ -181,6 +181,8 @@ phase page.
 - [ ] Restrict `6443` and `50000` on the VMs.
 - [ ] Lockout runbook with etcd snapshots.
 - [ ] NTP check.
+- [ ] Brute-force protection (CrowdSec) for anything exposed to the
+      internet through an ingress.
 
 ## Open questions
 
