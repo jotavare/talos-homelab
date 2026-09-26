@@ -8,8 +8,8 @@ opened on the router.
 - **Free** for this use: the Personal plan covers 6 users, unlimited user
   devices and 50 tagged devices.
 - **End-to-end encrypted** with WireGuard. Private keys never leave the
-  devices, and connections are outbound only, so nothing new is exposed to
-  the internet.
+  devices, and no port is forwarded on the router. The only listening port
+  is WireGuard's own, which answers nothing without a valid key.
 - **What is trusted:** Tailscale's coordination server decides which
   devices join the tailnet and sees metadata (devices, connection times),
   never traffic. Tailnet Lock removes the ability to add devices without a
@@ -237,8 +237,8 @@ pasted into admin console → **Access controls**:
 - **Nothing in the other direction:** a compromised server cannot start a
   connection to the laptop.
 - **`tests`** run on every save, so a broken rule is rejected before it
-  applies. They check both directions: my user reaches `22` and `8006`
-  but not other ports, and `tag:server` reaches none of my devices.
+  applies. They check both directions: my user reaches the four admin
+  ports but not others, and `tag:server` reaches none of my devices.
 
 The grant names my user, not `autogroup:member`. That group means every
 user in the tailnet, so anyone invited later (family, a friend) would get
@@ -265,8 +265,12 @@ The repo file is the reference copy. Syncing it automatically from git
 
 The tailnet rules only cover traffic over Tailscale. The LAN side is
 closed by the Proxmox firewall: see [01. Proxmox, Firewall](01-proxmox.md#firewall).
-It still allows Tailscale's own UDP port (`41641`) from the LAN, so direct
-connections at home keep working.
+It still accepts Tailscale's own UDP port (`41641`) from any source, on
+purpose: direct connections at home and hole punching from away both
+arrive there. WireGuard drops every packet that is not signed by a known
+device key, so the open port exposes nothing else. From the internet it
+is only reachable while a hole-punched session is open, since the router
+forwards no ports.
 
 ## References
 
