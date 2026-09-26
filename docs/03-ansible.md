@@ -34,7 +34,7 @@ uv tool install ansible-lint
 | [ansible/ansible.cfg](../ansible/ansible.cfg) | Settings: inventory, roles path, YAML output |
 | [ansible/inventory.yml](../ansible/inventory.yml) | The host `pve`. Its address comes from `PROXMOX_HOST` in the local `.env`, so the tailnet name stays out of git |
 | [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook |
-| [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | The tasks and handlers |
+| [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | The tasks, handlers and compliance checks (`tasks/verify.yml`) |
 | [proxmox/](../proxmox/) | The config files the role copies. Each file lives in one place and is explained in 01. Proxmox |
 
 ## What it covers
@@ -52,6 +52,30 @@ uv tool install ansible-lint
 
 The manual column is either a one-time install step or something that
 creates or holds a secret. Those stay by hand on purpose.
+
+## Compliance checks
+
+Every run ends with read-only checks, in check mode too, that the host
+still matches everything done since the install, including the manual
+steps the playbook cannot apply. A failed check stops the run with a red
+task and a pointer to the doc section.
+
+| Check | Expects |
+|-------|---------|
+| Services | `ssh`, `pve-firewall`, `tailscaled`, `smartmontools` and the daily upgrade timer running |
+| Not running | `rpcbind`, `fw-deadman.timer` |
+| SSH | Root key only, no password or keyboard login, `MaxAuthTries 3` |
+| Firewall | On, management IP sets exactly `100.64.0.0/10` and `fd7a:115c:a1e0::/48` |
+| Web UI 2FA | `root@pam` has TOTP and recovery keys |
+| Tailscale | Tailnet Lock enabled, `tag:server`, MagicDNS off, auto-update on, resolver `1.1.1.1` |
+| IPv6, email | `accept_ra` and `autoconf` 0 on `vmbr0`, default matcher sends to the SMTP target |
+| Pending | Reports packages to upgrade and a needed reboot (a note, not a failure) |
+
+Only the checks, without touching anything:
+
+```bash
+ansible-playbook proxmox.yml --check --tags verify
+```
 
 ## Firewall safety
 
@@ -85,8 +109,8 @@ Ansible in this terminal needs its output sent to a file or pipe that
 blocks (`> out.txt 2>&1`), otherwise it refuses to start with
 "Ansible requires blocking IO". A normal terminal does not need this.
 
-On the current host the check run reports `changed=0`: the playbook and
-the host agree.
+On the current host a full run reports `changed=0 failed=0`: nothing to
+change, and every compliance check passes.
 
 ## References
 

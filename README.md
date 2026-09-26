@@ -185,6 +185,10 @@ phase page.
 - [ ] UPS with NUT for a clean shutdown on power loss.
 - [ ] Test the web UI over tailnet IPv6 from a phone.
 
+- [ ] Run the Ansible compliance checks on a schedule (a timer on the
+      laptop or CI with a Tailscale runner), so drift shows up without a
+      manual run.
+
 ### Tailscale
 
 - [ ] Sync `tailscale/policy.hujson` to the tailnet from git (GitOps).
