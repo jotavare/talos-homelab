@@ -113,7 +113,7 @@ together.
 | Secrets | HashiCorp Vault | **SOPS** + **age** / **OpenBao** / **SecretSpec** |
 | Policy | Kyverno | **Kyverno** / **OPA Gatekeeper** / **Kubewarden** |
 | Runtime security | Falco | **Falco** / **Tetragon** |
-| Brute-force protection | None | **CrowdSec** / **fail2ban** |
+| Brute-force protection | None | **CrowdSec** + **Envoy Gateway** rate limits |
 | Vulnerability scanning | Trivy | **Trivy** / **Grype** |
 | SBOM | CycloneDX, Dependency-Track | **Syft** + **Dependency-Track** |
 
