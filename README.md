@@ -144,6 +144,45 @@ with the tools, the options chosen and why.
 | [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install |
 | [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, hardening |
 
+## Backlog
+
+Things skipped for now or not to forget. Ticked off as they land in a
+phase page.
+
+### Proxmox host
+
+- [ ] Back up `/etc/pve` off the host (firewall, users, 2FA, VM configs).
+- [ ] Outbound mail relay, so root's mail (upgrade failures, alerts)
+      actually arrives.
+- [ ] SMART, temperature and NVMe wear alerts by email.
+- [ ] UPS with NUT for a clean shutdown on power loss.
+- [ ] Maybe fail2ban. Low value while SSH is tailnet only and key only.
+- [ ] Test the web UI over tailnet IPv6 from a phone.
+
+### Tailscale
+
+- [ ] Policy test for the reverse direction: `tag:server` to members is
+      denied.
+- [ ] Note that `autogroup:member` assumes a single-user tailnet.
+- [ ] Sync `tailscale/policy.hujson` to the tailnet from git (GitOps).
+
+### Firewall
+
+- [ ] Note that the `local_network` override breaks Proxmox clustering.
+- [ ] Note that `policy_out: ACCEPT` is an accepted risk.
+
+### Before Talos
+
+- [ ] Dedicated Proxmox user and API token for OpenTofu.
+- [ ] VM and RAM budget for control plane and workers.
+- [ ] API access: VIP, `certSANs`, multi-endpoint `talosconfig`, DNS name.
+- [ ] IP plan inside `.11` to `.99`, including a Cilium LoadBalancer pool.
+- [ ] VM network: IPv6 RA off, KubeSpan off, Cilium devices pinned to the
+      LAN NIC.
+- [ ] Restrict `6443` and `50000` on the VMs.
+- [ ] Lockout runbook with etcd snapshots.
+- [ ] NTP check.
+
 ## Open questions
 
 - Can Talos run **fully in-memory** (diskless boot)? Understand how that actually works before committing to it as a design constraint.
