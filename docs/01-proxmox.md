@@ -2,6 +2,39 @@
 
 The physical host: from an empty mini PC to a running Proxmox VE.
 
+## Why a hypervisor under Talos
+
+Talos can run on bare metal, but this homelab starts with a single mini
+PC. One machine as one Talos node cannot show the things worth learning:
+etcd quorum, a node failing, rolling upgrades. Running Talos as VMs on
+Proxmox VE turns one box into a multi-node cluster.
+
+Proxmox also has a mature OpenTofu provider
+([bpg/proxmox](https://registry.terraform.io/providers/bpg/proxmox/latest)),
+and Talos has an official one
+([siderolabs/talos](https://registry.terraform.io/providers/siderolabs/talos/latest)).
+Between them the VMs, machine configs and cluster bootstrap can all be
+declared in this repo.
+
+## Why this hardware fits
+
+Specs are in the [Hardware section](../README.md#hardware) of the readme.
+
+- **Performance cores only.** The i5-12500T has no efficiency cores, which
+  avoids the scheduling quirks mixed-core 12th and 13th gen chips can cause
+  under a hypervisor. 35 W is fine to leave running 24/7.
+- **32 GB is enough for a real cluster.** Proxmox takes 1 to 2 GB, leaving
+  room for three control-plane VMs at 2 to 4 GB each plus two or three
+  workers at 4 to 6 GB each.
+- **All Intel hardware**, supported by the stock Proxmox kernel.
+
+Known limits:
+
+- **Storage is the tight resource.** 512 GB of QLC is fine to start. It
+  gets tight once workers need persistent volumes (Longhorn or similar) or
+  once ISOs and backups pile up, and QLC wears faster under heavy writes.
+- **Single NIC.** Everything, management included, goes through one port.
+
 ## Install USB
 
 ### Image
