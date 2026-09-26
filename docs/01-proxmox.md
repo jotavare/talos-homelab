@@ -117,14 +117,36 @@ The address plan behind these values is in the
 
 ## Post-install
 
-1. Open `https://192.168.1.10:8006` and log in as `root`, realm **Linux PAM**.
-   The certificate warning and the "no subscription" popup are expected.
-2. **pve → Updates → Repositories:** disable the enterprise repositories
+### Access
+
+Web UI at `https://192.168.1.10:8006`, user `root`, realm **Linux PAM**.
+The certificate warning and the "no subscription" popup are expected.
+
+- **Root password:** replaced the one set in the installer with a long
+  random one from the password manager (Bitwarden, item
+  "Proxmox VE · pve · root"). Changed under **Datacenter → Permissions →
+  Users → root → Password**.
+- **SSH key login:** an Ed25519 key generated on the admin laptop, with
+  the private key backed up in Bitwarden as an SSH key item
+  ("SSH key · jotavare · WSL laptop").
+
+```bash
+ssh-keygen -t ed25519 -C "jotavare"
+ssh-copy-id root@192.168.1.10   # appends the public key to /root/.ssh/authorized_keys
+ssh root@192.168.1.10 hostname  # prints "pve" without a password prompt
+```
+
+Local credentials for scripts live in a `.env` at the repo root, which is
+in `.gitignore` and never committed.
+
+### Next
+
+1. **pve → Updates → Repositories:** disable the enterprise repositories
    (PVE and Ceph), then **Add → No-Subscription**.
-3. **pve → Updates → Refresh → Upgrade.** Reboot if the kernel changed.
-4. **pve → System → Network:** confirm `vmbr0` has the static address.
+2. **pve → Updates → Refresh → Upgrade.** Reboot if the kernel changed.
+3. **pve → System → Network:** confirm `vmbr0` has the static address.
+4. Tailscale on the host, so the web UI is reachable over the tailnet only.
 5. Create a dedicated user and API token for OpenTofu (`bpg/proxmox`).
-6. Web UI reachable over Tailscale only, never the public internet.
 
 ### Known issue: e1000e hardware unit hang
 
