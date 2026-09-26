@@ -90,7 +90,7 @@ together.
 | Vulnerability scanning | Trivy | **Trivy** / **Grype** |
 | SBOM | CycloneDX, Dependency-Track | **Syft** + **Dependency-Track** |
 
-### Storage and data
+### Storage and Data
 
 | Area | Already used | Candidate |
 |------|--------------|-----------|
