@@ -8,10 +8,21 @@ Rebuild the homelab on [Talos](https://www.talos.dev/), an immutable,
 API-managed Kubernetes OS, instead of a general-purpose Linux distro
 running k8s on top.
 
+This is an experiment. It is not the first homelab here, but it
+deliberately uses Talos and tools not used day to day at work, to learn
+them properly. Everything is public, so the repo doubles as a record of
+how it was built, including dead ends and decisions that were reverted.
+
+## Hardware
+
+A single mini PC running Proxmox VE, with the Talos nodes as VMs on top.
+Specs, install steps and a build log: [proxmox/](proxmox/)
+
 ## Core stack (candidates)
 
 - **Kubernetes**: orchestration
 - **Talos**: the node OS itself
+- **Proxmox VE**: hypervisor on the physical host, Talos nodes run as VMs
 - **Tailscale** / **Headscale**: mesh networking / overlay VPN
   (Headscale as the self-hosted control-plane alternative to Tailscale's)
 - **WireGuard**: underlying tunnel protocol for the above
