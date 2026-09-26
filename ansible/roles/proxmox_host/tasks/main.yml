@@ -1,0 +1,123 @@
+- name: Disable the enterprise repositories
+  ansible.builtin.lineinfile:
+    path: "/etc/apt/sources.list.d/{{ item }}.sources"
+    regexp: "^Enabled:"
+    line: "Enabled: false"
+  loop: [pve-enterprise, ceph]
+
+- name: Add the no-subscription repository
+  ansible.builtin.copy:
+    src: "{{ proxmox_host_files }}/apt/sources/proxmox.sources"
+    dest: /etc/apt/sources.list.d/proxmox.sources
+    mode: "0644"
+
+- name: Add the Tailscale signing key
+  ansible.builtin.get_url:
+    url: https://pkgs.tailscale.com/stable/debian/trixie.noarmor.gpg
+    dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+    checksum: sha256:3e03dacf222698c60b8e2f990b809ca1b3e104de127767864284e6c228f1fb39
+    mode: "0644"
+
+- name: Add the Tailscale repository
+  ansible.builtin.copy:
+    src: "{{ proxmox_host_files }}/apt/sources/tailscale.sources"
+    dest: /etc/apt/sources.list.d/tailscale.sources
+    mode: "0644"
+
+- name: Install packages
+  ansible.builtin.apt:
+    name: [unattended-upgrades, tailscale]
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Configure unattended upgrades (security only, no reboot)
+  ansible.builtin.copy:
+    src: "{{ proxmox_host_files }}/apt/52unattended-upgrades-local"
+    dest: /etc/apt/apt.conf.d/52unattended-upgrades-local
+    mode: "0644"
+
+- name: Harden sshd
+  ansible.builtin.copy:
+    src: "{{ proxmox_host_files }}/ssh/10-hardening.conf"
+    dest: /etc/ssh/sshd_config.d/10-hardening.conf
+    mode: "0644"
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Reload sshd
+
+- name: Turn off IPv6 router advertisements and SLAAC
+  ansible.builtin.copy:
+    src: "{{ proxmox_host_files }}/sysctl/90-ipv6-no-autoconf.conf"
+    dest: /etc/sysctl.d/90-ipv6-no-autoconf.conf
+    mode: "0644"
+  notify: Apply sysctl
+
+- name: Configure smartd for the NVMe
+  ansible.builtin.copy:
+    src: "{{ proxmox_host_files }}/smartd/smartd.conf"
+    dest: /etc/smartd.conf
+    mode: "0644"
+  notify: Restart smartd
+
+- name: Disable rpcbind (no NFS on the host)
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: false
+    state: stopped
+  loop: [rpcbind.socket, rpcbind.service]
+
+- name: Read Tailscale settings
+  ansible.builtin.command: tailscale debug prefs
+  register: proxmox_host_ts_prefs
+  changed_when: false
+  check_mode: false
+
+- name: Keep host DNS off MagicDNS and turn on auto-update
+  ansible.builtin.command: tailscale set --accept-dns=false --auto-update
+  when: >-
+    (proxmox_host_ts_prefs.stdout | from_json).CorpDNS or
+    not (proxmox_host_ts_prefs.stdout | from_json).AutoUpdate.Apply
+  changed_when: true
+
+- name: Check whether the firewall files would change
+  ansible.builtin.copy:
+    src: "{{ proxmox_host_files }}/firewall/{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "0640"
+  loop: &proxmox_host_fw
+    - { src: cluster.fw, dest: /etc/pve/firewall/cluster.fw }
+    - { src: host.fw, dest: "/etc/pve/nodes/{{ inventory_hostname }}/host.fw" }
+  check_mode: true
+  register: proxmox_host_fw_check
+
+- name: Apply firewall changes behind a dead-man switch
+  when: proxmox_host_fw_check is changed and not ansible_check_mode
+  block:
+    - name: Arm the dead-man switch
+      ansible.builtin.command: >-
+        systemd-run --unit=fw-deadman --on-active={{ proxmox_host_deadman_minutes }}min
+        /usr/sbin/pve-firewall stop
+      changed_when: true
+
+    - name: Copy the firewall files
+      ansible.builtin.copy:
+        src: "{{ proxmox_host_files }}/firewall/{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: "0640"
+      loop: *proxmox_host_fw
+
+    - name: Wait for pve-firewall to load the rules
+      ansible.builtin.pause:
+        seconds: 15
+
+    - name: Check a fresh SSH connection still works
+      ansible.builtin.command: >-
+        ssh -o BatchMode=yes -o ControlMaster=no -o ControlPath=none
+        {{ ansible_user }}@{{ ansible_host }} pve-firewall status
+      delegate_to: localhost
+      changed_when: false
+
+    - name: Disarm the dead-man switch
+      ansible.builtin.systemd_service:
+        name: fw-deadman.timer
+        state: stopped

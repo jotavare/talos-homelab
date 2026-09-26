@@ -536,6 +536,52 @@ for every lock added here. It needs only the root password: no network, no
 | SSH (lost key) | Console, or the web UI shell: add a new public key to `/root/.ssh/authorized_keys` |
 | Tailscale down | Console: `tailscale status`, `systemctl restart tailscaled`; or `pve-firewall stop` to reach the UI from the LAN |
 
+## Ansible
+
+The steps above were done by hand first, to learn them. The ones that can
+run unattended are now also an Ansible playbook,
+[ansible/proxmox.yml](../ansible/proxmox.yml), so a reinstalled host gets
+the same configuration in one run. It uses the files in
+[proxmox/](../proxmox/) directly, so each config lives in one place.
+
+| Covered by the playbook | Still manual |
+|-------------------------|--------------|
+| Enterprise repos off, no-subscription and Tailscale repos on | Installing Proxmox, the network settings |
+| `unattended-upgrades` and its drop-in | Root password, web UI 2FA and recovery keys |
+| SSH hardening drop-in (validated before it is written) | Copying the SSH key (`ssh-copy-id`) |
+| IPv6 sysctl, smartd config | Full upgrade and reboot after the install |
+| `rpcbind` off | `tailscale up` login, tag, key expiry, Tailnet Lock |
+| Tailscale `--accept-dns=false --auto-update` | SMTP notification target (holds a password) |
+| Firewall files, behind a dead-man switch | |
+
+A firewall change is the one that can lock the host out, so the playbook
+applies it like the manual procedure: it arms `fw-deadman` first, copies
+the files, then opens a brand new SSH connection. Only if that works does
+it stop the timer; otherwise the firewall switches itself off after 5
+minutes.
+
+Ansible runs on the laptop, installed with
+[uv](https://docs.astral.sh/uv/) (no root needed):
+
+```bash
+uv tool install ansible-core
+uv tool install ansible-lint
+```
+
+The host address comes from `PROXMOX_HOST` in the local `.env`, so the
+tailnet name stays out of the inventory:
+
+```bash
+set -a && . ./.env && set +a
+cd ansible
+ansible-lint proxmox.yml
+ansible-playbook proxmox.yml --check --diff   # what would change
+ansible-playbook proxmox.yml
+```
+
+On the current host the check run reports `changed=0`: the playbook and
+the host agree.
+
 ## Planned VMs
 
 The plan for the Talos VMs, drawn before they exist. It changes if the
@@ -588,6 +634,7 @@ adding two VMs behind the same VIP.
 - [Package repositories](https://pve.proxmox.com/wiki/Package_Repositories)
 - [Network configuration](https://pve.proxmox.com/wiki/Network_Configuration)
 - [Firewall](https://pve.proxmox.com/wiki/Firewall)
+- [Ansible documentation](https://docs.ansible.com/)
 - [User management and two-factor authentication](https://pve.proxmox.com/wiki/User_Management)
 - [Unattended upgrades (Debian wiki)](https://wiki.debian.org/UnattendedUpgrades)
 - [Notifications](https://pve.proxmox.com/wiki/Notifications)

@@ -1,0 +1,7 @@
+all:
+  children:
+    proxmox:
+      hosts:
+        pve:
+          ansible_host: "{{ lookup('ansible.builtin.env', 'PROXMOX_HOST') }}"
+          ansible_user: root
