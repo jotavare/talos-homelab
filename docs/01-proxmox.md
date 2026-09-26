@@ -131,7 +131,8 @@ and API token, kept in a secrets store.
 
 The installer pre-filled a SLAAC IPv6 address. Rejected: the ISP prefix
 can rotate, and the address is publicly routable. Replaced with static
-IPv4.
+IPv4. The installer keeps IPv6 auto-configuration on, though, so it is
+turned off after the install (see [Network check](#network-check)).
 
 | Field | Value |
 |-------|-------|
@@ -287,6 +288,23 @@ The address is static on the host itself (`inet static`, no DHCP client
 running), and `.10` sits outside the router's DHCP pool (`.100` to
 `.254`), so no reservation on the router is needed.
 
+IPv6 on `vmbr0` is link-local only (`fe80::`), but the kernel still had
+`accept_ra` and `autoconf` on. If the router ever starts announcing an
+IPv6 prefix, the host would pick up a public address that bypasses the
+static IPv4 plan. Turned off with
+[`proxmox/sysctl/90-ipv6-no-autoconf.conf`](../proxmox/sysctl/90-ipv6-no-autoconf.conf),
+copied to `/etc/sysctl.d/`:
+
+```bash
+sysctl --system
+sysctl net.ipv6.conf.vmbr0.accept_ra net.ipv6.conf.vmbr0.autoconf   # both 0
+ip -6 addr show vmbr0   # only fe80::
+```
+
+This only covers the host. Talos VMs get the same settings in their own
+machine config. `tailscale0` keeps its tailnet IPv6 address, which
+Tailscale assigns itself.
+
 ### Firewall
 
 Only the tailnet can reach the management ports. Config in
@@ -301,7 +319,10 @@ the firewall on alone keeps the LAN open. Overriding the alias is what
 closes it:
 
 - `local_network` alias set to the tailnet range `100.64.0.0/10`.
-- `management` IP set: the tailnet range only.
+- `management` IP set: the tailnet ranges only, IPv4 `100.64.0.0/10` and
+  IPv6 `fd7a:115c:a1e0::/48`. MagicDNS answers with both addresses, so
+  without the IPv6 range a client that tries IPv6 first gets dropped and
+  has to fall back to IPv4.
 - `policy_in: DROP`, `policy_out: ACCEPT`.
 - Host rules: Tailscale direct connections (`udp/41641`) and ping from the
   LAN, for troubleshooting.
