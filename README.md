@@ -198,8 +198,8 @@ phase page.
 ### Tailscale
 
 - [ ] Sync `tailscale/policy.hujson` to the tailnet from git (GitOps).
-- [ ] Tailscale HTTPS certificate for the Proxmox web UI, instead of the
-      self-signed one.
+- [ ] Let's Encrypt certificate (`*.home.<domain>`) for the Proxmox web
+      UI, instead of the self-signed one.
 
 ### Repository
 
@@ -218,7 +218,9 @@ phase page.
       Tailscale with `tag:server`, init and unseal by hand, Raft
       snapshots copied off the host.
 - [ ] External Secrets Operator in the cluster, reading from OpenBao.
-- [ ] Tailscale grant for OpenBao (`tcp:8200`) from my user.
+- [ ] Tailscale tags `tag:openbao` and `tag:talos`, grants to `tcp:8200`.
+- [ ] Cloudflare API token for DNS-01, limited to DNS edits on the lab
+      domain.
 - [ ] Flux bootstrap: which git remote and which credential.
 - [ ] PBS VM sizing: RAM, vCPU and a datastore disk.
 - [ ] Rollout order: core platform first (Cilium, Flux, cert-manager,
