@@ -1,2 +1,25 @@
 proxmox_host_files: "{{ playbook_dir }}/../proxmox"
 proxmox_host_deadman_minutes: 5
+
+proxmox_host_tofu_user: tofu@pve
+proxmox_host_tofu_role: TofuProvisioner
+proxmox_host_tofu_privs:
+  - Datastore.AllocateSpace
+  - Datastore.AllocateTemplate
+  - Datastore.Audit
+  - SDN.Use
+  - Sys.Audit
+  - Sys.Modify
+  - VM.Allocate
+  - VM.Audit
+  - VM.Clone
+  - VM.Config.CDROM
+  - VM.Config.CPU
+  - VM.Config.Cloudinit
+  - VM.Config.Disk
+  - VM.Config.HWType
+  - VM.Config.Memory
+  - VM.Config.Network
+  - VM.Config.Options
+  - VM.GuestAgent.Audit
+  - VM.PowerMgmt

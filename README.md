@@ -170,6 +170,7 @@ with the tools, the options chosen and why.
 | [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, hardening |
 | [03. Ansible](docs/03-ansible.md) | Proxmox host configuration as a playbook |
 | [04. Secrets](docs/04-secrets.md) | SOPS and age for bootstrap secrets, OpenBao outside the cluster |
+| [05. OpenTofu](docs/05-opentofu.md) | Proxmox user, role and API token |
 
 ## Backlog
 
@@ -206,7 +207,6 @@ phase page.
 
 ### Before Talos
 
-- [ ] Dedicated Proxmox user and API token for OpenTofu.
 - [ ] API access: VIP, `certSANs`, multi-endpoint `talosconfig`, DNS name.
 - [ ] VM network: IPv6 RA off, KubeSpan off, Cilium devices pinned to the
       LAN NIC.

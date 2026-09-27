@@ -587,7 +587,7 @@ adding two VMs behind the same VIP.
 
 ## Next
 
-1. Create a dedicated user and API token for OpenTofu (`bpg/proxmox`).
+1. [05. OpenTofu](05-opentofu.md): the VMs as code.
 
 ## References
 
