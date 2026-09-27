@@ -1,25 +1,26 @@
 # Secrets
 
-How secrets are kept in a public repo: encrypted in git for what the
-build needs, and in OpenBao for what the apps need.
+How secrets are kept in a public repo: OpenBao, outside the cluster, for
+almost everything, and SOPS in git for the few secrets needed before
+OpenBao exists.
 
 ## Why two tools
 
-Some secrets are needed **before** the cluster exists: the Talos machine
-secrets, the OpenTofu variables. They cannot live in OpenBao, because
-OpenBao runs in the cluster they build. Everything else can.
+OpenBao runs in its own container on Proxmox, created by OpenTofu. The
+few secrets OpenTofu needs to create it cannot live in it yet.
 
 | Secret | Where | Why |
 |--------|-------|-----|
-| Build secrets (Talos machine secrets, OpenTofu variables) | Encrypted in git with **SOPS + age** | The repo alone rebuilds everything, with one key |
+| Bootstrap secrets (Proxmox API token for OpenTofu) | Encrypted in git with **SOPS + age** | Needed before OpenBao exists. The repo alone rebuilds everything, with one key |
+| Talos machine secrets, OpenTofu state encryption key | **OpenBao** | OpenBao runs outside the cluster, so it is there before the cluster is |
 | App secrets (database passwords, API keys) | **OpenBao**, read by **External Secrets Operator** | Git holds only references, no values at all |
 | The age private key | Bitwarden, plus a printed offline copy | It decrypts every SOPS file, so it cannot be in the repo |
 | OpenBao unseal keys and root token | Bitwarden, plus a printed offline copy | They open OpenBao, so they cannot be inside it |
 
-Keeping the build secrets only in Bitwarden would mean one tool fewer,
-but a rebuild would then need each secret copied by hand, against the
-Reproducible and GitOps goals. With SOPS, a rebuild needs the repo and
-one key.
+Keeping the bootstrap secrets only in Bitwarden would mean one tool
+fewer, but a rebuild would then need each secret copied by hand, against
+the Reproducible and GitOps goals. With SOPS, a rebuild needs the repo
+and one key.
 
 ## Tools
 
@@ -77,9 +78,24 @@ second check on GitHub.
 
 ## OpenBao
 
-Comes with the cluster: OpenBao for app secrets, External Secrets
-Operator to turn them into Kubernetes Secrets, Raft snapshots copied off
-the host, and a documented unseal procedure. Tracked in the Backlog.
+The cluster depends on OpenBao, so OpenBao does not run in the cluster.
+Inside it, a broken or rebuilt cluster would take its own secrets store
+down with it, and the Talos secrets could not be stored there at all.
+
+| | Plan |
+|--|------|
+| Where | A Debian LXC container on Proxmox, `192.168.1.30`, 1 vCPU, 0.5 GB RAM, 8 GB disk |
+| Created by | OpenTofu, like the Talos VMs |
+| Configured by | Ansible, with compliance checks like the host |
+| Reachable from | The tailnet only: Tailscale in the container, `tag:server`, firewall |
+| Storage | Integrated Raft, with snapshots copied off the host |
+| Init and unseal | By hand, since they produce the unseal keys and root token |
+| Apps | External Secrets Operator in the cluster reads from it |
+
+It still shares the host with everything else, so it survives a cluster
+rebuild but not the loss of the host (see the POC trade-offs in the
+[readme](../README.md#poc-trade-offs)). With no cloud key service at
+home, it starts sealed after every reboot and is unsealed by hand.
 
 ## References
 

@@ -32,9 +32,9 @@ hard rule: when something I already know is still the best fit, it stays.
 </p>
 
 <p align="center">
-  <img src="diagrams/proxmox.png" alt="Proxmox host plan: 32 GB of RAM split between the host, one control plane and three workers on the vmbr0 bridge, and the NVMe split into VM disks, ISOs and swap">
+  <img src="diagrams/proxmox.png" alt="Proxmox host plan: 32 GB of RAM split between the host, an OpenBao LXC container, one control plane and three workers on the vmbr0 bridge, and the NVMe split into VM and LXC disks, ISOs and swap">
   <br>
-  <sub><b>Proxmox.</b> Planned split of RAM and disk between the host, one control plane and three workers. Production needs three control planes for etcd quorum; one is used here to leave more room for apps (<a href="docs/01-proxmox.md#planned-vms">why</a>).</sub>
+  <sub><b>Proxmox.</b> Planned split of RAM and disk between the host, OpenBao, one control plane and three workers. Production needs three control planes for etcd quorum; one is used here to leave more room for apps (<a href="docs/01-proxmox.md#planned-vms">why</a>).</sub>
 </p>
 
 <p align="center">
@@ -74,7 +74,8 @@ LAN `192.168.1.0/24`:
 | `192.168.1.10` | Static | Proxmox |
 | `192.168.1.11` to `.19` | Static | Talos control plane |
 | `192.168.1.20` | Static | Kubernetes API VIP |
-| `192.168.1.21` to `.49` | Static | Talos workers and other lab machines |
+| `192.168.1.21` to `.29` | Static | Talos workers |
+| `192.168.1.30` to `.49` | Static | Services outside the cluster (OpenBao `.30`) and other lab machines |
 | `192.168.1.50` to `.99` | Static | Cilium LoadBalancer pool |
 | `192.168.1.100` to `.254` | Dynamic (DHCP) | Phones, laptops and other clients |
 
@@ -119,7 +120,7 @@ together.
 | Area | Already used | Candidate |
 |------|--------------|-----------|
 | SSO | Authentik, Keycloak | **Kanidm** / **Zitadel** / **Authelia** |
-| Secrets | HashiCorp Vault | **SOPS** + **age** (build) + **OpenBao** + **External Secrets Operator** (apps) |
+| Secrets | HashiCorp Vault | **OpenBao** (outside the cluster) + **External Secrets Operator** + **SOPS** + **age** (bootstrap) |
 | Policy | Kyverno | **Kyverno** / **OPA Gatekeeper** / **Kubewarden** |
 | Runtime security | Falco | **Falco** / **Tetragon** |
 | Brute-force protection | None | **CrowdSec** + **Envoy Gateway** rate limits |
@@ -155,6 +156,7 @@ written down and the homelab knowingly does something simpler.
 | Control plane | Three control planes, so etcd keeps quorum when one fails | One, to leave RAM for apps. All VMs share one host anyway ([details](docs/01-proxmox.md#planned-vms)) |
 | Control plane size | Enough RAM for headroom, 8 GB or more | 4 GB, tight for etcd, the API server and the Cilium agent. Watch memory and take RAM from a worker if needed |
 | Block storage | Longhorn with three replicas on separate nodes and disks | Longhorn anyway, but every replica lands on the same QLC NVMe: no real redundancy, and more writes on a drive that wears fast. Use one replica per volume |
+| Secrets store | Vault or OpenBao as a cluster of three on dedicated machines, auto-unsealed by a cloud key service | One OpenBao container on the same host, unsealed by hand after a reboot. Survives a cluster rebuild, not the loss of the host |
 | Backups | Proxmox Backup Server on a separate machine, plus a copy off site | Proxmox Backup Server as a VM on the same host until there is a second machine. It protects against mistakes, not against losing the host |
 
 ## Work in progress
@@ -167,7 +169,7 @@ with the tools, the options chosen and why.
 | [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install, planned VMs |
 | [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, hardening |
 | [03. Ansible](docs/03-ansible.md) | Proxmox host configuration as a playbook |
-| [04. Secrets](docs/04-secrets.md) | SOPS and age for build secrets, OpenBao plan for apps |
+| [04. Secrets](docs/04-secrets.md) | SOPS and age for bootstrap secrets, OpenBao outside the cluster |
 
 ## Backlog
 
@@ -220,9 +222,11 @@ phase page.
 - [ ] Talos system extensions: `qemu-guest-agent`, and for Longhorn
       `iscsi-tools` and `util-linux-tools`.
 - [ ] VM settings in OpenTofu: memory ballooning off, guest agent on.
-- [ ] OpenBao and External Secrets Operator in the cluster: Raft
-      snapshots off the host, unseal keys in Bitwarden and offline, a
-      documented unseal procedure after restarts.
+- [ ] OpenBao LXC container: created by OpenTofu, configured by Ansible,
+      Tailscale with `tag:server`, init and unseal by hand, Raft
+      snapshots copied off the host.
+- [ ] External Secrets Operator in the cluster, reading from OpenBao.
+- [ ] Tailscale grant for OpenBao (`tcp:8200`) from my user.
 - [ ] Flux bootstrap: which git remote and which credential.
 - [ ] Where OpenTofu keeps its state and how it is backed up.
 - [ ] PBS VM sizing: RAM, vCPU and a datastore disk.
