@@ -63,6 +63,7 @@ All SOPS files live in [secrets/](../secrets/):
 | File | Holds |
 |------|-------|
 | `example.sops.yaml` | A dummy value, to show the format |
+| `env.sops.yaml` | Settings the scripts read: the host's tailnet address and the lab domain |
 | `opentofu.sops.yaml` | The Proxmox API token for OpenTofu and the state encryption passphrase ([05. OpenTofu](05-opentofu.md)) |
 
 `example.sops.yaml` is a dummy file that shows the result. Without the key, `sops decrypt` fails with

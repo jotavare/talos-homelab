@@ -1,5 +1,5 @@
 variable "proxmox_host" {
-  description = "Proxmox address on the tailnet, from PROXMOX_HOST in the local .env."
+  description = "Proxmox address on the tailnet, from secrets/env.sops.yaml through run.sh."
   type        = string
 }
 

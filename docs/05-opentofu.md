@@ -105,9 +105,9 @@ tar xzf tofu_1.12.6_linux_amd64.tar.gz tofu && install -m 755 tofu ~/.local/bin/
 | `tofu/.terraform.lock.hcl` | Pinned provider checksums, kept in git |
 
 `run.sh` decrypts the API token and the state passphrase from
-`secrets/opentofu.sops.yaml` into environment variables for that one
-command, and reads the host address from the local `.env`. Nothing is
-written to disk in plain text:
+`secrets/opentofu.sops.yaml`, and the host address from
+`secrets/env.sops.yaml`, into environment variables for that one
+command. Nothing is written to disk in plain text:
 
 ```bash
 tofu/run.sh init
