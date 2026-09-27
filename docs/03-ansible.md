@@ -94,8 +94,9 @@ playbook applies it the same way as the manual procedure in
 5. Only if that works, stop the timer. Otherwise the firewall switches
    itself off and the host is reachable again.
 
-This path has not run for real yet: it only runs when a firewall file
-changes.
+Tested for real on a firewall file change: the timer was armed, the new
+files loaded, a fresh SSH connection worked, and the timer was stopped.
+The firewall stayed on the whole time.
 
 ## Running it
 
