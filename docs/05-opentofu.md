@@ -145,7 +145,20 @@ Once OpenBao runs, the passphrase moves there as the key provider. It
 stays in SOPS until then, because OpenTofu creates OpenBao.
 
 A single state file in git has no locking. That is fine with one person
-running OpenTofu from one laptop.
+running OpenTofu from one laptop. Every old state also stays in git
+history: if the passphrase and the age key ever leaked, those could be
+read too, and a new passphrase only protects new commits. The production
+way is a remote backend with locking; see the POC trade-offs in the
+[readme](../README.md#poc-trade-offs).
+
+Every run needs the age private key, which lives only on the laptop
+(`~/.config/sops/age/keys.txt`): it decrypts the SOPS file, which holds
+the passphrase that decrypts the state. Another machine needs a copy of
+the key from Bitwarden. CI would get its own age key, added as a second
+recipient in `.sops.yaml`, never this one.
+
+`.terraform.lock.hcl` is in git as well, as OpenTofu recommends: it pins
+the provider versions and checksums and holds no secrets.
 
 ## First plan
 
