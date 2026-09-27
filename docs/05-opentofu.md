@@ -270,6 +270,36 @@ Idle, the container uses under 20 MB of its 512 MB. Like OpenBao, it
 comes with an SSH server from the template, which the Ansible role
 removes.
 
+## Backup job
+
+In [opentofu/backups.tf](../opentofu/backups.tf): the daily backup of
+both containers, described in
+[01. Proxmox, Container backups](01-proxmox.md#container-backups). The
+guests come from the container resources, so a new container is one line
+in `vmid`.
+
+The job was first created by hand to test it, then brought under
+OpenTofu with an `import` block, removed again after the apply:
+
+```hcl
+import {
+  to = proxmox_backup_job.containers
+  id = "daily-containers"
+}
+```
+
+```bash
+opentofu/run.sh plan    # Plan: 1 to import, 0 to add, 0 to change, 0 to destroy.
+opentofu/run.sh apply
+```
+
+Drift test: `keep-last` changed to 3 on the host showed up in the next
+plan as `"keep-last" = "3" -> "7"`, and the apply set it back.
+
+The token can edit this job but, with `Datastore.Allocate` on `local`, it
+could also delete the backups there. Worth another look with Proxmox
+Backup Server, which has its own users and can keep pruning to itself.
+
 ## References
 
 - [OpenTofu](https://opentofu.org/)
