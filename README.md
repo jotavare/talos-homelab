@@ -172,6 +172,7 @@ with the tools, the options chosen and why.
 | [03. Ansible](docs/03-ansible.md) | Proxmox host configuration as a playbook |
 | [04. Secrets](docs/04-secrets.md) | SOPS and age for bootstrap secrets, OpenBao outside the cluster |
 | [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, project, state encryption |
+| [06. Talos](docs/06-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
 
 ## Backlog
 
@@ -208,21 +209,11 @@ phase page.
 
 ### Before Talos
 
-- [ ] API access: VIP, `certSANs`, multi-endpoint `talosconfig`, DNS name.
-- [ ] VM network: IPv6 RA off, KubeSpan off, Cilium devices pinned to the
-      LAN NIC.
-- [ ] Restrict `6443` and `50000` on the VMs with the per-VM Proxmox
-      firewall (`firewall=1` and `<vmid>.fw`), plus `tag:server` for the
-      Talos nodes in the tailnet.
 - [ ] Tailnet-only access for app admin UIs on the LoadBalancer pool
       (subnet router, `tailscale serve` or per-VM firewall), before any UI
       goes live.
 - [ ] Lockout and upgrade runbook: etcd snapshot before every upgrade,
       copied off the host.
-- [ ] NTP check.
-- [ ] Talos system extensions: `qemu-guest-agent`, and for Longhorn
-      `iscsi-tools` and `util-linux-tools`.
-- [ ] VM settings in OpenTofu: memory ballooning off, guest agent on.
 - [ ] OpenBao LXC container: created by OpenTofu, configured by Ansible,
       Tailscale with `tag:server`, init and unseal by hand, Raft
       snapshots copied off the host.
