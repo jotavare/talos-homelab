@@ -229,8 +229,8 @@ phase page.
 - [ ] OpenBao: Let's Encrypt certificate instead of the self-signed one.
 - [ ] Garage container and the daily OpenBao snapshot to it
       ([06. Object storage](docs/06-object-storage.md)).
-- [ ] Copy the Garage buckets off the host (a second machine or a cloud
-      bucket), encrypted, once there is somewhere to send them.
+- [ ] Copy the Garage buckets off the host, encrypted, most likely to
+      Cloudflare R2 (10 GB free), or to a second machine once there is one.
 - [ ] Restore test: an OpenBao snapshot restored into a scratch container.
 - [ ] OpenBao configuration in OpenTofu (`hashicorp/vault` provider), in
       its own project `opentofu/openbao/` with its own encrypted state:

@@ -16,7 +16,7 @@ cluster even exists. Same reasoning as for OpenBao in
 
 ## Why Garage
 
-State of the self-hosted S3 options when this was written:
+State of the S3 options when this was written:
 
 | Option | Status | Fit here |
 |--------|--------|----------|
@@ -25,10 +25,15 @@ State of the self-hosted S3 options when this was written:
 | MinIO | Community edition archived, no more releases | Out |
 | RustFS | Still alpha | Out for now, worth another look later |
 | Ceph (RGW) | Mature, but several daemons and a lot of RAM | Built for many disks and machines, not one box |
+| VersityGW | Active, an S3 gateway in front of a file system | Adds an S3 API to a file system or NAS I do not have |
+| Directory on the Proxmox host | Nothing to install | No S3 API, which Velero and Longhorn need, and backups mixed with the host |
+| Cloudflare R2 | Managed, 10 GB free, no egress fees | Off the host, but a cloud service for the primary copy, against the self-hosted goal. The best candidate for the copy off the host |
+| AWS S3, Google Cloud Storage, Azure Blob | Managed, versioning and object lock | Same as R2, with paid egress on top |
 
 MinIO is the one I know from before. With its community edition gone,
 Garage is the new tool, which also fits the goal of learning what I do not
-use at work.
+use at work. The cloud services are not out for good: one of them is where
+the copy off the host goes.
 
 ## Design
 
@@ -93,7 +98,7 @@ against a deleted container, a bad upgrade or a rebuilt cluster, not
 against losing the host or the drive (see the POC trade-offs in the
 [readme](../README.md#poc-trade-offs)). No versioning or object lock
 either: a client whose key leaks can delete its own bucket. A copy off the
-host is in the Backlog.
+host, most likely to Cloudflare R2, is in the Backlog.
 
 ### Build order
 
