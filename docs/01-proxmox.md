@@ -203,8 +203,9 @@ ssh root@pve.<tailnet>.ts.net hostname                       # key: works
 ssh -o PubkeyAuthentication=no root@pve.<tailnet>.ts.net     # Permission denied (publickey)
 ```
 
-Local credentials for scripts live in a `.env` at the repo root,
-which is in `.gitignore` and never committed.
+What the scripts need, such as the host's tailnet address, lives
+encrypted in `secrets/env.sops.yaml` ([04. Secrets](04-secrets.md)).
+Passwords that no script uses stay only in Bitwarden.
 
 ### Repositories and upgrade
 

@@ -32,7 +32,8 @@ uv tool install ansible-lint
 | Path | What it is |
 |------|------------|
 | [ansible/ansible.cfg](../ansible/ansible.cfg) | Settings: inventory, roles path, YAML output |
-| [ansible/inventory.yml](../ansible/inventory.yml) | The host `pve`. Its address comes from `PROXMOX_HOST` in the local `.env`, so the tailnet name stays out of git |
+| [ansible/inventory.yml](../ansible/inventory.yml) | The host `pve`. Its address comes from `PROXMOX_HOST`, so the tailnet address stays out of the inventory |
+| [ansible/run.sh](../ansible/run.sh) | Runs `ansible-playbook` with `PROXMOX_HOST` from `secrets/env.sops.yaml` in its environment |
 | [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook |
 | [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | The tasks, handlers and compliance checks (`tasks/verify.yml`) |
 | [proxmox/](../proxmox/) | The config files the role copies. Each file lives in one place and is explained in 01. Proxmox |
@@ -76,7 +77,7 @@ task and a pointer to the doc section.
 Only the checks, without touching anything:
 
 ```bash
-ansible-playbook proxmox.yml --check --tags verify
+./run.sh proxmox.yml --check --tags verify
 ```
 
 ## Firewall safety
@@ -101,11 +102,10 @@ The firewall stayed on the whole time.
 ## Running it
 
 ```bash
-set -a && . ./.env && set +a
 cd ansible
-ansible-lint proxmox.yml                      # production profile passes
-ansible-playbook proxmox.yml --check --diff   # what would change
-ansible-playbook proxmox.yml                  # apply
+ansible-lint proxmox.yml                # production profile passes
+./run.sh proxmox.yml --check --diff     # what would change
+./run.sh proxmox.yml                    # apply
 ```
 
 Ansible in this terminal needs its output sent to a file or pipe that
