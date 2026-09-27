@@ -38,7 +38,8 @@ The role's privileges:
 | `VM.GuestAgent.Audit` | Read the IPs reported by the guest agent |
 
 Not included: managing users, permissions, realms or groups, the console,
-host power, backups, snapshots and migration.
+host power, backups, snapshots and migration. The backup job is created by
+Ansible instead ([01. Proxmox, Container backups](01-proxmox.md#container-backups)).
 
 **Privilege separation off:** the token gets exactly the user's
 permissions. With it on, the token needs its own permission entry and
@@ -218,6 +219,38 @@ pct enter 130                    # a shell inside: Debian 13.6, eth0 192.168.1.3
 
 The token's `TofuProvisioner` role was enough for all of it, firewall
 included: no extra privilege was needed.
+
+## Garage container
+
+In [opentofu/garage.tf](../opentofu/garage.tf), next to OpenBao and from
+the same template. The design is in
+[06. Object storage](06-object-storage.md#design).
+
+| Resource | What it does |
+|----------|--------------|
+| `proxmox_virtual_environment_container.garage` | Container `140`, unprivileged, 1 core, 512 MB RAM, no swap, 4 GB root plus a 10 GB data volume at `/var/lib/garage/data`, `192.168.1.40`, starts at boot with `order = 1` |
+| `proxmox_virtual_environment_firewall_options.garage` | Container firewall on, inbound `DROP`, outbound `ACCEPT` |
+| `proxmox_virtual_environment_firewall_rules.garage` | Only TCP `3900` in, and only from OpenBao (`192.168.1.30`) |
+
+The data volume sets `backup = true`: Proxmox leaves mount point volumes
+out of backups unless told otherwise.
+
+```bash
+opentofu/run.sh plan    # Plan: 3 to add, 0 to change, 0 to destroy.
+opentofu/run.sh apply
+```
+
+Checks on the host:
+
+```bash
+pct config 140                  # mp0: local-lvm:vm-140-disk-1,mp=/var/lib/garage/data,backup=1,size=10G
+cat /etc/pve/firewall/140.fw    # policy_in: DROP, IN ACCEPT -source 192.168.1.30 -p tcp -dport 3900
+pct exec 140 -- df -h /var/lib/garage/data
+```
+
+Idle, the container uses under 20 MB of its 512 MB. Like OpenBao, it
+comes with an SSH server from the template, which the Ansible role
+removes.
 
 ## References
 
