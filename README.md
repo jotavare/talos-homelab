@@ -83,7 +83,7 @@ LAN `192.168.1.0/24`:
 | `192.168.1.11` to `.19` | Static | Talos control plane |
 | `192.168.1.20` | Static | Kubernetes API VIP |
 | `192.168.1.21` to `.29` | Static | Talos workers |
-| `192.168.1.30` to `.49` | Static | Services outside the cluster (OpenBao `.30`) and other lab machines |
+| `192.168.1.30` to `.49` | Static | Services outside the cluster (OpenBao `.30`, Garage `.40`) and other lab machines |
 | `192.168.1.50` to `.99` | Static | Cilium LoadBalancer pool |
 | `192.168.1.100` to `.254` | Dynamic (DHCP) | Phones, laptops and other clients |
 
@@ -140,7 +140,7 @@ together.
 | Area | Already used | Candidate |
 |------|--------------|-----------|
 | Block storage | local-path-provisioner, GKE and AKS managed disks | **Longhorn** |
-| Object storage | MinIO, Google Cloud Storage, Azure Blob Storage | **Garage** / **SeaweedFS** / **RustFS** / **Ceph** |
+| Object storage | MinIO, Google Cloud Storage, Azure Blob Storage | **Garage** (outside the cluster) |
 | Databases | Postgres, managed cloud and on-prem | **CloudNativePG** |
 | Backup | Cloud-managed Postgres backups | **Velero** + **Talos etcd snapshots** + **Proxmox Backup Server** |
 
@@ -166,6 +166,7 @@ written down and the homelab knowingly does something simpler.
 | Block storage | Longhorn with three replicas on separate nodes and disks | Longhorn anyway, but every replica lands on the same QLC NVMe: no real redundancy, and more writes on a drive that wears fast. Use one replica per volume |
 | Secrets store | Vault or OpenBao as a cluster of three on dedicated machines, auto-unsealed by a cloud key service | One OpenBao container on the same host, unsealed by hand after a reboot. Survives a cluster rebuild, not the loss of the host |
 | OpenTofu state | Remote backend with locking and versioning (S3, GCS, Azure Blob) | Encrypted state file in git, no locking. Fine for one person on one laptop; old states stay in git history ([details](docs/05-opentofu.md#state-encryption)) |
+| Object storage | Several nodes with replication, versioning and object lock, plus a copy off site | One Garage container on the same host, one copy of each object, no versioning. Survives a cluster rebuild, not the loss of the host or the drive ([details](docs/06-object-storage.md#limits)) |
 | Backups | Proxmox Backup Server on a separate machine, plus a copy off site | Proxmox Backup Server as a VM on the same host until there is a second machine. It protects against mistakes, not against losing the host |
 
 ## Work in progress
@@ -180,7 +181,8 @@ with the tools, the options chosen and why.
 | [03. Ansible](docs/03-ansible.md) | Proxmox host configuration as a playbook |
 | [04. Secrets](docs/04-secrets.md) | SOPS and age, OpenBao container set up and unsealed |
 | [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, project, state encryption, OpenBao container |
-| [06. Talos](docs/06-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
+| [06. Object storage](docs/06-object-storage.md) | Design: Garage container for backups, buckets, OpenBao snapshots |
+| [07. Talos](docs/07-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
 
 ## Backlog
 
@@ -224,8 +226,12 @@ phase page.
       goes live.
 - [ ] Lockout and upgrade runbook: etcd snapshot before every upgrade,
       copied off the host.
-- [ ] OpenBao: Let's Encrypt certificate instead of the self-signed one,
-      daily Raft snapshot copied off the host.
+- [ ] OpenBao: Let's Encrypt certificate instead of the self-signed one.
+- [ ] Garage container and the daily OpenBao snapshot to it
+      ([06. Object storage](docs/06-object-storage.md)).
+- [ ] Copy the Garage buckets off the host (a second machine or a cloud
+      bucket), encrypted, once there is somewhere to send them.
+- [ ] Restore test: an OpenBao snapshot restored into a scratch container.
 - [ ] OpenBao configuration in OpenTofu (`hashicorp/vault` provider), in
       its own project `opentofu/openbao/` with its own encrypted state:
       policies (moved out of Ansible), auth methods (import `userpass`),
