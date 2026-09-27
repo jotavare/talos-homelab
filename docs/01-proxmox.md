@@ -557,10 +557,9 @@ The first run took 11 seconds: 434 MB for OpenBao, 160 MB for Garage,
 about 4 GB on `local` with seven of each. Failures go to the default
 notification matcher, so they arrive by email.
 
-The job is created by Ansible, not OpenTofu. OpenTofu's token would need
-`Datastore.Allocate`, which can also change or remove storages and delete
-the backups themselves. The token that can destroy a container should not
-also control its backups.
+The job is managed by OpenTofu
+([05. OpenTofu, Backup job](05-opentofu.md#backup-job)), with the one
+extra privilege it needs limited to `local`.
 
 Restore, into a new ID so the original keeps running:
 
