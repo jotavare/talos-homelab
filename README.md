@@ -221,6 +221,12 @@ phase page.
       copied off the host.
 - [ ] OpenBao: Let's Encrypt certificate instead of the self-signed one,
       daily Raft snapshot copied off the host.
+- [ ] OpenBao configuration in OpenTofu (`hashicorp/vault` provider), in
+      its own project `opentofu/openbao/` with its own encrypted state:
+      policies (moved out of Ansible), auth methods (import `userpass`),
+      `kv-v2`, later Kubernetes auth. OpenTofu logs in with my own
+      short-lived `userpass` token. Init, unseal and my password stay
+      manual.
 - [ ] External Secrets Operator in the cluster, reading from OpenBao.
 - [ ] Cloudflare API token for DNS-01, limited to DNS edits on the lab
       domain.
