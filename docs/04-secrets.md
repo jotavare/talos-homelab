@@ -12,7 +12,7 @@ few secrets OpenTofu needs to create it cannot live in it yet.
 | Secret | Where | Why |
 |--------|-------|-----|
 | Bootstrap secrets (Proxmox API token for OpenTofu) | Encrypted in git with **SOPS + age** | Needed before OpenBao exists. The repo alone rebuilds everything, with one key |
-| Talos machine secrets, OpenTofu state encryption key | **OpenBao** | OpenBao runs outside the cluster, so it is there before the cluster is |
+| Talos machine secrets, the Garage keys, the Tailscale auth key for the nodes | **OpenBao** | OpenBao runs outside the cluster, so it is there before the cluster is |
 | App secrets (database passwords, API keys) | **OpenBao**, read by **External Secrets Operator** | Git holds only references, no values at all |
 | The age private key | Bitwarden, plus a printed offline copy | It decrypts every SOPS file, so it cannot be in the repo |
 | OpenBao unseal keys and root token | Bitwarden, plus a printed offline copy | They open OpenBao, so they cannot be inside it |
@@ -42,6 +42,17 @@ differ in where the secret lives.
 OpenBao is not a layer under SOPS; they are two answers to the same
 question. SOPS covers what has to exist before OpenBao does, OpenBao
 covers the rest.
+
+### What stays in SOPS
+
+The rule is one question: is it needed to create or restore OpenBao? The
+Proxmox API token creates the OpenBao container, and the state passphrase
+decrypts the state that describes it. Stored in OpenBao, a rebuild would
+need them from the very thing being rebuilt. OpenBao also starts sealed
+after every reboot, so every OpenTofu or Ansible run would first need an
+unseal and a login. The host address and the domain are private rather
+than secret, and every run needs them before OpenBao is reachable.
+Anything else goes to OpenBao.
 
 ## Tools
 
