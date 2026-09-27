@@ -62,7 +62,7 @@ The popup shows the secret once. It went straight into a SOPS file (see
 [04. Secrets](04-secrets.md)), from a terminal outside the editor:
 
 ```bash
-EDITOR=nano sops tofu/proxmox.sops.yaml
+EDITOR=nano sops secrets/opentofu.sops.yaml
 ```
 
 ```yaml
@@ -73,8 +73,8 @@ The format is the token ID, `=`, then the secret. Checks that never print
 the secret:
 
 ```bash
-grep -c "ENC\[" tofu/proxmox.sops.yaml   # 2: one value plus the SOPS MAC
-curl -sk -H "Authorization: PVEAPIToken=$(sops decrypt --extract '["proxmox_api_token"]' tofu/proxmox.sops.yaml)" \
+grep -c "ENC\[" secrets/opentofu.sops.yaml   # 2: one value plus the SOPS MAC
+curl -sk -H "Authorization: PVEAPIToken=$(sops decrypt --extract '["proxmox_api_token"]' secrets/opentofu.sops.yaml)" \
   https://pve.<tailnet>.ts.net:8006/api2/json/version   # version 9.2.20
 ```
 
