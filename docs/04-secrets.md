@@ -89,15 +89,20 @@ The cluster depends on OpenBao, so OpenBao does not run in the cluster.
 Inside it, a broken or rebuilt cluster would take its own secrets store
 down with it, and the Talos secrets could not be stored there at all.
 
-| | Plan |
-|--|------|
-| Where | A Debian LXC container on Proxmox, `192.168.1.30`, 1 vCPU, 0.5 GB RAM, 8 GB disk |
-| Created by | OpenTofu, like the Talos VMs |
-| Configured by | Ansible, with compliance checks like the host |
-| Reachable from | The tailnet only: Tailscale in the container, `tag:server`, firewall |
-| Storage | Integrated Raft, with snapshots copied off the host |
-| Init and unseal | By hand, since they produce the unseal keys and root token |
-| Apps | External Secrets Operator in the cluster reads from it |
+| Item | Design | Why |
+|------|--------|-----|
+| Container | Debian 13 LXC, unprivileged, `192.168.1.30`, 1 vCPU, 0.5 GB RAM, 8 GB disk, start on boot | Light; unprivileged limits the damage if it is ever broken into |
+| Created by | OpenTofu, container and template | Same as the Talos VMs |
+| Configured by | Ansible through `pve` (`pct exec`), no SSH server in the container | Nothing extra listening or to harden |
+| Install | OpenBao `.deb` from its GitHub releases, checked against the published SHA256 | There is no official apt repository |
+| Listens on | `127.0.0.1:8200` only, TLS | Not reachable from the LAN at all |
+| Reached through | Tailscale in the container, userspace mode, which forwards tailnet connections to localhost | Tailnet only; no TUN device, which an unprivileged container does not get |
+| Name and certificate | `openbao.home.<domain>`, from a Let's Encrypt wildcard certificate for `*.home.<domain>` | Trusted everywhere, no root to install; the wildcard keeps host names out of the public certificate logs |
+| Certificate renewal | DNS-01 challenge through the Cloudflare API, on a timer in the container | Nothing exposed to the internet. The Cloudflare token only edits DNS for that one domain |
+| Storage | Integrated Raft, single node, daily snapshot on a timer | Copying snapshots off the host is in the Backlog |
+| Unseal | One key share, threshold one, in Bitwarden plus the printed copy | Splitting a key only helps with several people |
+| Access | Root token only for the first setup, then revoked. I log in with `userpass`; the cluster later uses Kubernetes auth for External Secrets Operator | No standing root token |
+| Tailnet rules | Tags `tag:openbao` and `tag:talos`. My user and `tag:talos` reach `tag:openbao` on `8200`, nothing else | The Talos nodes can reach OpenBao and nothing more |
 
 It still shares the host with everything else, so it survives a cluster
 rebuild but not the loss of the host (see the POC trade-offs in the
