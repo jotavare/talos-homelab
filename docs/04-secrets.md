@@ -22,6 +22,27 @@ fewer, but a rebuild would then need each secret copied by hand, against
 the Reproducible and GitOps goals. With SOPS, a rebuild needs the repo
 and one key.
 
+### SOPS or OpenBao
+
+Almost every secret here is one an app in the cluster needs: off-the-shelf
+software that reads a Kubernetes Secret. Both tools can deliver that; they
+differ in where the secret lives.
+
+| | SOPS + age | OpenBao + External Secrets Operator |
+|--|------------|-------------------------------------|
+| Extra service to run | None | Yes, it must stay up, unsealed and backed up |
+| Where secrets live | In git, encrypted | In OpenBao's storage, never in git |
+| Off-the-shelf apps | Yes | Yes: ESO writes a plain Kubernetes Secret, the app never knows |
+| Rotating a secret | Edit, commit, push | An API call, no git change |
+| Audit log of every read | No, only git history | Yes |
+| Dynamic, short-lived credentials | No | Yes |
+| Order at startup | None | OpenBao must be up before anything that needs it |
+| Backup | Every clone is one | Its storage is the only copy |
+
+OpenBao is not a layer under SOPS; they are two answers to the same
+question. SOPS covers what has to exist before OpenBao does, OpenBao
+covers the rest.
+
 ## Tools
 
 Installed on the laptop from the official GitHub releases into
@@ -83,6 +104,27 @@ git config core.hooksPath .githooks
 Tested by staging a plaintext `*.sops.yaml`: the commit is refused with
 the command to encrypt it. The CI secret scan in the Backlog adds a
 second check on GitHub.
+
+## Key management
+
+One age key encrypts everything today, which is fine for one person on one
+laptop. How it grows:
+
+- **Several recipients per rule.** A comma-separated list of public keys
+  in a `.sops.yaml` rule means any one of them can decrypt. That is how a
+  person, the cluster and CI read the same file without sharing a key.
+- **One key per identity.** The laptop, Flux in the cluster and each CI
+  job get their own key, so one can be removed without touching the
+  others.
+- **A break-glass key.** One extra key in every rule, kept offline and on
+  no machine: the way back if the main key is lost or has to be rotated.
+- **Rules by path.** The first matching rule wins, so a path can be
+  limited to fewer keys, for example CI reading `env.sops.yaml` but not
+  `opentofu.sops.yaml`.
+- **Re-encrypting after a change.** Adding or removing a recipient takes
+  `sops updatekeys <file>` for every affected file. Old copies in git
+  history stay readable by the old key, so a leaked key means rotating the
+  secrets themselves, not only the key.
 
 ## OpenBao
 
@@ -203,11 +245,20 @@ OpenBao starts sealed after the container or the host restarts:
 pct exec 130 -- bao operator unseal -address=https://127.0.0.1:8200 -tls-skip-verify
 ```
 
+## Alternatives considered
+
+| Tool | Why not |
+|------|---------|
+| [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets) | Encrypts to the cluster itself, so the files can only be opened by that one cluster. SOPS works outside the cluster too, for OpenTofu and Ansible |
+| [SecretSpec](https://github.com/cachix/secretspec) | Feeds secrets to a program on a laptop or in CI (`secretspec run -- command`). It has no cluster-side component, its Kubernetes provider reads secrets already in the cluster instead of creating them, and it was still 0.x with weekly breaking releases. Worth another look if apps get developed against this cluster |
+
 ## References
 
 - [SOPS](https://github.com/getsops/sops)
 - [age](https://github.com/FiloSottile/age)
 - [OpenBao](https://openbao.org/)
 - [External Secrets Operator](https://external-secrets.io/)
+- [Using SOPS with age and git like a pro](https://devops.datenkollektiv.de/using-sops-with-age-and-git-like-a-pro.html)
+- [A comprehensive guide to SOPS](https://blog.gitguardian.com/a-comprehensive-guide-to-sops/)
 
 [Back to the build log](../README.md#work-in-progress)
