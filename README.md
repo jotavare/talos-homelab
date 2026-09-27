@@ -9,9 +9,12 @@ is not my first homelab. This one is for what I do not touch at work:
 Talos itself, and open source tools I have not used professionally. When
 something I already know is still the best fit, it stays.
 
-**Why public.** On purpose: to practise security in the open. Secrets
-live here too, encrypted with [SOPS](https://github.com/getsops/sops) and
-age, next to an encrypted OpenTofu state, and the infrastructure is only
+**Why public.** On purpose: to practise security in the open. The only
+secrets in this repo solve a chicken-and-egg problem: they are needed
+before OpenBao exists. Those are encrypted with
+[SOPS](https://github.com/getsops/sops) and age, next to an encrypted
+OpenTofu state. App secrets live in OpenBao, and personal credentials and
+recovery keys in my Bitwarden, never here. The infrastructure is only
 reachable over a private tailnet. If you manage to decrypt anything, or
 find something that should not be public, please tell me through a
 [private security report](.github/SECURITY.md).
