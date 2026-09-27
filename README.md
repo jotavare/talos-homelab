@@ -211,6 +211,8 @@ phase page.
 - [ ] Security audit pipeline in CI: secret scanning of every push and
       the full history, plus linting of the config files, before anything
       reaches the public repo.
+- [ ] Break-glass age key kept offline, plus separate age keys for Flux
+      and CI, added as recipients with `sops updatekeys`.
 
 ### Before Talos
 
