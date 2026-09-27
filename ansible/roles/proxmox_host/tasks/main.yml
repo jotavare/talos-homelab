@@ -125,6 +125,34 @@
     | selectattr('roleid', 'equalto', proxmox_host_tofu_role) | list | length == 0
   changed_when: true
 
+- name: Read the container backup job
+  ansible.builtin.command: pvesh get /cluster/backup --output-format json
+  register: proxmox_host_backup_jobs
+  changed_when: false
+  check_mode: false
+
+- name: Index the container backup job
+  ansible.builtin.set_fact:
+    proxmox_host_backup_current: >-
+      {{ proxmox_host_backup_jobs.stdout | from_json
+      | selectattr('id', 'equalto', proxmox_host_backup_id) | first | default({}) }}
+
+- name: Create the container backup job
+  ansible.builtin.command: >-
+    pvesh create /cluster/backup --id {{ proxmox_host_backup_id }}
+    --node {{ inventory_hostname }} {{ proxmox_host_backup_args }}
+  when: proxmox_host_backup_current | length == 0
+  changed_when: true
+
+- name: Keep the container backup job settings exact
+  ansible.builtin.command: >-
+    pvesh set /cluster/backup/{{ proxmox_host_backup_id }}
+    --node {{ inventory_hostname }} {{ proxmox_host_backup_args }}
+  when:
+    - proxmox_host_backup_current | length > 0
+    - proxmox_host_backup_current | dict2items | selectattr('key', 'in', proxmox_host_backup_job) | items2dict != proxmox_host_backup_job
+  changed_when: true
+
 - name: Check whether the firewall files would change
   ansible.builtin.copy:
     src: "{{ proxmox_host_files }}/firewall/{{ item.src }}"

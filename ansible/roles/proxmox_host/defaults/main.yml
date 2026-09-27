@@ -1,6 +1,25 @@
 proxmox_host_files: "{{ playbook_dir }}/../proxmox"
 proxmox_host_deadman_minutes: 5
 
+proxmox_host_backup_id: daily-containers
+proxmox_host_backup_job:
+  vmid: "130,140"
+  schedule: "03:00"
+  storage: local
+  mode: snapshot
+  compress: zstd
+  enabled: 1
+  prune-backups:
+    keep-last: "7"
+proxmox_host_backup_args: >-
+  --vmid {{ proxmox_host_backup_job.vmid }}
+  --schedule {{ proxmox_host_backup_job.schedule }}
+  --storage {{ proxmox_host_backup_job.storage }}
+  --mode {{ proxmox_host_backup_job.mode }}
+  --compress {{ proxmox_host_backup_job.compress }}
+  --enabled {{ proxmox_host_backup_job.enabled }}
+  --prune-backups keep-last={{ proxmox_host_backup_job['prune-backups']['keep-last'] }}
+
 proxmox_host_tofu_user: tofu@pve
 proxmox_host_tofu_role: TofuProvisioner
 proxmox_host_tofu_privs:

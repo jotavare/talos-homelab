@@ -537,6 +537,42 @@ for every lock added here. It needs only the root password: no network, no
 | SSH (lost key) | Console, or the web UI shell: add a new public key to `/root/.ssh/authorized_keys` |
 | Tailscale down | Console: `tailscale status`, `systemctl restart tailscaled`; or `pve-firewall stop` to reach the UI from the LAN |
 
+### Container backups
+
+A snapshot is not a backup. Proxmox snapshots of a container sit in the
+same thin pool on the same NVMe, so they are only for rolling back a bad
+upgrade. A backup job writes a full, compressed copy of each container as
+a separate file.
+
+| Setting | Value |
+|---------|-------|
+| Job | `daily-containers`, in `/etc/pve/jobs.cfg` |
+| Guests | `130` (OpenBao) and `140` (Garage) |
+| When | Every day at 03:00 |
+| Mode | `snapshot`: the container keeps running, OpenBao stays unsealed |
+| Where | `local` (`/var/lib/vz/dump`), `zstd` |
+| Retention | The last 7 per container |
+
+The first run took 11 seconds: 434 MB for OpenBao, 160 MB for Garage,
+about 4 GB on `local` with seven of each. Failures go to the default
+notification matcher, so they arrive by email.
+
+The job is created by Ansible, not OpenTofu. OpenTofu's token would need
+`Datastore.Allocate`, which can also change or remove storages and delete
+the backups themselves. The token that can destroy a container should not
+also control its backups.
+
+Restore, into a new ID so the original keeps running:
+
+```bash
+ls /var/lib/vz/dump/
+pct restore 9130 /var/lib/vz/dump/vzdump-lxc-130-<date>.tar.zst --storage local-lvm
+```
+
+The backups are on the same disk as the containers: they cover a mistake
+or a broken container, not a dead drive. The Talos VMs are left for
+Proxmox Backup Server (Backlog).
+
 ## Ansible
 
 The steps above that can run unattended are also an Ansible playbook:
