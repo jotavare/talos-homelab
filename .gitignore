@@ -4,6 +4,7 @@ drafts/
 secrets/*
 !secrets/*.sops.yaml
 keys.txt
+*.agekey
 *.dec.yaml
 *.dec.json
 
