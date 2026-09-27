@@ -125,32 +125,30 @@
     | selectattr('roleid', 'equalto', proxmox_host_tofu_role) | list | length == 0
   changed_when: true
 
-- name: Read the container backup job
-  ansible.builtin.command: pvesh get /cluster/backup --output-format json
-  register: proxmox_host_backup_jobs
-  changed_when: false
-  check_mode: false
-
-- name: Index the container backup job
-  ansible.builtin.set_fact:
-    proxmox_host_backup_current: >-
-      {{ proxmox_host_backup_jobs.stdout | from_json
-      | selectattr('id', 'equalto', proxmox_host_backup_id) | first | default({}) }}
-
-- name: Create the container backup job
+- name: Create the OpenTofu backup storage role
   ansible.builtin.command: >-
-    pvesh create /cluster/backup --id {{ proxmox_host_backup_id }}
-    --node {{ inventory_hostname }} {{ proxmox_host_backup_args }}
-  when: proxmox_host_backup_current | length == 0
+    pveum role add {{ proxmox_host_tofu_backup_role }}
+    --privs {{ proxmox_host_tofu_backup_privs | join(',') }}
+  when: proxmox_host_tofu_backup_role not in proxmox_host_roles
   changed_when: true
 
-- name: Keep the container backup job settings exact
+- name: Keep the OpenTofu backup storage role privileges exact
   ansible.builtin.command: >-
-    pvesh set /cluster/backup/{{ proxmox_host_backup_id }}
-    --node {{ inventory_hostname }} {{ proxmox_host_backup_args }}
+    pveum role modify {{ proxmox_host_tofu_backup_role }}
+    --privs {{ proxmox_host_tofu_backup_privs | join(',') }}
   when:
-    - proxmox_host_backup_current | length > 0
-    - proxmox_host_backup_current | dict2items | selectattr('key', 'in', proxmox_host_backup_job) | items2dict != proxmox_host_backup_job
+    - proxmox_host_tofu_backup_role in proxmox_host_roles
+    - (proxmox_host_roles[proxmox_host_tofu_backup_role] | default('')).split(',') | sort != proxmox_host_tofu_backup_privs | sort
+  changed_when: true
+
+- name: Give the OpenTofu user the backup storage role on the backup storage only
+  ansible.builtin.command: >-
+    pveum acl modify {{ proxmox_host_tofu_backup_path }} --users {{ proxmox_host_tofu_user }}
+    --roles {{ proxmox_host_tofu_backup_role }}
+  when: >-
+    proxmox_host_acl | selectattr('ugid', 'equalto', proxmox_host_tofu_user)
+    | selectattr('path', 'equalto', proxmox_host_tofu_backup_path)
+    | selectattr('roleid', 'equalto', proxmox_host_tofu_backup_role) | list | length == 0
   changed_when: true
 
 - name: Check whether the firewall files would change

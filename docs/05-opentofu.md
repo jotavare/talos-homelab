@@ -34,12 +34,30 @@ The role's privileges:
 | `Sys.Audit` | Read node information |
 | `Sys.Modify` | Required by the ISO download API. The broadest one here |
 | `VM.Allocate`, `VM.Audit`, `VM.Clone`, `VM.PowerMgmt` | Create, read, clone, start and stop VMs and containers |
+| `VM.Backup` | Put VMs and containers in a backup job |
 | `VM.Config.*` (CD-ROM, CPU, Cloudinit, Disk, HWType, Memory, Network, Options) | Configure them |
 | `VM.GuestAgent.Audit` | Read the IPs reported by the guest agent |
 
 Not included: managing users, permissions, realms or groups, the console,
-host power, backups, snapshots and migration. The backup job is created by
-Ansible instead ([01. Proxmox, Container backups](01-proxmox.md#container-backups)).
+host power, snapshots and migration.
+
+A backup job also needs `Datastore.Allocate` on the storage it writes to.
+That privilege can change or remove the storage and delete any volume on
+it, backups included, so it is not in the main role. A second role,
+`TofuBackupStorage`, adds it on `/storage/local` only:
+
+| Role | Path | Privileges |
+|------|------|------------|
+| `TofuProvisioner` | `/` | The table above |
+| `TofuBackupStorage` | `/storage/local` | `Datastore.Allocate`, `Datastore.AllocateSpace`, `Datastore.AllocateTemplate`, `Datastore.Audit` |
+
+The second role repeats the storage privileges of the first on purpose.
+In Proxmox a permission entry on a more specific path replaces the
+inherited one for the same user. With only `Datastore.Allocate` there,
+the token lost `Datastore.Audit` on `local`, could no longer see the
+Debian template, and the next plan wanted to destroy and recreate both
+containers. The `0 to destroy` line caught it before anything was
+applied.
 
 **Privilege separation off:** the token gets exactly the user's
 permissions. With it on, the token needs its own permission entry and
