@@ -26,7 +26,7 @@ hard rule: when something I already know is still the best fit, it stays.
 ## Diagrams
 
 <p align="center">
-  <img src="diagrams/overview.png" alt="Homelab overview: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs, with admin access from a laptop or phone only over Tailscale">
+  <img src="diagrams/overview.png" alt="Homelab overview: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs and an OpenBao container, with admin access from a laptop or phone only over Tailscale">
   <br>
   <sub><b>Overview.</b> One flat LAN, Talos VMs bridged onto it, management over Tailscale only.</sub>
 </p>
