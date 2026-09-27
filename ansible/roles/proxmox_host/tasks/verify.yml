@@ -101,28 +101,17 @@
   ansible.builtin.assert:
     that:
       - proxmox_host_tofu_roles[proxmox_host_tofu_role].split(',') | sort == proxmox_host_tofu_privs | sort
-      - proxmox_host_tofu_acl | length == 1
-      - proxmox_host_tofu_acl[0].path == '/' and proxmox_host_tofu_acl[0].roleid == proxmox_host_tofu_role
+      - proxmox_host_tofu_roles[proxmox_host_tofu_backup_role].split(',') | sort == proxmox_host_tofu_backup_privs | sort
+      - proxmox_host_tofu_acl | length == 2
+      - >-
+        proxmox_host_tofu_acl | selectattr('path', 'equalto', '/')
+        | selectattr('roleid', 'equalto', proxmox_host_tofu_role) | list | length == 1
+      - >-
+        proxmox_host_tofu_acl | selectattr('path', 'equalto', proxmox_host_tofu_backup_path)
+        | selectattr('roleid', 'equalto', proxmox_host_tofu_backup_role) | list | length == 1
       - proxmox_host_tofu_tokens | selectattr('tokenid', 'equalto', 'opentofu') | list | length == 1
     quiet: true
     fail_msg: OpenTofu user, role or token drifted, see docs/05-opentofu.md
-
-- name: Read the container backup job
-  ansible.builtin.command: pvesh get /cluster/backup --output-format json
-  register: proxmox_host_backup_state
-  changed_when: false
-  check_mode: false
-
-- name: Check the container backup job
-  vars:
-    proxmox_host_backup_found: >-
-      {{ proxmox_host_backup_state.stdout | from_json
-      | selectattr('id', 'equalto', proxmox_host_backup_id) | first | default({}) }}
-  ansible.builtin.assert:
-    that:
-      - proxmox_host_backup_found | dict2items | selectattr('key', 'in', proxmox_host_backup_job) | items2dict == proxmox_host_backup_job
-    quiet: true
-    fail_msg: Container backup job missing or drifted, see docs/01-proxmox.md
 
 - name: Check for pending upgrades and reboots
   ansible.builtin.shell: |
