@@ -171,7 +171,7 @@ with the tools, the options chosen and why.
 | [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, hardening |
 | [03. Ansible](docs/03-ansible.md) | Proxmox host configuration as a playbook |
 | [04. Secrets](docs/04-secrets.md) | SOPS and age for bootstrap secrets, OpenBao outside the cluster |
-| [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, project, state encryption |
+| [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, project, state encryption, OpenBao container |
 | [06. Talos](docs/06-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
 
 ## Backlog
@@ -214,9 +214,9 @@ phase page.
       goes live.
 - [ ] Lockout and upgrade runbook: etcd snapshot before every upgrade,
       copied off the host.
-- [ ] OpenBao LXC container: created by OpenTofu, configured by Ansible,
-      Tailscale with `tag:server`, init and unseal by hand, Raft
-      snapshots copied off the host.
+- [ ] OpenBao container configured by Ansible: OpenBao, Tailscale with
+      `tag:openbao`, init and unseal by hand, Raft snapshots copied off the
+      host.
 - [ ] External Secrets Operator in the cluster, reading from OpenBao.
 - [ ] Tailscale tags `tag:openbao` and `tag:talos`, grants to `tcp:8200`.
 - [ ] Cloudflare API token for DNS-01, limited to DNS edits on the lab
