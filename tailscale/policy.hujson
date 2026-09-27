@@ -1,25 +1,46 @@
 {
   "tagOwners": {
-    "tag:server": ["autogroup:admin"],
+    "tag:server":  ["autogroup:admin"],
+    "tag:openbao": ["autogroup:admin"],
+    "tag:talos":   ["autogroup:admin"],
   },
 
   "grants": [
     {
       "src": ["jotavare@github"],
       "dst": ["tag:server"],
-      "ip":  ["tcp:22", "tcp:8006", "tcp:6443", "tcp:50000"],
+      "ip":  ["tcp:22", "tcp:8006"],
+    },
+    {
+      "src": ["jotavare@github"],
+      "dst": ["tag:talos"],
+      "ip":  ["tcp:6443", "tcp:50000"],
+    },
+    {
+      "src": ["jotavare@github", "tag:talos"],
+      "dst": ["tag:openbao"],
+      "ip":  ["tcp:8200"],
     },
   ],
 
   "tests": [
     {
       "src":    "jotavare@github",
-      "accept": ["tag:server:22", "tag:server:8006", "tag:server:6443", "tag:server:50000"],
-      "deny":   ["tag:server:80", "tag:server:3389", "tag:server:9100"],
+      "accept": ["tag:server:22", "tag:server:8006", "tag:talos:6443", "tag:talos:50000", "tag:openbao:8200"],
+      "deny":   ["tag:server:6443", "tag:server:3389", "tag:talos:22", "tag:openbao:22"],
+    },
+    {
+      "src":    "tag:talos",
+      "accept": ["tag:openbao:8200"],
+      "deny":   ["tag:server:22", "tag:server:8006", "jotavare@github:22"],
     },
     {
       "src":  "tag:server",
-      "deny": ["jotavare@github:22", "jotavare@github:443"],
+      "deny": ["jotavare@github:22", "jotavare@github:443", "tag:openbao:8200"],
+    },
+    {
+      "src":  "tag:openbao",
+      "deny": ["jotavare@github:22", "tag:server:22", "tag:talos:50000"],
     },
   ],
 }

@@ -76,7 +76,7 @@ together with tailnet-only access for admin UIs (Backlog).
 
 Tailnet Lock refuses any new device until a signing node signs it
 ([02. Tailscale, Tailnet Lock](02-tailscale.md#tailnet-lock)). The nodes
-join with a **pre-signed auth key**: reusable, tagged `tag:server`, and
+join with a **pre-signed auth key**: reusable, tagged `tag:talos`, and
 signed once with `tailscale lock sign` on `pve` or the laptop. Nodes that
 use it join already trusted, which also survives rebuilds. The key is a
 secret, so it lives in OpenBao.

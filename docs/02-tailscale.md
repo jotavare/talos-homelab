@@ -228,17 +228,31 @@ The default policy lets every device reach every other device on every
 port. Replaced with [tailscale/policy.hujson](../tailscale/policy.hujson),
 pasted into admin console → **Access controls**:
 
-- **`tag:server`** on `pve` (Machines → ⋯ → **Edit ACL tags**). Tagged
-  devices belong to the tailnet, not a person, and never expire. The tag
-  must exist in the policy (`tagOwners`) before it can be assigned.
-- **My devices** (user `jotavare@github`: laptop, phone) reach
-  `tag:server` on `22`, `8006`, `6443` and `50000` only. The last two are
-  for the Talos VMs later.
-- **Nothing in the other direction:** a compromised server cannot start a
-  connection to the laptop.
+- **Tags** mark what a device is. Tagged devices belong to the tailnet, not
+  a person, and never expire. A tag must exist in the policy
+  (`tagOwners`) before it can be assigned (Machines → ⋯ → **Edit ACL
+  tags**).
+
+  | Tag | Devices |
+  |-----|---------|
+  | `tag:server` | `pve` |
+  | `tag:openbao` | The OpenBao container |
+  | `tag:talos` | The Talos nodes |
+
+- **Grants**, the only traffic allowed:
+
+  | From | To | Ports |
+  |------|----|-------|
+  | My devices (user `jotavare@github`: laptop, phone) | `tag:server` | `22`, `8006` |
+  | My devices | `tag:talos` | `6443`, `50000` |
+  | My devices and `tag:talos` | `tag:openbao` | `8200` |
+
+- **Nothing in the other direction:** a compromised server, container or
+  node cannot start a connection to the laptop, and none of them can reach
+  each other except Talos to OpenBao.
 - **`tests`** run on every save, so a broken rule is rejected before it
-  applies. They check both directions: my user reaches the four admin
-  ports but not others, and `tag:server` reaches none of my devices.
+  applies. They check every row above plus the ports and directions that
+  must stay closed.
 
 The grant names my user, not `autogroup:member`. That group means every
 user in the tailnet, so anyone invited later (family, a friend) would get
