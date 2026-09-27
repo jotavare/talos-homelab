@@ -52,6 +52,7 @@ uv tool install ansible-lint
 | `rpcbind` off | SMTP notification target (holds a password) |
 | Tailscale `--accept-dns=false --auto-update` | The OpenTofu API token (a secret) |
 | OpenTofu user `tofu@pve` and role `TofuProvisioner` | |
+| Daily backup job for the containers | |
 | Firewall files, behind a dead-man switch | |
 
 The manual column is either a one-time install step or something that
@@ -74,6 +75,7 @@ task and a pointer to the doc section.
 | Tailscale | Tailnet Lock enabled, `tag:server`, MagicDNS off, auto-update on, resolver `1.1.1.1` |
 | IPv6, email | `accept_ra` and `autoconf` 0 on `vmbr0`, default matcher sends to the SMTP target |
 | OpenTofu | Role privileges exact, only one permission entry for `tofu@pve`, token `opentofu` exists |
+| Backups | Job `daily-containers` exists with the exact guests, schedule, storage and retention |
 | Pending | Reports packages to upgrade and a needed reboot (a note, not a failure) |
 
 Only the checks, without touching anything:
