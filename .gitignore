@@ -2,3 +2,6 @@ CLAUDE.md
 .claude/
 drafts/
 .env
+
+.terraform/
+*.tfplan

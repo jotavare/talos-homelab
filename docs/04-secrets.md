@@ -58,8 +58,14 @@ sops decrypt secrets/example.sops.yaml      # print the plaintext
 sops secrets/example.sops.yaml              # edit, re-encrypts on save
 ```
 
-[secrets/example.sops.yaml](../secrets/example.sops.yaml) is a dummy
-file that shows the result. Without the key, `sops decrypt` fails with
+All SOPS files live in [secrets/](../secrets/):
+
+| File | Holds |
+|------|-------|
+| `example.sops.yaml` | A dummy value, to show the format |
+| `opentofu.sops.yaml` | The Proxmox API token for OpenTofu and the state encryption passphrase ([05. OpenTofu](05-opentofu.md)) |
+
+`example.sops.yaml` is a dummy file that shows the result. Without the key, `sops decrypt` fails with
 "at least one key has to be successful, but none were".
 
 ## Commit guard
