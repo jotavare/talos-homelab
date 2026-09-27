@@ -171,7 +171,7 @@ written down and the homelab knowingly does something simpler.
 | Secrets store | Vault or OpenBao as a cluster of three on dedicated machines, auto-unsealed by a cloud key service | One OpenBao container on the same host, unsealed by hand after a reboot. Survives a cluster rebuild, not the loss of the host |
 | OpenTofu state | Remote backend with locking and versioning (S3, GCS, Azure Blob) | Encrypted state file in git, no locking. Fine for one person on one laptop; old states stay in git history ([details](docs/05-opentofu.md#state-encryption)) |
 | Object storage | Several nodes with replication, versioning and object lock, plus a copy off site | One Garage container on the same host, one copy of each object, no versioning. Survives a cluster rebuild, not the loss of the host or the drive ([details](docs/06-object-storage.md#limits)) |
-| Backups | Proxmox Backup Server on a separate machine, plus a copy off site | Proxmox Backup Server as a VM on the same host until there is a second machine. It protects against mistakes, not against losing the host |
+| Backups | Proxmox Backup Server on a separate machine, plus a copy off site | A daily backup job for the containers to `local` now, Proxmox Backup Server as a VM on the same host later. Both protect against mistakes, not against losing the host ([details](docs/01-proxmox.md#container-backups)) |
 
 ## Work in progress
 
@@ -231,11 +231,15 @@ phase page.
 - [ ] Lockout and upgrade runbook: etcd snapshot before every upgrade,
       copied off the host.
 - [ ] OpenBao: Let's Encrypt certificate instead of the self-signed one.
-- [ ] Garage container and the daily OpenBao snapshot to it
+- [ ] Garage Ansible role: binary, config, unit and compliance checks
       ([06. Object storage](docs/06-object-storage.md)).
+- [ ] Optional: daily OpenBao Raft snapshot to Garage, on top of the
+      container backup. Portable into any OpenBao and restores the data
+      without rolling back the container.
 - [ ] Copy the Garage buckets off the host, encrypted, most likely to
       Cloudflare R2 (10 GB free), or to a second machine once there is one.
-- [ ] Restore test: an OpenBao snapshot restored into a scratch container.
+- [ ] Restore test: the OpenBao container backup restored under a new ID
+      with its network off, unsealed, then deleted.
 - [ ] OpenBao configuration in OpenTofu (`hashicorp/vault` provider), in
       its own project `opentofu/openbao/` with its own encrypted state:
       policies (moved out of Ansible), auth methods (import `userpass`),

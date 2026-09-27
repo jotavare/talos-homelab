@@ -42,7 +42,7 @@ Written before building, so each choice has its reason next to it.
 | Item | Design | Why |
 |------|--------|-----|
 | Container | ID `140`, Debian 13 LXC, unprivileged, `192.168.1.40`, 1 vCPU, 0.5 GB RAM, start on boot | Same as OpenBao. Garage idles at well under 100 MB |
-| Disks | 4 GB root with the metadata, plus a separate 10 GB data volume for the objects | The data volume grows on its own (`size` in OpenTofu) without touching the root disk. 10 GB is plenty for OpenBao snapshots; grow it when the cluster backups arrive |
+| Disks | 4 GB root with the metadata, plus a separate 10 GB data volume for the objects | The data volume grows on its own (`size` in OpenTofu) without touching the root disk. 10 GB is plenty to start; grow it when the cluster backups arrive |
 | Created by | OpenTofu, same template as OpenBao | Same as every other machine |
 | Configured by | Ansible through `pve` (`pct exec`), no SSH server | Same as OpenBao |
 | Install | The static binary from the Garage releases, pinned by SHA256 in the role, with a `systemd` unit | There is no Debian package |
@@ -59,7 +59,7 @@ Written before building, so each choice has its reason next to it.
 
 | Bucket | Client | When |
 |--------|--------|------|
-| `openbao-snapshots` | OpenBao container, daily timer | Now |
+| `openbao-snapshots` | OpenBao container, daily timer | Optional |
 | `etcd-snapshots` | Talos etcd backup job in the cluster | With the cluster |
 | `velero` | Velero | With the cluster |
 | `longhorn` | Longhorn backup target | With the cluster |
@@ -73,6 +73,12 @@ URLs (`s3ForcePathStyle: true`) and no request checksums
 does not accept.
 
 ### OpenBao snapshots
+
+Optional. The daily container backup
+([01. Proxmox, Container backups](01-proxmox.md#container-backups))
+already covers OpenBao. A Raft snapshot adds a small file that restores
+into any OpenBao, and restores the data without rolling back the
+container.
 
 1. A `bao` policy that can only read `sys/storage/raft/snapshot`, and a
    periodic token with only that policy, created by hand and kept in a
@@ -111,9 +117,8 @@ host, most likely to Cloudflare R2, is in the Backlog.
 
 1. OpenTofu: container `140`, the data volume and the firewall.
 2. Ansible: the binary, the config and the unit, plus compliance checks.
-3. By hand in the container: the `openbao-snapshots` bucket and its key,
-   stored in OpenBao.
-4. The snapshot policy, token and timer on the OpenBao container.
+3. Optional: the `openbao-snapshots` bucket and its key, then the
+   snapshot policy, token and timer on the OpenBao container.
 
 ## References
 
