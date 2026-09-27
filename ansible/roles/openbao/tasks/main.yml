@@ -72,6 +72,15 @@
     mode: "0640"
   notify: Restart OpenBao
 
+- name: Copy the OpenBao policies
+  ansible.builtin.copy:
+    src: "{{ openbao_files }}/policies/"
+    dest: /etc/openbao/policies/
+    owner: root
+    group: root
+    mode: "0644"
+    directory_mode: "0755"
+
 - name: Start OpenBao
   ansible.builtin.systemd_service:
     name: openbao
