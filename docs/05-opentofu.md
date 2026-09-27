@@ -96,13 +96,13 @@ tar xzf tofu_1.12.6_linux_amd64.tar.gz tofu && install -m 755 tofu ~/.local/bin/
 
 | File | What it is |
 |------|------------|
-| [tofu/versions.tf](../tofu/versions.tf) | OpenTofu and provider versions, state encryption |
-| [tofu/providers.tf](../tofu/providers.tf) | The Proxmox endpoint |
-| [tofu/variables.tf](../tofu/variables.tf) | The host address and the state passphrase |
-| [tofu/main.tf](../tofu/main.tf) | The resources. For now only reads the Proxmox version |
-| [tofu/run.sh](../tofu/run.sh) | Runs `tofu` with the secrets from SOPS in its environment |
-| `tofu/terraform.tfstate` | The state, encrypted, kept in git |
-| `tofu/.terraform.lock.hcl` | Pinned provider checksums, kept in git |
+| [opentofu/versions.tf](../opentofu/versions.tf) | OpenTofu and provider versions, state encryption |
+| [opentofu/providers.tf](../opentofu/providers.tf) | The Proxmox endpoint |
+| [opentofu/variables.tf](../opentofu/variables.tf) | The host address and the state passphrase |
+| [opentofu/main.tf](../opentofu/main.tf) | The resources. For now only reads the Proxmox version |
+| [opentofu/run.sh](../opentofu/run.sh) | Runs `tofu` with the secrets from SOPS in its environment |
+| `opentofu/terraform.tfstate` | The state, encrypted, kept in git |
+| `opentofu/.terraform.lock.hcl` | Pinned provider checksums, kept in git |
 
 `run.sh` decrypts the API token and the state passphrase from
 `secrets/opentofu.sops.yaml`, and the host address from
@@ -110,9 +110,9 @@ tar xzf tofu_1.12.6_linux_amd64.tar.gz tofu && install -m 755 tofu ~/.local/bin/
 command. Nothing is written to disk in plain text:
 
 ```bash
-tofu/run.sh init
-tofu/run.sh plan
-tofu/run.sh apply
+opentofu/run.sh init
+opentofu/run.sh plan
+opentofu/run.sh apply
 ```
 
 The provider talks to the web UI's self-signed certificate
@@ -166,7 +166,7 @@ Only reads Proxmox, to prove the connection, the token and the
 encryption:
 
 ```bash
-tofu/run.sh plan
+opentofu/run.sh plan
 # data.proxmox_version.pve: Read complete
 # + proxmox_version = "9.2.20"
 ```
