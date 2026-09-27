@@ -5,3 +5,10 @@ all:
         pve:
           ansible_host: "{{ lookup('ansible.builtin.env', 'PROXMOX_HOST') }}"
           ansible_user: root
+    openbao:
+      hosts:
+        openbao:
+          ansible_host: "{{ lookup('ansible.builtin.env', 'PROXMOX_HOST') }}"
+          ansible_user: root
+          ansible_connection: community.proxmox.proxmox_pct_remote
+          proxmox_vmid: 130
