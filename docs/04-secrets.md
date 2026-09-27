@@ -105,13 +105,103 @@ down with it, and the Talos secrets could not be stored there at all.
 | Access | Root token only for the first setup, then revoked. I log in with `userpass`; the cluster later uses Kubernetes auth for External Secrets Operator | No standing root token |
 | Tailnet rules | Tags `tag:openbao` and `tag:talos`. My user and `tag:talos` reach `tag:openbao` on `8200`, nothing else | The Talos nodes can reach OpenBao and nothing more |
 
-The container itself is built: see
-[05. OpenTofu, OpenBao container](05-opentofu.md#openbao-container).
+The container is built, see [OpenBao setup](#openbao-setup).
 
 It still shares the host with everything else, so it survives a cluster
 rebuild but not the loss of the host (see the POC trade-offs in the
 [readme](../README.md#poc-trade-offs)). With no cloud key service at
 home, it starts sealed after every reboot and is unsealed by hand.
+
+## OpenBao setup
+
+The container comes from OpenTofu
+([05. OpenTofu, OpenBao container](05-opentofu.md#openbao-container));
+everything inside it comes from the Ansible playbook
+[ansible/openbao.yml](../ansible/openbao.yml), which reaches the container
+through `pve` with `pct` (the `community.proxmox.proxmox_pct_remote`
+connection), so the container needs no SSH server.
+
+| Step | What the role does |
+|------|--------------------|
+| SSH server | Removes `openssh-server`: the Debian template ships it, listening on `22` |
+| Updates | Same unattended security updates drop-in as the host |
+| Tailscale | Installs it from the official repository and runs it in userspace mode ([openbao/tailscaled](../openbao/tailscaled)): an unprivileged container has no TUN device, and userspace mode forwards tailnet connections to `127.0.0.1` |
+| OpenBao | Installs the 2.7.0 `.deb`, checked against its SHA256, with [openbao/openbao.hcl](../openbao/openbao.hcl): Raft storage, listening on `127.0.0.1:8200` only |
+| TLS | The package's own self-signed certificate, until the Let's Encrypt one |
+| Policies | Copies [openbao/policies/](../openbao/policies/) to `/etc/openbao/policies/` |
+| Checks | Services running, only localhost listening, no port `22`, userspace mode, Raft, version, and the seal state |
+
+```bash
+cd ansible
+ansible-galaxy collection install -r requirements.yml
+./run.sh openbao.yml
+```
+
+The first run failed on one ordering detail: the package starts
+`tailscaled` right after installing it, in the normal mode that needs a
+TUN device, and systemd gave up after a few failed restarts before the
+userspace setting was in place. The role now resets the failed state and
+restarts it once the setting is written.
+
+### Joining the tailnet
+
+```bash
+pct exec 130 -- tailscale up --hostname=openbao --advertise-tags=tag:openbao --accept-dns=false
+```
+
+The login URL was approved in the browser. Tailnet Lock then kept the
+container locked out until it was signed. The container itself prints the
+command to run on a signing node:
+
+```bash
+pct exec 130 -- tailscale lock status    # "LOCKED OUT", with the sign command
+tailscale lock sign nodekey:... tlpub:...  # on pve
+```
+
+Both keys in that command are public. Afterwards the container reports
+"accessible under Tailnet Lock", and from the laptop over the tailnet
+`/v1/sys/health` answers.
+
+### Init and unseal
+
+Run by hand in a terminal outside the editor, since both commands handle
+the key:
+
+```bash
+bao operator init -key-shares=1 -key-threshold=1
+bao operator unseal    # asks for the key, hidden
+```
+
+With the self-signed certificate every command also takes
+`-address=https://127.0.0.1:8200 -tls-skip-verify`. Init prints the unseal
+key and the root token once. The unseal key is in Bitwarden and printed
+offline; it is needed again after every restart of the container.
+
+### Login and root token
+
+The root token was used once, then revoked:
+
+```bash
+bao login                                   # root token
+bao policy write admin /etc/openbao/policies/admin.hcl
+bao auth enable userpass
+bao write auth/userpass/users/<user> policies=admin password="$P"
+bao login -method=userpass username=<user>  # works
+bao login                                   # root token again
+bao token revoke -self
+```
+
+My login is now `userpass` with the `admin` policy, its password in
+Bitwarden. There is no standing root token; a new one can be generated
+with the unseal key if it is ever needed (`bao operator generate-root`).
+
+### After a restart
+
+OpenBao starts sealed after the container or the host restarts:
+
+```bash
+pct exec 130 -- bao operator unseal -address=https://127.0.0.1:8200 -tls-skip-verify
+```
 
 ## References
 

@@ -34,7 +34,9 @@ uv tool install ansible-lint
 | [ansible/ansible.cfg](../ansible/ansible.cfg) | Settings: inventory, roles path, YAML output |
 | [ansible/inventory.yml](../ansible/inventory.yml) | The host `pve`. Its address comes from `PROXMOX_HOST`, so the tailnet address stays out of the inventory |
 | [ansible/run.sh](../ansible/run.sh) | Runs `ansible-playbook` with `PROXMOX_HOST` from `secrets/env.sops.yaml` in its environment |
-| [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook |
+| [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook for the host |
+| [ansible/openbao.yml](../ansible/openbao.yml) | The playbook for the OpenBao container, see [04. Secrets](04-secrets.md#openbao-setup) |
+| [ansible/requirements.yml](../ansible/requirements.yml) | The `community.proxmox` collection, for reaching containers through `pve` |
 | [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | The tasks, handlers and compliance checks (`tasks/verify.yml`) |
 | [proxmox/](../proxmox/) | The config files the role copies. Each file lives in one place and is explained in 01. Proxmox |
 
