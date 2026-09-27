@@ -1,15 +1,20 @@
 # Homelab
 
-I am rebuilding my homelab on [Talos](https://www.talos.dev/), an
-immutable, API-managed Kubernetes OS, instead of a general-purpose Linux
-distro running Kubernetes on top.
+A single-server homelab running Kubernetes on
+[Talos Linux](https://www.talos.dev/), an immutable, API-managed OS, as
+VMs on Proxmox. Built step by step and written down as it happens.
 
-At work I already run Kubernetes on RKE2, GKE and AKS. This is not my
-first homelab either, so the point here is not to learn Kubernetes from
-scratch. The point is to learn the parts I do not touch at work: Talos
-itself, and around it, open source tools or tools I have not used
-professionally. New and open source tools are preferred, but it is not a
-hard rule: when something I already know is still the best fit, it stays.
+**Why.** I already run Kubernetes at work on RKE2, GKE and AKS, and this
+is not my first homelab. This one is for what I do not touch at work:
+Talos itself, and open source tools I have not used professionally. When
+something I already know is still the best fit, it stays.
+
+**Why public.** On purpose: to practise security in the open. Secrets
+live here too, encrypted with [SOPS](https://github.com/getsops/sops) and
+age, next to an encrypted OpenTofu state, and the infrastructure is only
+reachable over a private tailnet. If you manage to decrypt anything, or
+find something that should not be public, please tell me through a
+[private security report](.github/SECURITY.md).
 
 ## Goals
 
