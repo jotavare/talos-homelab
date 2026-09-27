@@ -1,11 +1,5 @@
-data "proxmox_virtual_environment_version" "pve" {}
-
-data "proxmox_virtual_environment_nodes" "all" {}
+data "proxmox_version" "pve" {}
 
 output "proxmox_version" {
-  value = data.proxmox_virtual_environment_version.pve.version
-}
-
-output "nodes" {
-  value = data.proxmox_virtual_environment_nodes.all.names
+  value = data.proxmox_version.pve.version
 }

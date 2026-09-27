@@ -170,7 +170,7 @@ with the tools, the options chosen and why.
 | [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, hardening |
 | [03. Ansible](docs/03-ansible.md) | Proxmox host configuration as a playbook |
 | [04. Secrets](docs/04-secrets.md) | SOPS and age for bootstrap secrets, OpenBao outside the cluster |
-| [05. OpenTofu](docs/05-opentofu.md) | Proxmox user, role and API token |
+| [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, project, state encryption |
 
 ## Backlog
 
@@ -228,7 +228,6 @@ phase page.
 - [ ] External Secrets Operator in the cluster, reading from OpenBao.
 - [ ] Tailscale grant for OpenBao (`tcp:8200`) from my user.
 - [ ] Flux bootstrap: which git remote and which credential.
-- [ ] Where OpenTofu keeps its state and how it is backed up.
 - [ ] PBS VM sizing: RAM, vCPU and a datastore disk.
 - [ ] Rollout order: core platform first (Cilium, Flux, cert-manager,
       storage, metrics), then one app at a time while watching RAM.
