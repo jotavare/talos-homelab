@@ -6,4 +6,10 @@ for f in $(git diff --cached --name-only --diff-filter=ACM | grep -E '(^|/)[^/]+
     status=1
   fi
 done
+for f in $(git diff --cached --name-only --diff-filter=ACM | grep -E '(^|/)terraform\.tfstate(\.backup)?$'); do
+  if ! git show ":$f" | grep -q '"encrypted_data"'; then
+    echo "pre-commit: $f is not encrypted, check the encryption block in tofu/versions.tf" >&2
+    status=1
+  fi
+done
 exit $status

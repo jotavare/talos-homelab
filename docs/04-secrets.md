@@ -71,7 +71,8 @@ All SOPS files live in [secrets/](../secrets/):
 ## Commit guard
 
 A versioned git hook, [.githooks/pre-commit](../.githooks/pre-commit),
-refuses a `*.sops.yaml` file that is not encrypted. It is enabled once
+refuses a `*.sops.yaml` file that is not encrypted, and an OpenTofu state
+without `encrypted_data`. It is enabled once
 per clone:
 
 ```bash
