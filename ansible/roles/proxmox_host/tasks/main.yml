@@ -79,6 +79,52 @@
     not (proxmox_host_ts_prefs.stdout | from_json).AutoUpdate.Apply
   changed_when: true
 
+- name: Read Proxmox roles, users and permissions
+  ansible.builtin.command: "pveum {{ item }} list --output-format json"
+  loop: [role, user, acl]
+  register: proxmox_host_pveum
+  changed_when: false
+  check_mode: false
+
+- name: Index Proxmox roles, users and permissions
+  ansible.builtin.set_fact:
+    proxmox_host_roles: "{{ proxmox_host_pveum.results[0].stdout | from_json | items2dict(key_name='roleid', value_name='privs') }}"
+    proxmox_host_users: "{{ proxmox_host_pveum.results[1].stdout | from_json | map(attribute='userid') | list }}"
+    proxmox_host_acl: "{{ proxmox_host_pveum.results[2].stdout | from_json }}"
+
+- name: Create the OpenTofu role
+  ansible.builtin.command: >-
+    pveum role add {{ proxmox_host_tofu_role }}
+    --privs {{ proxmox_host_tofu_privs | join(',') }}
+  when: proxmox_host_tofu_role not in proxmox_host_roles
+  changed_when: true
+
+- name: Keep the OpenTofu role privileges exact
+  ansible.builtin.command: >-
+    pveum role modify {{ proxmox_host_tofu_role }}
+    --privs {{ proxmox_host_tofu_privs | join(',') }}
+  when:
+    - proxmox_host_tofu_role in proxmox_host_roles
+    - (proxmox_host_roles[proxmox_host_tofu_role] | default('')).split(',') | sort != proxmox_host_tofu_privs | sort
+  changed_when: true
+
+- name: Create the OpenTofu user (no password, token only)
+  ansible.builtin.command: >-
+    pveum user add {{ proxmox_host_tofu_user }}
+    --comment "OpenTofu, talos-homelab"
+  when: proxmox_host_tofu_user not in proxmox_host_users
+  changed_when: true
+
+- name: Give the OpenTofu user its role on /
+  ansible.builtin.command: >-
+    pveum acl modify / --users {{ proxmox_host_tofu_user }}
+    --roles {{ proxmox_host_tofu_role }}
+  when: >-
+    proxmox_host_acl | selectattr('ugid', 'equalto', proxmox_host_tofu_user)
+    | selectattr('path', 'equalto', '/')
+    | selectattr('roleid', 'equalto', proxmox_host_tofu_role) | list | length == 0
+  changed_when: true
+
 - name: Check whether the firewall files would change
   ansible.builtin.copy:
     src: "{{ proxmox_host_files }}/firewall/{{ item.src }}"

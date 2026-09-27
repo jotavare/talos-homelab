@@ -83,6 +83,30 @@
     quiet: true
     fail_msg: IPv6 autoconf is on or alerts do not use the SMTP target, see docs/01-proxmox.md
 
+- name: Read the OpenTofu user, role and token
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - pveum role list --output-format json
+    - pveum acl list --output-format json
+    - pveum user token list {{ proxmox_host_tofu_user }} --output-format json
+  register: proxmox_host_tofu_state
+  changed_when: false
+  check_mode: false
+
+- name: Check the OpenTofu user has only its role, and its token
+  vars:
+    proxmox_host_tofu_roles: "{{ proxmox_host_tofu_state.results[0].stdout | from_json | items2dict(key_name='roleid', value_name='privs') }}"
+    proxmox_host_tofu_acl: "{{ proxmox_host_tofu_state.results[1].stdout | from_json | selectattr('ugid', 'equalto', proxmox_host_tofu_user) | list }}"
+    proxmox_host_tofu_tokens: "{{ proxmox_host_tofu_state.results[2].stdout | from_json }}"
+  ansible.builtin.assert:
+    that:
+      - proxmox_host_tofu_roles[proxmox_host_tofu_role].split(',') | sort == proxmox_host_tofu_privs | sort
+      - proxmox_host_tofu_acl | length == 1
+      - proxmox_host_tofu_acl[0].path == '/' and proxmox_host_tofu_acl[0].roleid == proxmox_host_tofu_role
+      - proxmox_host_tofu_tokens | selectattr('tokenid', 'equalto', 'opentofu') | list | length == 1
+    quiet: true
+    fail_msg: OpenTofu user, role or token drifted, see docs/05-opentofu.md
+
 - name: Check for pending upgrades and reboots
   ansible.builtin.shell: |
     set -o pipefail
