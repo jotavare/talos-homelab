@@ -142,8 +142,11 @@ contains `encrypted_data`; with a wrong passphrase OpenTofu stops with
 ([04. Secrets](04-secrets.md#commit-guard)) also refuses a state without
 `encrypted_data`.
 
-Once OpenBao runs, the passphrase moves there as the key provider. It
-stays in SOPS until then, because OpenTofu creates OpenBao.
+The passphrase for this project stays in SOPS: this state creates
+OpenBao, so its key cannot live in OpenBao
+([04. Secrets, What stays in SOPS](04-secrets.md#what-stays-in-sops)).
+Later projects that do not build OpenBao, such as its configuration, can
+use OpenBao as their key provider.
 
 A single state file in git has no locking. That is fine with one person
 running OpenTofu from one laptop. Every old state also stays in git
@@ -151,6 +154,13 @@ history: if the passphrase and the age key ever leaked, those could be
 read too, and a new passphrase only protects new commits. The production
 way is a remote backend with locking; see the POC trade-offs in the
 [readme](../README.md#poc-trade-offs).
+
+The Garage bucket ([06. Object storage](06-object-storage.md)) could be
+that backend, but not for this project. This state creates the Garage
+container, so losing Garage would lose the state needed to rebuild it.
+Garage also has no versioning and no copy off the host, while git has
+both. A remote backend fits later projects, once the buckets have a copy
+off the host.
 
 Every run needs the age private key, which lives only on the laptop
 (`~/.config/sops/age/keys.txt`): it decrypts the SOPS file, which holds

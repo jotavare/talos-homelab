@@ -100,6 +100,13 @@ against losing the host or the drive (see the POC trade-offs in the
 either: a client whose key leaks can delete its own bucket. A copy off the
 host, most likely to Cloudflare R2, is in the Backlog.
 
+### What stays out of Garage
+
+| Item | Why |
+|------|-----|
+| The OpenTofu state | This state creates the Garage container, so it cannot live in it. Git also gives it version history and a copy off the host, which Garage does not ([05. OpenTofu](05-opentofu.md#state-encryption)) |
+| The snapshot schedule | OpenTofu only acts when it runs, so the daily job is a timer that Ansible sets up. OpenTofu can later own the declarative parts: the bucket, its key and lifecycle rule, and the OpenBao snapshot policy |
+
 ### Build order
 
 1. OpenTofu: container `140`, the data volume and the firewall.
