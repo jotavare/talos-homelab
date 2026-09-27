@@ -544,24 +544,26 @@ see [03. Ansible](03-ansible.md).
 
 ## Planned VMs
 
-The plan for the Talos VMs and the OpenBao container, drawn before they exist. It changes if the
-numbers turn out wrong once the cluster runs.
+The plan for the Talos VMs and the OpenBao and Garage containers, drawn
+before they exist. It changes if the numbers turn out wrong once the
+cluster runs.
 
-![Proxmox host plan: 32 GB of RAM split between the host, an OpenBao LXC container, one control plane and three workers on the vmbr0 bridge, and the NVMe split into VM and LXC disks, ISOs and swap](../diagrams/proxmox.png)
+![Proxmox host plan: 32 GB of RAM split between the host, the OpenBao and Garage LXC containers, one control plane and three workers on the vmbr0 bridge, and the NVMe split into VM and LXC disks, ISOs and swap](../diagrams/proxmox.png)
 
 | VM | vCPU | RAM | Disk | IP |
 |----|------|-----|------|----|
 | Control plane | 2 | 4 GB | 32 GB | `192.168.1.11` |
 | Worker 1 to 3 | 4 each | 8 GB each | 80 GB each | `192.168.1.21` to `.23` |
 | OpenBao (LXC container) | 1 | 0.5 GB | 8 GB | `192.168.1.30` |
+| Garage (LXC container) | 1 | 0.5 GB | 4 GB + 10 GB | `192.168.1.40` |
 | Kubernetes API VIP | | | | `192.168.1.20` |
 | Cilium LoadBalancer pool | | | | `192.168.1.50` to `.99` |
 
-- **RAM:** 3.5 GB stays with the host, 0.5 GB goes to OpenBao and 28 GB
-  to the VMs. No overcommit, so a busy VM never pushes the host into swap.
-- **vCPU:** 15 on 12 threads. CPU overcommit is fine, the VMs are rarely
+- **RAM:** 3 GB stays with the host, 0.5 GB each goes to OpenBao and
+  Garage, and 28 GB to the VMs. No overcommit, so a busy VM never pushes the host into swap.
+- **vCPU:** 16 on 12 threads. CPU overcommit is fine, the VMs are rarely
   all busy at once.
-- **Disk:** 280 GB of the 348 GB `local-lvm` thin pool, leaving room for
+- **Disk:** 294 GB of the 348 GB `local-lvm` thin pool, leaving room for
   snapshots and an extra VM. `local` (96 GB) keeps the Talos ISO.
 - **API VIP:** with a single control plane the VIP is not needed yet, but
   pointing clients at it from day one means a second or third control
@@ -569,6 +571,8 @@ numbers turn out wrong once the cluster runs.
 - **OpenBao outside the cluster:** the cluster depends on its secrets, so
   it runs in its own LXC container and survives a cluster rebuild. See
   [04. Secrets](04-secrets.md#openbao).
+- **Garage outside the cluster:** backups of the cluster cannot live in
+  it. See [06. Object storage](06-object-storage.md).
 
 **Why one control plane and not three.** Production clusters run three
 control planes, so etcd keeps quorum when one fails, and that is the

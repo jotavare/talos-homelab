@@ -34,13 +34,13 @@ find something that should not be public, please tell me through a
 ## Diagrams
 
 <p align="center">
-  <img src="diagrams/overview.png" alt="Homelab overview: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs and an OpenBao container, with admin access from a laptop or phone only over Tailscale">
+  <img src="diagrams/overview.png" alt="Homelab overview: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs and the OpenBao and Garage containers, with admin access from a laptop or phone only over Tailscale">
   <br>
   <sub><b>Overview.</b> One flat LAN, Talos VMs bridged onto it, management over Tailscale only.</sub>
 </p>
 
 <p align="center">
-  <img src="diagrams/proxmox.png" alt="Proxmox host plan: 32 GB of RAM split between the host, an OpenBao LXC container, one control plane and three workers on the vmbr0 bridge, and the NVMe split into VM and LXC disks, ISOs and swap">
+  <img src="diagrams/proxmox.png" alt="Proxmox host plan: 32 GB of RAM split between the host, the OpenBao and Garage LXC containers, one control plane and three workers on the vmbr0 bridge, and the NVMe split into VM and LXC disks, ISOs and swap">
   <br>
   <sub><b>Proxmox.</b> Planned split of RAM and disk between the host, OpenBao, one control plane and three workers. Production needs three control planes for etcd quorum; one is used here to leave more room for apps (<a href="docs/01-proxmox.md#planned-vms">why</a>).</sub>
 </p>
