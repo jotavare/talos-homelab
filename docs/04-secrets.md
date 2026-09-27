@@ -153,7 +153,7 @@ down with it, and the Talos secrets could not be stored there at all.
 | Reached through | Tailscale in the container, userspace mode, which forwards tailnet connections to localhost | Tailnet only; no TUN device, which an unprivileged container does not get |
 | Name and certificate | `openbao.home.<domain>`, from a Let's Encrypt wildcard certificate for `*.home.<domain>` | Trusted everywhere, no root to install; the wildcard keeps host names out of the public certificate logs |
 | Certificate renewal | DNS-01 challenge through the Cloudflare API, on a timer in the container | Nothing exposed to the internet. The Cloudflare token only edits DNS for that one domain |
-| Storage | Integrated Raft, single node, daily snapshot on a timer, copied to Garage | See [06. Object storage](06-object-storage.md#openbao-snapshots) |
+| Storage | Integrated Raft, single node. The container is backed up daily by Proxmox | [Container backups](01-proxmox.md#container-backups); a Raft snapshot to Garage is optional ([06. Object storage](06-object-storage.md#openbao-snapshots)) |
 | Unseal | One key share, threshold one, in Bitwarden plus the printed copy | Splitting a key only helps with several people |
 | Access | Root token only for the first setup, then revoked. I log in with `userpass`; the cluster later uses Kubernetes auth for External Secrets Operator | No standing root token |
 | Tailnet rules | Tags `tag:openbao` and `tag:talos`. My user and `tag:talos` reach `tag:openbao` on `8200`, nothing else | The Talos nodes can reach OpenBao and nothing more |
