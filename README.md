@@ -236,6 +236,9 @@ phase page.
 - [ ] Optional: daily OpenBao Raft snapshot to Garage, on top of the
       container backup. Portable into any OpenBao and restores the data
       without rolling back the container.
+- [ ] Optional: Garage as an OCI image container (Proxmox 9.1+), fully in
+      OpenTofu with no Ansible role, once OCI containers leave tech preview
+      and the config file can be supplied without a bind mount.
 - [ ] Copy the Garage buckets off the host, encrypted, most likely to
       Cloudflare R2 (10 GB free), or to a second machine once there is one.
 - [ ] Restore test: the OpenBao container backup restored under a new ID
