@@ -116,18 +116,29 @@ tar xzf tofu_1.12.6_linux_amd64.tar.gz tofu && install -m 755 tofu ~/.local/bin/
 | File | What it is |
 |------|------------|
 | [opentofu/versions.tf](../opentofu/versions.tf) | OpenTofu and provider versions, state encryption |
-| [opentofu/providers.tf](../opentofu/providers.tf) | The Proxmox endpoint |
-| [opentofu/variables.tf](../opentofu/variables.tf) | The host address and the state passphrase |
+| [opentofu/providers.tf](../opentofu/providers.tf) | The Proxmox endpoint and the Cloudflare provider |
+| [opentofu/variables.tf](../opentofu/variables.tf) | Values that come from SOPS: addresses, domain, zone, passphrase, a token |
 | [opentofu/main.tf](../opentofu/main.tf) | Reads the Proxmox version |
 | [opentofu/openbao.tf](../opentofu/openbao.tf) | The OpenBao container, its template and firewall |
+| [opentofu/garage.tf](../opentofu/garage.tf) | The Garage container, its data volume and firewall |
+| [opentofu/backups.tf](../opentofu/backups.tf) | The daily backup job for the containers |
+| [opentofu/dns.tf](../opentofu/dns.tf) | DNS records in Cloudflare |
+| [opentofu/acme.tf](../opentofu/acme.tf) | The Let's Encrypt certificate for the Proxmox web UI |
 | [opentofu/run.sh](../opentofu/run.sh) | Runs `tofu` with the secrets from SOPS in its environment |
 | `opentofu/terraform.tfstate` | The state, encrypted, kept in git |
 | `opentofu/.terraform.lock.hcl` | Pinned provider checksums, kept in git |
 
-`run.sh` decrypts the API token and the state passphrase from
-`secrets/opentofu.sops.yaml`, and the host address from
-`secrets/env.sops.yaml`, into environment variables for that one
-command. Nothing is written to disk in plain text:
+`run.sh` is a table: each `load` line names an environment variable, the
+SOPS file in [secrets/](../secrets/) and the key to decrypt into it, for
+that one command. Nothing is written to disk in plain text. A new value
+is one more line:
+
+```sh
+load TF_VAR_domain                     env.sops.yaml       DOMAIN
+load CLOUDFLARE_API_TOKEN              opentofu.sops.yaml  cloudflare_dns_token
+```
+
+Run it with:
 
 ```bash
 opentofu/run.sh init
@@ -135,9 +146,11 @@ opentofu/run.sh plan
 opentofu/run.sh apply
 ```
 
-The provider talks to the web UI's self-signed certificate
-(`insecure = true`). The traffic stays inside the tailnet; a real
-certificate is in the Backlog.
+The provider talks to the web UI by its tailnet IP, so it cannot check
+the certificate (`insecure = true`). The traffic stays inside the
+tailnet. The web UI now has a real certificate
+([DNS and certificates](#dns-and-certificates)); switching the provider
+to that name is in the Backlog.
 
 ## State encryption
 
@@ -300,11 +313,80 @@ The token can edit this job but, with `Datastore.Allocate` on `local`, it
 could also delete the backups there. Worth another look with Proxmox
 Backup Server, which has its own users and can keep pruning to itself.
 
+## DNS and certificates
+
+Trusted certificates for the admin UIs, from Let's Encrypt, with nothing
+exposed to the internet: the DNS-01 challenge proves the domain with a TXT
+record in Cloudflare instead of a web server.
+
+### Names
+
+Public A records in Cloudflare point each name at its tailnet IP:
+
+| Name | Points to |
+|------|-----------|
+| `pve.home.<domain>` | The Proxmox host's tailnet IP |
+| `openbao.home.<domain>` | The OpenBao container's tailnet IP |
+
+They resolve for anyone, but the `100.x` addresses only answer inside the
+tailnet. The other options were split DNS on the tailnet (one more
+service to run, and nothing resolves when it is down) and `/etc/hosts`
+on every device (no phones). Public records reveal the host names, so the
+certificates are per host rather than one wildcard: a wildcard would hide
+nothing more.
+
+### Cloudflare tokens
+
+Account API tokens, each limited to **DNS: Edit** on the one zone, so a
+leaked token can only change this domain's records. One per job, so each
+can be revoked alone:
+
+| Token | Used by | Kept in |
+|-------|---------|---------|
+| `opentofu-dns` | OpenTofu, for the records (`CLOUDFLARE_API_TOKEN`) | `opentofu.sops.yaml` |
+| `pve-acme` | Proxmox, to renew its certificate | `opentofu.sops.yaml`, then Proxmox's own plugin config |
+
+The zone ID is in `env.sops.yaml`, so the tokens need no Zone Read
+permission. The `pve-acme` token reaches Proxmox through `data_wo`, a
+write-only argument: OpenTofu sends it but never stores it in the state.
+Changing it means raising `data_wo_version`.
+
+### Proxmox web UI certificate
+
+| Part | Where | Why |
+|------|-------|-----|
+| ACME account `default`, Let's Encrypt | Ansible ([03. Ansible](03-ansible.md)) | The API only lets `root@pam` register an account |
+| DNS plugin `cloudflare` (`proxmox_acme_dns_plugin`) | OpenTofu | Needs `Sys.Modify` on `/`, already in the role |
+| Certificate for `pve.home.<domain>` (`proxmox_acme_certificate`) | OpenTofu | Needs `Sys.Modify` on `/nodes/pve`, already in the role |
+| Renewal | Proxmox's daily `pve-daily-update` timer | Renews by itself 30 days before expiry, no OpenTofu run needed |
+
+Proxmox cannot issue a wildcard: its ACME domain format only allows
+plain labels, so `*` is refused. With per-host certificates that does not
+matter.
+
+```bash
+opentofu/run.sh plan    # Plan: 4 to add, 0 to change, 0 to destroy.
+opentofu/run.sh apply   # the certificate took 51 seconds
+```
+
+Checks:
+
+```bash
+dig +short @1.1.1.1 pve.home.<domain>          # the host's 100.x address
+echo | openssl s_client -connect pve.home.<domain>:8006 2>/dev/null \
+  | openssl x509 -noout -issuer -dates          # issuer=C=US, O=Let's Encrypt, 90 days
+```
+
+`https://pve.home.<domain>:8006` now opens with no browser warning.
+
 ## References
 
 - [OpenTofu](https://opentofu.org/)
 - [OpenTofu state encryption](https://opentofu.org/docs/language/state/encryption/)
 - [bpg/proxmox provider](https://registry.terraform.io/providers/bpg/proxmox/latest/docs)
 - [Proxmox user management and API tokens](https://pve.proxmox.com/wiki/User_Management)
+- [Proxmox certificate management](https://pve.proxmox.com/wiki/Certificate_Management)
+- [Cloudflare OpenTofu provider](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs)
+- [Let's Encrypt challenge types](https://letsencrypt.org/docs/challenge-types/)
 
 [Back to the build log](../README.md#work-in-progress)

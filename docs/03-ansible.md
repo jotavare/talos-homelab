@@ -54,6 +54,7 @@ uv tool install ansible-lint
 | Tailscale `--accept-dns=false --auto-update` | The OpenTofu API token (a secret) |
 | OpenTofu user `tofu@pve` and role `TofuProvisioner` | |
 | Role `TofuBackupStorage` on `/storage/local` only | |
+| Let's Encrypt ACME account `default` (only `root@pam` can register one) | The Cloudflare tokens (secrets) |
 | Firewall files, behind a dead-man switch | |
 
 The manual column is either a one-time install step or something that
@@ -75,6 +76,7 @@ task and a pointer to the doc section.
 | Web UI 2FA | `root@pam` has TOTP and recovery keys |
 | Tailscale | Tailnet Lock enabled, `tag:server`, MagicDNS off, auto-update on, resolver `1.1.1.1` |
 | IPv6, email | `accept_ra` and `autoconf` 0 on `vmbr0`, default matcher sends to the SMTP target |
+| ACME | Account `default` exists, on the Let's Encrypt production directory, status `valid` |
 | OpenTofu | Both roles' privileges exact, exactly two permission entries for `tofu@pve` (`/` and `/storage/local`), token `opentofu` exists |
 | Pending | Reports packages to upgrade and a needed reboot (a note, not a failure) |
 
