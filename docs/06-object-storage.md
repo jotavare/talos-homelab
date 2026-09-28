@@ -45,9 +45,9 @@ Written before building, so each choice has its reason next to it.
 | Disks | 4 GB root with the metadata, plus a separate 10 GB data volume for the objects | The data volume grows on its own (`size` in OpenTofu) without touching the root disk. 10 GB is plenty to start; grow it when the cluster backups arrive |
 | Created by | OpenTofu, same template as OpenBao | Same as every other machine |
 | Configured by | Ansible through `pve` (`pct exec`), no SSH server | Same as OpenBao |
-| Install | The static binary from the Garage releases, pinned by SHA256 in the role, with a `systemd` unit | There is no Debian package |
-| Mode | Single node, replication factor 1, LMDB metadata with automatic snapshots | One node is all there is. Metadata snapshots let Garage recover from a corrupted database |
-| Listens on | S3 API `3900` on the LAN. RPC `3901` and admin API `3903` on `127.0.0.1` only | Only the S3 API is needed from outside. The `garage` CLI runs inside the container |
+| Install | The static binary from the Garage releases, pinned by SHA256 in the role, with a `systemd` unit running as a `garage` system user | There is no Debian package |
+| Mode | `--single-node`, replication factor 1, LMDB metadata with automatic snapshots | Garage sets up its own one-node layout. Metadata snapshots let Garage recover from a corrupted database |
+| Listens on | S3 API `3900` on the LAN, IPv4 only. RPC `3901` on `127.0.0.1` only. Admin API off | Only the S3 API is needed from outside. The `garage` CLI runs inside the container and talks RPC; the admin API waits for monitoring |
 | Tailscale | None | Nothing on the tailnet needs it: every client is on the LAN, and I manage it through `pct` |
 | Firewall | Inbound `DROP`, then `3900` from each client's IP, added only when that client exists | Least privilege: OpenBao (`.30`) first; the Talos nodes (`.11` to `.29`) later |
 | Buckets and keys | One bucket and one access key per client. A key can only read and write its own bucket | One leaked key exposes one set of backups, not all of them |
@@ -115,10 +115,80 @@ host, most likely to Cloudflare R2, is in the Backlog.
 
 ### Build order
 
-1. OpenTofu: container `140`, the data volume and the firewall.
-2. Ansible: the binary, the config and the unit, plus compliance checks.
-3. Optional: the `openbao-snapshots` bucket and its key, then the
-   snapshot policy, token and timer on the OpenBao container.
+1. OpenTofu: container `140`, the data volume and the firewall
+   ([05. OpenTofu, Garage container](05-opentofu.md#garage-container)).
+2. Ansible: the binary, the config and the unit, plus compliance checks
+   ([Setup](#setup)).
+3. OpenTofu: buckets, keys and lifecycle rules, through the S3 API, when
+   the first client needs one.
+4. Optional: the `openbao-snapshots` bucket, then the snapshot policy,
+   token and timer on the OpenBao container.
+
+## Setup
+
+The container comes from OpenTofu; the rest is the Ansible role
+[ansible/roles/garage/](../ansible/roles/garage/), reaching the container
+through `pve` like OpenBao
+([03. Ansible](03-ansible.md)). The files it copies are in
+[garage/](../garage/):
+
+| File | What it is |
+|------|------------|
+| [garage.toml](../garage/garage.toml) | Replication factor 1, LMDB, metadata on the root disk, data on the 10 GB volume, RPC on localhost, S3 API on `0.0.0.0:3900`, region `garage` |
+| [garage.service](../garage/garage.service) | Runs `garage server --single-node` as the `garage` user, with a read-only system except `/var/lib/garage` |
+
+| Step | Detail |
+|------|--------|
+| Packages | `unattended-upgrades` with the same drop-in as the host, `openssh-server` purged |
+| Binary | `/usr/local/bin/garage`, v2.4.1 |
+| RPC secret | 32 random bytes, generated once in the container into `/etc/garage/rpc_secret`, mode `0600`, owner `garage`. It never leaves the container: with one node, nothing else needs it |
+| Directories | `/var/lib/garage/meta` on the root disk, `/var/lib/garage/data` on the volume, both owned by `garage` |
+
+The upstream unit uses `DynamicUser`, which makes `/var/lib/garage` a
+symlink that systemd manages. The data volume is mounted inside that
+path, so the role uses a fixed system user instead.
+
+### Checking the binary
+
+Garage publishes no checksum for its binaries. The SHA256 in the role was
+checked against a second source: the same binary inside the official
+`dxflrs/garage:v2.4.1` image on Docker Hub, pulled straight from the
+registry API. Both give
+`ae49f8de4aaee6b5ca305f7cbdccc8cd8a29b2804aac074649f18bfb83d0a2b6`. A new
+version gets the same check before its hash goes in the role.
+
+### Running it
+
+```bash
+cd ansible
+ansible-lint garage.yml
+./run.sh garage.yml
+```
+
+The first run changed 11 tasks, the second `changed=0`. The compliance
+checks at the end of every run:
+
+| Check | Expects |
+|-------|---------|
+| Services | `garage` and `unattended-upgrades` running |
+| Ports | `0.0.0.0:3900` and not on IPv6, `127.0.0.1:3901` only, nothing on `3903` or `22` |
+| Version | `garage v2.4.1` |
+| Cluster | `garage status` lists a healthy node |
+| Storage | `/var/lib/garage/data` is the mounted volume |
+| Secret | `rpc_secret` owned by `garage`, mode `600` |
+
+Firewall, tested from both sides:
+
+```bash
+pct exec 130 -- curl -s -o /dev/null -w '%{http_code}\n' http://192.168.1.40:3900/   # 403: Garage answers, no key
+curl -s -m 5 http://192.168.1.40:3900/                                                # from pve: times out
+```
+
+Idle, Garage uses about 25 MB of RAM. The CLI inside the container:
+
+```bash
+pct exec 140 -- /usr/local/bin/garage -c /etc/garage/garage.toml status
+```
 
 ## References
 

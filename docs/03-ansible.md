@@ -36,6 +36,7 @@ uv tool install ansible-lint
 | [ansible/run.sh](../ansible/run.sh) | Runs `ansible-playbook` with `PROXMOX_HOST` from `secrets/env.sops.yaml` in its environment |
 | [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook for the host |
 | [ansible/openbao.yml](../ansible/openbao.yml) | The playbook for the OpenBao container, see [04. Secrets](04-secrets.md#openbao-setup) |
+| [ansible/garage.yml](../ansible/garage.yml) | The playbook for the Garage container, see [06. Object storage](06-object-storage.md#setup) |
 | [ansible/requirements.yml](../ansible/requirements.yml) | The `community.proxmox` collection, for reaching containers through `pve` |
 | [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | The tasks, handlers and compliance checks (`tasks/verify.yml`) |
 | [proxmox/](../proxmox/) | The config files the role copies. Each file lives in one place and is explained in 01. Proxmox |
