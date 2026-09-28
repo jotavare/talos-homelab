@@ -1,15 +1,16 @@
 {
   "tagOwners": {
-    "tag:server":  ["autogroup:admin"],
-    "tag:openbao": ["autogroup:admin"],
-    "tag:talos":   ["autogroup:admin"],
+    "tag:server":   ["autogroup:admin"],
+    "tag:openbao":  ["autogroup:admin"],
+    "tag:talos":    ["autogroup:admin"],
+    "tag:services": ["autogroup:admin"],
   },
 
   "grants": [
     {
       "src": ["jotavare@github"],
       "dst": ["tag:server"],
-      "ip":  ["tcp:22", "tcp:443", "tcp:8006"],
+      "ip":  ["tcp:22", "tcp:8006"],
     },
     {
       "src": ["jotavare@github"],
@@ -22,8 +23,8 @@
       "ip":  ["tcp:8200"],
     },
     {
-      "src": ["jotavare@github"],
-      "dst": ["tag:openbao"],
+      "src": ["jotavare@github", "tag:talos"],
+      "dst": ["tag:services"],
       "ip":  ["tcp:443"],
     },
   ],
@@ -31,17 +32,21 @@
   "tests": [
     {
       "src":    "jotavare@github",
-      "accept": ["tag:server:22", "tag:server:443", "tag:server:8006", "tag:talos:6443", "tag:talos:50000", "tag:openbao:443", "tag:openbao:8200"],
-      "deny":   ["tag:server:6443", "tag:server:3389", "tag:talos:22", "tag:openbao:22"],
+      "accept": ["tag:server:22", "tag:server:8006", "tag:talos:6443", "tag:talos:50000", "tag:openbao:8200", "tag:services:443"],
+      "deny":   ["tag:server:443", "tag:server:6443", "tag:server:3389", "tag:talos:22", "tag:openbao:22", "tag:services:22", "tag:services:8200"],
     },
     {
       "src":    "tag:talos",
-      "accept": ["tag:openbao:8200"],
-      "deny":   ["tag:server:22", "tag:server:443", "tag:server:8006", "tag:openbao:443", "jotavare@github:22"],
+      "accept": ["tag:openbao:8200", "tag:services:443"],
+      "deny":   ["tag:server:22", "tag:server:8006", "tag:services:22", "jotavare@github:22"],
     },
     {
       "src":  "tag:server",
       "deny": ["jotavare@github:22", "jotavare@github:443", "tag:openbao:8200"],
+    },
+    {
+      "src":  "tag:services",
+      "deny": ["jotavare@github:22", "tag:server:22", "tag:server:8006", "tag:talos:50000", "tag:openbao:8200"],
     },
     {
       "src":  "tag:openbao",
