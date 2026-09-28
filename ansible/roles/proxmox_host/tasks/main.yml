@@ -79,6 +79,19 @@
     not (proxmox_host_ts_prefs.stdout | from_json).AutoUpdate.Apply
   changed_when: true
 
+- name: Read the Tailscale Serve config
+  ansible.builtin.command: tailscale serve status --json
+  register: proxmox_host_ts_serve
+  changed_when: false
+  check_mode: false
+
+- name: Serve the web UI on port 443 of the tailnet address
+  ansible.builtin.command: tailscale serve --bg --tcp 443 tcp://localhost:8006
+  when: >-
+    ((proxmox_host_ts_serve.stdout | from_json).TCP | default({}))['443'].TCPForward | default('')
+    != 'localhost:8006'
+  changed_when: true
+
 - name: Read Proxmox roles, users and permissions
   ansible.builtin.command: "pveum {{ item }} list --output-format json"
   loop: [role, user, acl]
