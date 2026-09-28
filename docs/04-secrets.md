@@ -85,21 +85,20 @@ that key. Only the values become ciphertext, so diffs still show which
 key changed.
 
 ```bash
-sops encrypt -i secrets/example.sops.yaml   # encrypt in place
-sops decrypt secrets/example.sops.yaml      # print the plaintext
-sops secrets/example.sops.yaml              # edit, re-encrypts on save
+sops encrypt -i secrets/env.sops.yaml       # encrypt in place
+sops decrypt secrets/env.sops.yaml          # print the plaintext
+sops secrets/env.sops.yaml                  # edit, re-encrypts on save
 ```
 
 All SOPS files live in [secrets/](../secrets/):
 
 | File | Holds |
 |------|-------|
-| `example.sops.yaml` | A dummy value, to show the format |
-| `env.sops.yaml` | Settings the scripts read: the host's tailnet address and the lab domain |
-| `opentofu.sops.yaml` | The Proxmox API token for OpenTofu and the state encryption passphrase ([05. OpenTofu](05-opentofu.md)) |
+| `env.sops.yaml` | Private settings the scripts read: the host's and OpenBao's tailnet addresses, the lab domain, its Cloudflare zone ID, the Let's Encrypt contact |
+| `opentofu.sops.yaml` | The Proxmox API token for OpenTofu, the state encryption passphrase and the two Cloudflare tokens ([05. OpenTofu](05-opentofu.md)) |
 
-`example.sops.yaml` is a dummy file that shows the result. Without the key, `sops decrypt` fails with
-"at least one key has to be successful, but none were".
+Without the key, `sops decrypt` fails with "at least one key has to be
+successful, but none were".
 
 ## Commit guard
 
@@ -151,8 +150,8 @@ down with it, and the Talos secrets could not be stored there at all.
 | Install | OpenBao `.deb` from its GitHub releases, checked against the published SHA256 | There is no official apt repository |
 | Listens on | `127.0.0.1:8200` only, TLS | Not reachable from the LAN at all |
 | Reached through | Tailscale in the container, userspace mode, which forwards tailnet connections to localhost | Tailnet only; no TUN device, which an unprivileged container does not get |
-| Name and certificate | `openbao.home.<domain>`, from a Let's Encrypt wildcard certificate for `*.home.<domain>` | Trusted everywhere, no root to install; the wildcard keeps host names out of the public certificate logs |
-| Certificate renewal | DNS-01 challenge through the Cloudflare API, on a timer in the container | Nothing exposed to the internet. The Cloudflare token only edits DNS for that one domain |
+| Name and certificate | `openbao.home.<domain>`, a public record pointing at its tailnet IP, with its own Let's Encrypt certificate | Trusted everywhere, no root to install. The name is public anyway, so a wildcard would hide nothing ([05. OpenTofu, DNS and certificates](05-opentofu.md#dns-and-certificates)) |
+| Certificate renewal | DNS-01 challenge with `lego` on a timer in the container, with its own Cloudflare token | Nothing exposed to the internet. The token only edits DNS for that one domain, and revoking it touches nothing else |
 | Storage | Integrated Raft, single node. The container is backed up daily by Proxmox | [Container backups](01-proxmox.md#container-backups); a Raft snapshot to Garage is optional ([06. Object storage](06-object-storage.md#openbao-snapshots)) |
 | Unseal | One key share, threshold one, in Bitwarden plus the printed copy | Splitting a key only helps with several people |
 | Access | Root token only for the first setup, then revoked. I log in with `userpass`; the cluster later uses Kubernetes auth for External Secrets Operator | No standing root token |
