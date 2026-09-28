@@ -87,7 +87,7 @@ LAN `192.168.1.0/24`:
 | `192.168.1.11` to `.19` | Static | Talos control plane |
 | `192.168.1.20` | Static | Kubernetes API VIP |
 | `192.168.1.21` to `.29` | Static | Talos workers |
-| `192.168.1.30` to `.49` | Static | Services outside the cluster (OpenBao `.30`, services VM `.31`, Garage `.40`) and other lab machines |
+| `192.168.1.30` to `.49` | Static | Services outside the cluster (services VM `.30`, Garage `.40`) and other lab machines |
 | `192.168.1.50` to `.99` | Static | Cilium LoadBalancer pool |
 | `192.168.1.100` to `.254` | Dynamic (DHCP) | Phones, laptops and other clients |
 
@@ -170,7 +170,7 @@ written down and the homelab knowingly does something simpler.
 | Control plane | Three control planes, so etcd keeps quorum when one fails | One, to leave RAM for apps. All VMs share one host anyway ([details](docs/01-proxmox.md#planned-vms)) |
 | Control plane size | Enough RAM for headroom, 8 GB or more | 4 GB, tight for etcd, the API server and the Cilium agent. Watch memory and take RAM from a worker if needed |
 | Block storage | Longhorn with three replicas on separate nodes and disks | Longhorn anyway, but every replica lands on the same QLC NVMe: no real redundancy, and more writes on a drive that wears fast. Use one replica per volume |
-| Secrets store | Vault or OpenBao as a cluster of three on dedicated machines, auto-unsealed by a cloud key service | One OpenBao container on the same host, unsealed by hand after a reboot. Survives a cluster rebuild, not the loss of the host |
+| Secrets store | Vault or OpenBao as a cluster of three on dedicated machines, auto-unsealed by a cloud key service | One OpenBao in the services VM on the same host, unsealed by hand after a reboot. Survives a cluster rebuild, not the loss of the host |
 | OpenTofu state | Remote backend with locking and versioning (S3, GCS, Azure Blob) | Encrypted state file in git, no locking. Fine for one person on one laptop; old states stay in git history ([details](docs/05-opentofu.md#state-encryption)) |
 | Object storage | Several nodes with replication, versioning and object lock, plus a copy off site | One Garage container on the same host, one copy of each object, no versioning. Survives a cluster rebuild, not the loss of the host or the drive ([details](docs/06-object-storage.md#limits)) |
 | Backups | Proxmox Backup Server on a separate machine, plus a copy off site | A daily backup job for the containers to `local` now, Proxmox Backup Server as a VM on the same host later. Both protect against mistakes, not against losing the host ([details](docs/01-proxmox.md#container-backups)) |
@@ -188,7 +188,7 @@ with the tools, the options chosen and why.
 | [04. Secrets](docs/04-secrets.md) | SOPS and age, OpenBao container set up and unsealed |
 | [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, project, state encryption, OpenBao container |
 | [06. Object storage](docs/06-object-storage.md) | Garage container for backups: design, OpenTofu, Ansible role |
-| [07. Services VM](docs/07-services.md) | Design: Docker Compose stack with OpenBao, Caddy and Tailscale, replacing the containers |
+| [07. Services VM](docs/07-services.md) | Docker Compose stack with OpenBao, Caddy and Tailscale; OpenBao moved in from its container |
 | [08. Talos](docs/08-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
 
 ## Backlog
@@ -231,16 +231,19 @@ phase page.
 
 ### Before Talos
 
-- [ ] Services VM: build it, move OpenBao into the stack, then Garage
-      ([07. Services VM](docs/07-services.md)).
+- [ ] Move Garage into the services stack, then remove container `140`
+      and its Ansible role ([07. Services VM](docs/07-services.md)).
+- [ ] Remove the protected final backup of the OpenBao container once the
+      services VM has run for a while.
+- [ ] Rekey OpenBao (`bao operator rekey`), change the `jotavare`
+      password and roll the `caddy-dns` token: all three were shared
+      outside Bitwarden during the move.
+- [ ] Update the overview and Proxmox diagrams for the services VM.
 - [ ] Tailnet-only access for app admin UIs on the LoadBalancer pool
       (subnet router, `tailscale serve` or per-VM firewall), before any UI
       goes live.
 - [ ] Lockout and upgrade runbook: etcd snapshot before every upgrade,
       copied off the host.
-- [ ] OpenBao: Let's Encrypt certificate for `openbao.home.<domain>`,
-      `lego` on a timer in the container, with its own Cloudflare token
-      (`openbao-acme`).
 - [ ] Optional: daily OpenBao Raft snapshot to Garage, on top of the
       container backup. Portable into any OpenBao and restores the data
       without rolling back the container.

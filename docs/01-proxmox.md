@@ -547,9 +547,9 @@ a separate file.
 | Setting | Value |
 |---------|-------|
 | Job | `daily-containers`, in `/etc/pve/jobs.cfg` |
-| Guests | `130` (OpenBao) and `140` (Garage) |
+| Guests | `130` (services VM) and `140` (Garage) |
 | When | Every day at 03:00 |
-| Mode | `snapshot`: the container keeps running, OpenBao stays unsealed |
+| Mode | `snapshot`: the guests keep running, OpenBao stays unsealed |
 | Where | `local` (`/var/lib/vz/dump`), `zstd` |
 | Retention | The last 7 per container |
 
@@ -588,7 +588,7 @@ see [03. Ansible](03-ansible.md).
 
 ## Planned VMs
 
-The plan for the Talos VMs and the OpenBao and Garage containers, drawn
+The plan for the Talos VMs, the services VM and the Garage container, drawn
 before they exist. It changes if the numbers turn out wrong once the
 cluster runs.
 
@@ -598,13 +598,14 @@ cluster runs.
 |----|------|-----|------|----|
 | Control plane | 2 | 4 GB | 32 GB | `192.168.1.11` |
 | Worker 1 to 3 | 4 each | 8 GB each | 80 GB each | `192.168.1.21` to `.23` |
-| OpenBao (LXC container) | 1 | 0.5 GB | 8 GB | `192.168.1.30` |
+| Services VM (OpenBao, Caddy, Tailscale) | 2 | 1.5 GB | 32 GB | `192.168.1.30` |
 | Garage (LXC container) | 1 | 0.5 GB | 4 GB + 10 GB | `192.168.1.40` |
 | Kubernetes API VIP | | | | `192.168.1.20` |
 | Cilium LoadBalancer pool | | | | `192.168.1.50` to `.99` |
 
-- **RAM:** 3 GB stays with the host, 0.5 GB each goes to OpenBao and
-  Garage, and 28 GB to the VMs. No overcommit, so a busy VM never pushes the host into swap.
+- **RAM:** 2 GB stays with the host, 1.5 GB goes to the services VM, 0.5
+  GB to Garage and 28 GB to the Talos VMs. Once Garage moves into the
+  services VM, the host gets 2.5 GB. No overcommit, so a busy VM never pushes the host into swap.
 - **vCPU:** 16 on 12 threads. CPU overcommit is fine, the VMs are rarely
   all busy at once.
 - **Disk:** 294 GB of the 348 GB `local-lvm` thin pool, leaving room for
@@ -613,7 +614,7 @@ cluster runs.
   pointing clients at it from day one means a second or third control
   plane can join later without new certificates or kubeconfigs.
 - **OpenBao outside the cluster:** the cluster depends on its secrets, so
-  it runs in its own LXC container and survives a cluster rebuild. See
+  it runs on the services VM and survives a cluster rebuild. See
   [04. Secrets](04-secrets.md#openbao).
 - **Garage outside the cluster:** backups of the cluster cannot live in
   it. See [06. Object storage](06-object-storage.md).
