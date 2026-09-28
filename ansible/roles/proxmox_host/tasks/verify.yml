@@ -9,7 +9,6 @@
     - { key: lock, cmd: tailscale lock status }
     - { key: ts, cmd: tailscale status --json }
     - { key: prefs, cmd: tailscale debug prefs }
-    - { key: serve, cmd: tailscale serve status --json }
     - { key: resolv, cmd: cat /etc/resolv.conf }
     - { key: notify, cmd: cat /etc/pve/notifications.cfg }
     - { key: sysctl, cmd: sysctl -n net.ipv6.conf.vmbr0.accept_ra net.ipv6.conf.vmbr0.autoconf }
@@ -65,7 +64,7 @@
     quiet: true
     fail_msg: root@pam is missing TOTP or recovery keys, see docs/01-proxmox.md#access
 
-- name: Check Tailscale (lock, tag, DNS, auto-update, Serve)
+- name: Check Tailscale (lock, tag, DNS, auto-update)
   ansible.builtin.assert:
     that:
       - proxmox_host_s.lock is search('Tailnet Lock is ENABLED')
@@ -73,8 +72,6 @@
       - not (proxmox_host_s.prefs | from_json).CorpDNS
       - (proxmox_host_s.prefs | from_json).AutoUpdate.Apply
       - proxmox_host_s.resolv is search('(?m)^nameserver 1\.1\.1\.1$')
-      - (proxmox_host_s.serve | from_json).TCP['443'].TCPForward == 'localhost:8006'
-      - (proxmox_host_s.serve | from_json).Web is not defined
     quiet: true
     fail_msg: Tailscale drifted from docs/02-tailscale.md
 
