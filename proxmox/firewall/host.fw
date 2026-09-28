@@ -3,4 +3,5 @@ enable: 1
 
 [RULES]
 IN ACCEPT -p udp -dport 41641 -log nolog
+IN ACCEPT -source 192.168.1.30 -p tcp -dport 8006 -log nolog
 IN Ping(ACCEPT) -source 192.168.1.0/24 -log nolog
