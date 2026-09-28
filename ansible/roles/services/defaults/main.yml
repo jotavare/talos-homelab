@@ -1,0 +1,9 @@
+services_files: "{{ playbook_dir }}/../services"
+services_domain: "{{ lookup('ansible.builtin.env', 'DOMAIN') }}"
+services_acme_email: "{{ lookup('ansible.builtin.env', 'ACME_EMAIL') }}"
+services_bao_user: jotavare
+services_bao_password: "{{ lookup('ansible.builtin.env', 'BAO_PASSWORD') }}"
+services_bao_unseal_key: "{{ lookup('ansible.builtin.env', 'BAO_UNSEAL_KEY') }}"
+services_secrets:
+  - { path: services/caddy, field: cloudflare_token, file: cloudflare_token }
+  - { path: services/tailscale, field: auth_key, file: tailscale_auth_key }

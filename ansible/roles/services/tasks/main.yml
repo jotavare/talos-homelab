@@ -1,0 +1,172 @@
+- name: Install Docker and base packages
+  ansible.builtin.apt:
+    name: [docker.io, docker-compose, qemu-guest-agent, unattended-upgrades]
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Keep security updates automatic
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../proxmox/apt/52unattended-upgrades-local"
+    dest: /etc/apt/apt.conf.d/52unattended-upgrades-local
+    mode: "0644"
+
+- name: Start Docker and the guest agent
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop: [docker, qemu-guest-agent]
+
+- name: Read the Docker networks
+  ansible.builtin.command: docker network ls --format '{% raw %}{{.Name}}{% endraw %}'
+  register: services_networks
+  changed_when: false
+  check_mode: false
+
+- name: Create the internal backend network
+  ansible.builtin.command: docker network create --internal backend
+  when: "'backend' not in services_networks.stdout_lines"
+  changed_when: true
+
+- name: Create the service directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: /opt/services, mode: "0755" }
+    - { path: /srv/secrets, mode: "0700" }
+
+- name: Copy the Compose projects
+  ansible.builtin.copy:
+    src: "{{ services_files }}/{{ item }}/"
+    dest: "/opt/services/{{ item }}/"
+    owner: root
+    group: root
+    mode: "0644"
+    directory_mode: "0755"
+  loop: [openbao, proxy]
+
+- name: Write the Compose settings
+  ansible.builtin.copy:
+    content: |
+      DOMAIN={{ services_domain }}
+      ACME_EMAIL={{ services_acme_email }}
+    dest: "/opt/services/{{ item }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  loop: [openbao, proxy]
+
+- name: Check the OpenBao data is in place
+  ansible.builtin.find:
+    paths: /srv/openbao
+    file_type: any
+  register: services_bao_data
+
+- name: Refuse to start OpenBao without its data
+  ansible.builtin.assert:
+    that: services_bao_data.matched > 0
+    fail_msg: /srv/openbao is empty. Copy the Raft data first, see docs/07-services.md
+    quiet: true
+
+- name: Start OpenBao
+  ansible.builtin.command: docker compose up -d --wait
+  args:
+    chdir: /opt/services/openbao
+  register: services_bao_up
+  changed_when: "'Started' in services_bao_up.stderr or 'Recreated' in services_bao_up.stderr"
+
+- name: Find OpenBao on the backend network
+  ansible.builtin.command: >-
+    docker inspect -f '{% raw %}{{(index .NetworkSettings.Networks "backend").IPAddress}}{% endraw %}' openbao
+  register: services_bao_ip
+  changed_when: false
+  check_mode: false
+
+- name: Read the seal state
+  ansible.builtin.uri:
+    url: "http://{{ services_bao_ip.stdout }}:8200/v1/sys/seal-status"
+  register: services_bao_seal
+  check_mode: false
+
+- name: Ask for the unseal key
+  ansible.builtin.pause:
+    prompt: OpenBao is sealed. Unseal key
+    echo: false
+  register: services_bao_unseal_prompt
+  when: services_bao_seal.json.sealed and services_bao_unseal_key | length == 0
+
+- name: Unseal OpenBao
+  ansible.builtin.uri:
+    url: "http://{{ services_bao_ip.stdout }}:8200/v1/sys/unseal"
+    method: POST
+    body_format: json
+    body:
+      key: "{{ services_bao_unseal_key if services_bao_unseal_key | length > 0 else services_bao_unseal_prompt.user_input }}"
+  when: services_bao_seal.json.sealed
+  no_log: true
+  changed_when: true
+
+- name: Ask for the OpenBao password
+  ansible.builtin.pause:
+    prompt: "OpenBao password for {{ services_bao_user }}"
+    echo: false
+  register: services_bao_password_prompt
+  when: services_bao_password | length == 0
+
+- name: Log in to OpenBao
+  ansible.builtin.uri:
+    url: "http://{{ services_bao_ip.stdout }}:8200/v1/auth/userpass/login/{{ services_bao_user }}"
+    method: POST
+    body_format: json
+    body:
+      password: "{{ services_bao_password if services_bao_password | length > 0 else services_bao_password_prompt.user_input }}"
+  register: services_bao_login
+  no_log: true
+  check_mode: false
+
+- name: Read the stack's secrets from OpenBao
+  ansible.builtin.uri:
+    url: "http://{{ services_bao_ip.stdout }}:8200/v1/kv/data/{{ item.path }}"
+    headers:
+      X-Vault-Token: "{{ services_bao_login.json.auth.client_token }}"
+  loop: "{{ services_secrets }}"
+  register: services_bao_secrets
+  no_log: true
+  check_mode: false
+
+- name: Write the secrets for Compose
+  ansible.builtin.copy:
+    content: "{{ item.json.data.data[item.item.field] }}"
+    dest: "/srv/secrets/{{ item.item.file }}"
+    owner: root
+    group: root
+    mode: "0400"
+  loop: "{{ services_bao_secrets.results }}"
+  no_log: true
+
+- name: Log out of OpenBao
+  ansible.builtin.uri:
+    url: "http://{{ services_bao_ip.stdout }}:8200/v1/auth/token/revoke-self"
+    method: POST
+    headers:
+      X-Vault-Token: "{{ services_bao_login.json.auth.client_token }}"
+    status_code: [204]
+  no_log: true
+  changed_when: false
+  check_mode: false
+
+- name: Start the proxy
+  ansible.builtin.command: docker compose up -d --build --wait
+  args:
+    chdir: /opt/services/proxy
+  register: services_proxy_up
+  changed_when: "'Started' in services_proxy_up.stderr or 'Recreated' in services_proxy_up.stderr"
+
+- name: Verify the VM
+  ansible.builtin.import_tasks: verify.yml
+  tags: [verify]

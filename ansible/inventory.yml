@@ -19,3 +19,11 @@ all:
           ansible_user: root
           ansible_connection: community.proxmox.proxmox_pct_remote
           proxmox_vmid: 140
+    services:
+      hosts:
+        services:
+          ansible_host: 192.168.1.30
+          ansible_user: debian
+          ansible_ssh_common_args: >-
+            -o ProxyJump=root@{{ lookup('ansible.builtin.env', 'PROXMOX_HOST') }}
+            -o StrictHostKeyChecking=accept-new
