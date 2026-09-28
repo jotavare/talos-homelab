@@ -1,6 +1,10 @@
 proxmox_host_files: "{{ playbook_dir }}/../proxmox"
 proxmox_host_deadman_minutes: 5
 
+proxmox_host_acme_account: default
+proxmox_host_acme_email: "{{ lookup('ansible.builtin.env', 'ACME_EMAIL') }}"
+proxmox_host_acme_directory: https://acme-v02.api.letsencrypt.org/directory
+
 proxmox_host_tofu_user: tofu@pve
 proxmox_host_tofu_role: TofuProvisioner
 proxmox_host_tofu_privs:
