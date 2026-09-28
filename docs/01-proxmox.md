@@ -572,6 +572,15 @@ The backups are on the same disk as the containers: they cover a mistake
 or a broken container, not a dead drive. The Talos VMs are left for
 Proxmox Backup Server (Backlog).
 
+### Web UI certificate
+
+The web UI at `https://pve.home.<domain>:8006` has a Let's Encrypt
+certificate, so browsers trust it with no warning. The name points at the
+host's tailnet IP, so it only opens over the tailnet. Proxmox renews it
+itself, from its daily update timer. How it is set up (Cloudflare DNS,
+the ACME account, plugin and certificate) is in
+[05. OpenTofu, DNS and certificates](05-opentofu.md#dns-and-certificates).
+
 ## Ansible
 
 The steps above that can run unattended are also an Ansible playbook:

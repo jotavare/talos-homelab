@@ -205,6 +205,9 @@ phase page.
 - [ ] UPS with NUT for a clean shutdown on power loss.
 - [ ] Test the web UI over tailnet IPv6 from a phone.
 
+- [ ] OpenTofu and Ansible: reach Proxmox as `pve.home.<domain>` with
+      certificate checks on, instead of the tailnet IP with
+      `insecure = true`.
 - [ ] Run the Ansible compliance checks on a schedule (a timer on the
       laptop or CI with a Tailscale runner), so drift shows up without a
       manual run.
@@ -212,14 +215,14 @@ phase page.
 ### Tailscale
 
 - [ ] Sync `tailscale/policy.hujson` to the tailnet from git (GitOps).
-- [ ] Let's Encrypt certificate (`*.home.<domain>`) for the Proxmox web
-      UI, instead of the self-signed one.
 
 ### Repository
 
 - [ ] Security audit pipeline in CI: secret scanning of every push and
       the full history, plus linting of the config files, before anything
       reaches the public repo.
+- [ ] Rotate the Cloudflare tokens once a year (roll in the dashboard,
+      new value into SOPS, raise `data_wo_version` for `pve-acme`).
 - [ ] Break-glass age key kept offline, plus separate age keys for Flux
       and CI, added as recipients with `sops updatekeys`.
 
@@ -230,7 +233,9 @@ phase page.
       goes live.
 - [ ] Lockout and upgrade runbook: etcd snapshot before every upgrade,
       copied off the host.
-- [ ] OpenBao: Let's Encrypt certificate instead of the self-signed one.
+- [ ] OpenBao: Let's Encrypt certificate for `openbao.home.<domain>`,
+      `lego` on a timer in the container, with its own Cloudflare token
+      (`openbao-acme`).
 - [ ] Optional: daily OpenBao Raft snapshot to Garage, on top of the
       container backup. Portable into any OpenBao and restores the data
       without rolling back the container.
@@ -248,8 +253,6 @@ phase page.
       short-lived `userpass` token. Init, unseal and my password stay
       manual.
 - [ ] External Secrets Operator in the cluster, reading from OpenBao.
-- [ ] Cloudflare API token for DNS-01, limited to DNS edits on the lab
-      domain.
 - [ ] Flux bootstrap: which git remote and which credential.
 - [ ] PBS VM sizing: RAM, vCPU and a datastore disk.
 - [ ] Rollout order: core platform first (Cilium, Flux, cert-manager,
