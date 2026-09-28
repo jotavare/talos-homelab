@@ -1,0 +1,60 @@
+name: proxy
+
+services:
+  tailscale:
+    container_name: tailscale
+    image: tailscale/tailscale:v1.102.5@sha256:c507f3a2a6ab1cabd8d809b98edeb41edbd5c3fb6ad9632ffd098b4c7d0b4065
+    hostname: services
+    restart: unless-stopped
+    environment:
+      TS_AUTHKEY: file:/run/secrets/tailscale_auth_key
+      TS_AUTH_ONCE: "true"
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_HOSTNAME: services
+      TS_EXTRA_ARGS: --advertise-tags=tag:services
+      TS_TAILSCALED_EXTRA_ARGS: --port=41641
+      TS_ACCEPT_DNS: "false"
+    secrets:
+      - tailscale_auth_key
+    volumes:
+      - tailscale:/var/lib/tailscale
+    ports:
+      - "41641:41641/udp"
+    networks:
+      - default
+      - backend
+
+  caddy:
+    container_name: caddy
+    build: .
+    image: proxy-caddy:2.11.4
+    restart: unless-stopped
+    network_mode: service:tailscale
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    secrets:
+      - cloudflare_token
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - tailscale
+
+secrets:
+  tailscale_auth_key:
+    file: /srv/secrets/tailscale_auth_key
+  cloudflare_token:
+    file: /srv/secrets/cloudflare_token
+
+volumes:
+  tailscale:
+  caddy-data:
+  caddy-config:
+
+networks:
+  default:
+  backend:
+    name: backend
+    external: true
