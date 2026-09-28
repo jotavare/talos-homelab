@@ -157,7 +157,9 @@ down with it, and the Talos secrets could not be stored there at all.
 | Access | Root token only for the first setup, then revoked. I log in with `userpass`; the cluster later uses Kubernetes auth for External Secrets Operator | No standing root token |
 | Tailnet rules | Tags `tag:openbao` and `tag:talos`. My user and `tag:talos` reach `tag:openbao` on `8200`, nothing else | The Talos nodes can reach OpenBao and nothing more |
 
-The container is built, see [OpenBao setup](#openbao-setup).
+The container is built, see [OpenBao setup](#openbao-setup). It is moving
+into the Docker Compose stack on the services VM, with the same data
+([07. Services VM](07-services.md#moving-openbao)).
 
 It still shares the host with everything else, so it survives a cluster
 rebuild but not the loss of the host (see the POC trade-offs in the

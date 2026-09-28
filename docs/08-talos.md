@@ -92,8 +92,8 @@ and talosconfig. All of it stays in the encrypted OpenTofu state
 
 ### Build order
 
-1. OpenBao container, since the auth key and secrets live there, and the
-   Garage container for backups.
+1. The services VM with OpenBao, since the auth key and secrets live
+   there, and Garage for backups.
 2. Talos image and the four VMs.
 3. Machine configs and bootstrap.
 4. Cilium.

@@ -87,7 +87,7 @@ LAN `192.168.1.0/24`:
 | `192.168.1.11` to `.19` | Static | Talos control plane |
 | `192.168.1.20` | Static | Kubernetes API VIP |
 | `192.168.1.21` to `.29` | Static | Talos workers |
-| `192.168.1.30` to `.49` | Static | Services outside the cluster (OpenBao `.30`, Garage `.40`) and other lab machines |
+| `192.168.1.30` to `.49` | Static | Services outside the cluster (OpenBao `.30`, services VM `.31`, Garage `.40`) and other lab machines |
 | `192.168.1.50` to `.99` | Static | Cilium LoadBalancer pool |
 | `192.168.1.100` to `.254` | Dynamic (DHCP) | Phones, laptops and other clients |
 
@@ -106,6 +106,8 @@ together.
 | IaC | Terraform | **OpenTofu** |
 | Config management | Ansible | **Ansible** |
 | Remote access | Cloudflare Tunnel | **Tailscale** / **Headscale** |
+| Containers outside the cluster | Docker, Docker Compose | **Docker Compose** in a VM |
+| Reverse proxy outside the cluster | Traefik | **Caddy** / **Nginx Proxy Manager** |
 
 ### Delivery
 
@@ -186,7 +188,8 @@ with the tools, the options chosen and why.
 | [04. Secrets](docs/04-secrets.md) | SOPS and age, OpenBao container set up and unsealed |
 | [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, project, state encryption, OpenBao container |
 | [06. Object storage](docs/06-object-storage.md) | Garage container for backups: design, OpenTofu, Ansible role |
-| [07. Talos](docs/07-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
+| [07. Services VM](docs/07-services.md) | Design: Docker Compose stack with OpenBao, Caddy and Tailscale, replacing the containers |
+| [08. Talos](docs/08-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
 
 ## Backlog
 
@@ -228,6 +231,8 @@ phase page.
 
 ### Before Talos
 
+- [ ] Services VM: build it, move OpenBao into the stack, then Garage
+      ([07. Services VM](docs/07-services.md)).
 - [ ] Tailnet-only access for app admin UIs on the LoadBalancer pool
       (subnet router, `tailscale serve` or per-VM firewall), before any UI
       goes live.
