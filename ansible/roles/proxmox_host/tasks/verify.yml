@@ -113,6 +113,22 @@
     quiet: true
     fail_msg: OpenTofu user, role or token drifted, see docs/05-opentofu.md
 
+- name: Read the ACME account
+  ansible.builtin.command: pvesh get /cluster/acme/account/{{ proxmox_host_acme_account }} --output-format json
+  register: proxmox_host_acme_state
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Check the ACME account
+  ansible.builtin.assert:
+    that:
+      - proxmox_host_acme_state.rc == 0
+      - (proxmox_host_acme_state.stdout | from_json).directory == proxmox_host_acme_directory
+      - (proxmox_host_acme_state.stdout | from_json).account.status == 'valid'
+    quiet: true
+    fail_msg: ACME account missing or drifted, see docs/01-proxmox.md
+
 - name: Check for pending upgrades and reboots
   ansible.builtin.shell: |
     set -o pipefail

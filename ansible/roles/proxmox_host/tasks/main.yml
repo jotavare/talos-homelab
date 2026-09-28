@@ -151,6 +151,30 @@
     | selectattr('roleid', 'equalto', proxmox_host_tofu_backup_role) | list | length == 0
   changed_when: true
 
+- name: Read the ACME accounts
+  ansible.builtin.command: pvesh get /cluster/acme/account --output-format json
+  register: proxmox_host_acme_accounts
+  changed_when: false
+  check_mode: false
+
+- name: Read the Let's Encrypt terms of service
+  ansible.builtin.command: pvesh get /cluster/acme/tos --output-format json
+  register: proxmox_host_acme_tos
+  changed_when: false
+  check_mode: false
+  when: >-
+    proxmox_host_acme_accounts.stdout | from_json
+    | selectattr('name', 'equalto', proxmox_host_acme_account) | list | length == 0
+
+- name: Register the ACME account (root only, so not in OpenTofu)
+  ansible.builtin.command: >-
+    pvesh create /cluster/acme/account --name {{ proxmox_host_acme_account }}
+    --contact {{ proxmox_host_acme_email }}
+    --directory {{ proxmox_host_acme_directory }}
+    --tos_url {{ proxmox_host_acme_tos.stdout | from_json }}
+  when: proxmox_host_acme_tos is not skipped
+  changed_when: true
+
 - name: Check whether the firewall files would change
   ansible.builtin.copy:
     src: "{{ proxmox_host_files }}/firewall/{{ item.src }}"
