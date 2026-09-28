@@ -1,0 +1,36 @@
+- name: Check services
+  ansible.builtin.command: systemctl is-active {{ item }}
+  loop: [docker, qemu-guest-agent, unattended-upgrades]
+  changed_when: false
+  check_mode: false
+
+- name: Collect VM state
+  ansible.builtin.command: "{{ item.cmd }}"
+  loop:
+    - { key: listen, cmd: "ss -Hlntu" }
+    - { key: running, cmd: "docker ps --format '{% raw %}{{.Names}} {{.State}}{% endraw %}'" }
+    - { key: ts, cmd: "docker exec tailscale tailscale status --self --json" }
+    - { key: secrets, cmd: "stat -c '%n %U %a' /srv/secrets/cloudflare_token /srv/secrets/tailscale_auth_key" }
+  loop_control:
+    label: "{{ item.key }}"
+  register: services_state
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Index the results
+  ansible.builtin.set_fact:
+    services_s: "{{ dict(services_state.results | map(attribute='item.key') | zip(services_state.results | map(attribute='stdout'))) }}"
+
+- name: Check the stack
+  ansible.builtin.assert:
+    that:
+      - services_s.running is search('(?m)^openbao running$')
+      - services_s.running is search('(?m)^tailscale running$')
+      - services_s.running is search('(?m)^caddy running$')
+      - "'tag:services' in ((services_s.ts | from_json).Self.Tags | default([]))"
+      - services_s.listen is not search(':(443|8200)\s')
+      - services_s.secrets is search('cloudflare_token root 400')
+      - services_s.secrets is search('tailscale_auth_key root 400')
+    quiet: true
+    fail_msg: Services VM drifted from docs/07-services.md
