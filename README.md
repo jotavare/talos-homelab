@@ -185,7 +185,7 @@ with the tools, the options chosen and why.
 | [03. Ansible](docs/03-ansible.md) | Proxmox host configuration as a playbook |
 | [04. Secrets](docs/04-secrets.md) | SOPS and age, OpenBao container set up and unsealed |
 | [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, project, state encryption, OpenBao container |
-| [06. Object storage](docs/06-object-storage.md) | Design: Garage container for backups, buckets, OpenBao snapshots |
+| [06. Object storage](docs/06-object-storage.md) | Garage container for backups: design, OpenTofu, Ansible role |
 | [07. Talos](docs/07-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
 
 ## Backlog
@@ -231,8 +231,6 @@ phase page.
 - [ ] Lockout and upgrade runbook: etcd snapshot before every upgrade,
       copied off the host.
 - [ ] OpenBao: Let's Encrypt certificate instead of the self-signed one.
-- [ ] Garage Ansible role: binary, config, unit and compliance checks
-      ([06. Object storage](docs/06-object-storage.md)).
 - [ ] Optional: daily OpenBao Raft snapshot to Garage, on top of the
       container backup. Portable into any OpenBao and restores the data
       without rolling back the container.
