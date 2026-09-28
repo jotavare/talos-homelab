@@ -7,3 +7,4 @@ services_bao_unseal_key: "{{ lookup('ansible.builtin.env', 'BAO_UNSEAL_KEY') }}"
 services_secrets:
   - { path: services/caddy, field: cloudflare_token, file: cloudflare_token }
   - { path: services/tailscale, field: auth_key, file: tailscale_auth_key }
+  - { path: services/garage, field: rpc_secret, file: garage_rpc_secret }

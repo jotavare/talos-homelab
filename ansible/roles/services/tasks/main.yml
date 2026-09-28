@@ -39,6 +39,9 @@
   loop:
     - { path: /opt/services, mode: "0755" }
     - { path: /srv/secrets, mode: "0700" }
+    - { path: /srv/garage, mode: "0700" }
+    - { path: /srv/garage/meta, mode: "0700" }
+    - { path: /srv/garage/data, mode: "0700" }
 
 - name: Copy the Compose projects
   ansible.builtin.copy:
@@ -48,7 +51,8 @@
     group: root
     mode: "0644"
     directory_mode: "0755"
-  loop: [openbao, caddy]
+  loop: [openbao, garage, caddy]
+  register: services_projects
 
 - name: Write the Compose settings
   ansible.builtin.copy:
@@ -59,7 +63,7 @@
     owner: root
     group: root
     mode: "0600"
-  loop: [openbao, caddy]
+  loop: [openbao, garage, caddy]
 
 - name: Check the OpenBao data is in place
   ansible.builtin.find:
@@ -98,7 +102,10 @@
     recurse: true
 
 - name: Start OpenBao
-  ansible.builtin.command: docker compose up -d --wait
+  ansible.builtin.command: >-
+    docker compose up -d --wait
+    {{ '--force-recreate' if services_projects.results | selectattr('item', 'equalto', 'openbao')
+    | selectattr('changed') | list | length > 0 else '' }}
   args:
     chdir: /opt/services/openbao
   register: services_bao_up
@@ -184,12 +191,29 @@
   changed_when: false
   check_mode: false
 
+- name: Start Garage
+  ansible.builtin.command: >-
+    docker compose up -d --wait
+    {{ '--force-recreate' if services_projects.results | selectattr('item', 'equalto', 'garage')
+    | selectattr('changed') | list | length > 0 else '' }}
+  args:
+    chdir: /opt/services/garage
+  register: services_garage_up
+  changed_when: "'Started' in services_garage_up.stderr or 'Recreated' in services_garage_up.stderr"
+
 - name: Start Tailscale and Caddy
   ansible.builtin.command: docker compose up -d --build --wait
   args:
     chdir: /opt/services/caddy
   register: services_caddy_up
   changed_when: "'Started' in services_caddy_up.stderr or 'Recreated' in services_caddy_up.stderr"
+
+- name: Reload Caddy when its config changed
+  ansible.builtin.command: docker exec caddy caddy reload --config /etc/caddy/Caddyfile
+  when: >-
+    services_projects.results | selectattr('item', 'equalto', 'caddy')
+    | selectattr('changed') | list | length > 0
+  changed_when: true
 
 - name: Verify the VM
   ansible.builtin.import_tasks: verify.yml
