@@ -10,6 +10,7 @@ keys.txt
 
 .terraform/
 *.tfplan
+*.tfstate
 *.tfstate.backup
 *.tfvars
 *.tfvars.json
