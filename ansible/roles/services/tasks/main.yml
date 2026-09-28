@@ -73,6 +73,30 @@
     fail_msg: /srv/openbao is empty. Copy the Raft data first, see docs/07-services.md
     quiet: true
 
+- name: Pull the OpenBao image
+  ansible.builtin.command: docker compose pull --quiet
+  args:
+    chdir: /opt/services/openbao
+  changed_when: false
+
+- name: Read the OpenBao user of the image
+  ansible.builtin.command: >-
+    docker compose run --rm --no-deps --entrypoint id openbao -u openbao
+  args:
+    chdir: /opt/services/openbao
+  register: services_bao_uid
+  changed_when: false
+  check_mode: false
+
+- name: Give the OpenBao data to that user
+  ansible.builtin.file:
+    path: /srv/openbao
+    state: directory
+    owner: "{{ services_bao_uid.stdout | trim }}"
+    group: "{{ services_bao_uid.stdout | trim }}"
+    mode: "0700"
+    recurse: true
+
 - name: Start OpenBao
   ansible.builtin.command: docker compose up -d --wait
   args:
