@@ -19,8 +19,8 @@ variable "cloudflare_zone_id" {
   type        = string
 }
 
-variable "openbao_tailnet_ip" {
-  description = "OpenBao container address on the tailnet, from secrets/env.sops.yaml through run.sh."
+variable "services_tailnet_ip" {
+  description = "Services stack address on the tailnet, from secrets/env.sops.yaml through run.sh."
   type        = string
 }
 
