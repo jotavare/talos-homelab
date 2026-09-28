@@ -236,7 +236,7 @@ pasted into admin console → **Access controls**:
   | Tag | Devices |
   |-----|---------|
   | `tag:server` | `pve` |
-  | `tag:openbao` | The OpenBao container |
+  | `tag:services` | The services stack on the services VM (OpenBao, Caddy) |
   | `tag:talos` | The Talos nodes |
 
 - **Grants**, the only traffic allowed:
@@ -245,11 +245,11 @@ pasted into admin console → **Access controls**:
   |------|----|-------|
   | My devices (user `jotavare@github`: laptop, phone) | `tag:server` | `22`, `8006` |
   | My devices | `tag:talos` | `6443`, `50000` |
-  | My devices and `tag:talos` | `tag:openbao` | `8200` |
+  | My devices and `tag:talos` | `tag:services` | `443` |
 
 - **Nothing in the other direction:** a compromised server, container or
   node cannot start a connection to the laptop, and none of them can reach
-  each other except Talos to OpenBao.
+  each other except Talos to the services stack.
 - **`tests`** run on every save, so a broken rule is rejected before it
   applies. They check every row above plus the ports and directions that
   must stay closed.

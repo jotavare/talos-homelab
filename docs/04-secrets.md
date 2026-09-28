@@ -13,6 +13,7 @@ few secrets OpenTofu needs to create it cannot live in it yet.
 |--------|-------|-----|
 | Bootstrap secrets (Proxmox API token for OpenTofu) | Encrypted in git with **SOPS + age** | Needed before OpenBao exists. The repo alone rebuilds everything, with one key |
 | Talos machine secrets, the Garage keys, the Tailscale auth key for the nodes | **OpenBao** | OpenBao runs outside the cluster, so it is there before the cluster is |
+| Secrets of the services stack (Caddy's Cloudflare token, the Tailscale auth key) | **OpenBao**, read by Ansible at deploy time | The stack runs next to OpenBao, so it reads them from there |
 | App secrets (database passwords, API keys) | **OpenBao**, read by **External Secrets Operator** | Git holds only references, no values at all |
 | The age private key | Bitwarden, plus a printed offline copy | It decrypts every SOPS file, so it cannot be in the repo |
 | OpenBao unseal keys and root token | Bitwarden, plus a printed offline copy | They open OpenBao, so they cannot be inside it |
@@ -144,22 +145,21 @@ down with it, and the Talos secrets could not be stored there at all.
 
 | Item | Design | Why |
 |------|--------|-----|
-| Container | Debian 13 LXC, unprivileged, `192.168.1.30`, 1 vCPU, 0.5 GB RAM, 8 GB disk, start on boot | Light; unprivileged limits the damage if it is ever broken into |
-| Created by | OpenTofu, container and template | Same as the Talos VMs |
-| Configured by | Ansible through `pve` (`pct exec`), no SSH server in the container | Nothing extra listening or to harden |
-| Install | OpenBao `.deb` from its GitHub releases, checked against the published SHA256 | There is no official apt repository |
-| Listens on | `127.0.0.1:8200` only, TLS | Not reachable from the LAN at all |
-| Reached through | Tailscale in the container, userspace mode, which forwards tailnet connections to localhost | Tailnet only; no TUN device, which an unprivileged container does not get |
-| Name and certificate | `openbao.home.<domain>`, a public record pointing at its tailnet IP, with its own Let's Encrypt certificate | Trusted everywhere, no root to install. The name is public anyway, so a wildcard would hide nothing ([05. OpenTofu, DNS and certificates](05-opentofu.md#dns-and-certificates)) |
-| Certificate renewal | DNS-01 challenge with `lego` on a timer in the container, with its own Cloudflare token | Nothing exposed to the internet. The token only edits DNS for that one domain, and revoking it touches nothing else |
-| Storage | Integrated Raft, single node. The container is backed up daily by Proxmox | [Container backups](01-proxmox.md#container-backups); a Raft snapshot to Garage is optional ([06. Object storage](06-object-storage.md#openbao-snapshots)) |
+| Runs in | The Docker Compose stack on the services VM (`130`, `192.168.1.30`), image `openbao/openbao:2.7.0` pinned by digest | One readable Compose file for the services outside the cluster ([07. Services VM](07-services.md)) |
+| Created by | OpenTofu for the VM, Ansible for the stack | Same as every other machine |
+| Listens on | `8200` on the internal Docker network `backend` only, plain HTTP | Nothing on the LAN or the tailnet reaches it directly |
+| Reached through | Caddy in the same stack, on `https://openbao.home.<domain>`, only over the tailnet | One name, no port, a real certificate |
+| Name and certificate | A public record pointing at the stack's tailnet IP, Let's Encrypt certificate from Caddy | Trusted everywhere, no root to install ([05. OpenTofu, DNS and certificates](05-opentofu.md#dns-and-certificates)) |
+| Certificate renewal | Caddy, DNS-01 through Cloudflare, with a token that lives in OpenBao | Nothing exposed to the internet |
+| Storage | Integrated Raft, single node, in `/srv/openbao` on the VM. The VM is backed up daily by Proxmox | [Container backups](01-proxmox.md#container-backups); a Raft snapshot to Garage is optional ([06. Object storage](06-object-storage.md#openbao-snapshots)) |
 | Unseal | One key share, threshold one, in Bitwarden plus the printed copy | Splitting a key only helps with several people |
 | Access | Root token only for the first setup, then revoked. I log in with `userpass`; the cluster later uses Kubernetes auth for External Secrets Operator | No standing root token |
-| Tailnet rules | Tags `tag:openbao` and `tag:talos`. My user and `tag:talos` reach `tag:openbao` on `8200`, nothing else | The Talos nodes can reach OpenBao and nothing more |
+| Tailnet rules | Tag `tag:services` on the stack. My user and `tag:talos` reach it on `443`, nothing else | The Talos nodes can reach OpenBao and nothing more |
 
-The container is built, see [OpenBao setup](#openbao-setup). It is moving
-into the Docker Compose stack on the services VM, with the same data
-([07. Services VM](07-services.md#moving-openbao)).
+OpenBao started in its own LXC container, installed from the `.deb` with
+Tailscale inside. It moved into the stack with the same Raft data, so the
+unseal key, the login and every secret stayed the same
+([07. Services VM, Moving OpenBao](07-services.md#moving-openbao)).
 
 It still shares the host with everything else, so it survives a cluster
 rebuild but not the loss of the host (see the POC trade-offs in the
@@ -168,53 +168,9 @@ home, it starts sealed after every reboot and is unsealed by hand.
 
 ## OpenBao setup
 
-The container comes from OpenTofu
-([05. OpenTofu, OpenBao container](05-opentofu.md#openbao-container));
-everything inside it comes from the Ansible playbook
-[ansible/openbao.yml](../ansible/openbao.yml), which reaches the container
-through `pve` with `pct` (the `community.proxmox.proxmox_pct_remote`
-connection), so the container needs no SSH server.
-
-| Step | What the role does |
-|------|--------------------|
-| SSH server | Removes `openssh-server`: the Debian template ships it, listening on `22` |
-| Updates | Same unattended security updates drop-in as the host |
-| Tailscale | Installs it from the official repository and runs it in userspace mode ([openbao/tailscaled](../openbao/tailscaled)): an unprivileged container has no TUN device, and userspace mode forwards tailnet connections to `127.0.0.1` |
-| OpenBao | Installs the 2.7.0 `.deb`, checked against its SHA256, with [openbao/openbao.hcl](../openbao/openbao.hcl): Raft storage, listening on `127.0.0.1:8200` only |
-| TLS | The package's own self-signed certificate, until the Let's Encrypt one |
-| Policies | Copies [openbao/policies/](../openbao/policies/) to `/etc/openbao/policies/` |
-| Checks | Services running, only localhost listening, no port `22`, userspace mode, Raft, version, and the seal state |
-
-```bash
-cd ansible
-ansible-galaxy collection install -r requirements.yml
-./run.sh openbao.yml
-```
-
-The first run failed on one ordering detail: the package starts
-`tailscaled` right after installing it, in the normal mode that needs a
-TUN device, and systemd gave up after a few failed restarts before the
-userspace setting was in place. The role now resets the failed state and
-restarts it once the setting is written.
-
-### Joining the tailnet
-
-```bash
-pct exec 130 -- tailscale up --hostname=openbao --advertise-tags=tag:openbao --accept-dns=false
-```
-
-The login URL was approved in the browser. Tailnet Lock then kept the
-container locked out until it was signed. The container itself prints the
-command to run on a signing node:
-
-```bash
-pct exec 130 -- tailscale lock status    # "LOCKED OUT", with the sign command
-tailscale lock sign nodekey:... tlpub:...  # on pve
-```
-
-Both keys in that command are public. Afterwards the container reports
-"accessible under Tailnet Lock", and from the laptop over the tailnet
-`/v1/sys/health` answers.
+First set up in the LXC container, before the move to the services VM.
+Init, the unseal key and the login below happened once and moved along
+with the data.
 
 ### Init and unseal
 
@@ -226,8 +182,7 @@ bao operator init -key-shares=1 -key-threshold=1
 bao operator unseal    # asks for the key, hidden
 ```
 
-With the self-signed certificate every command also takes
-`-address=https://127.0.0.1:8200 -tls-skip-verify`. Init prints the unseal
+Init prints the unseal
 key and the root token once. The unseal key is in Bitwarden and printed
 offline; it is needed again after every restart of the container.
 
@@ -237,7 +192,7 @@ The root token was used once, then revoked:
 
 ```bash
 bao login                                   # root token
-bao policy write admin /etc/openbao/policies/admin.hcl
+bao policy write admin admin.hcl           # services/openbao/policies/
 bao auth enable userpass
 bao write auth/userpass/users/<user> policies=admin password="$P"
 bao login -method=userpass username=<user>  # works
@@ -251,11 +206,15 @@ with the unseal key if it is ever needed (`bao operator generate-root`).
 
 ### After a restart
 
-OpenBao starts sealed after the container or the host restarts:
+OpenBao starts sealed after the VM or the host restarts. Unseal it through
+`pve`, since the VM is only reachable from there:
 
 ```bash
-pct exec 130 -- bao operator unseal -address=https://127.0.0.1:8200 -tls-skip-verify
+ssh -J root@<PROXMOX_HOST> debian@192.168.1.30 sudo docker exec -it openbao bao operator unseal
 ```
+
+The Ansible `services` role also unseals it when it finds it sealed,
+asking for the key.
 
 ## Alternatives considered
 

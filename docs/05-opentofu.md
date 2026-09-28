@@ -119,10 +119,11 @@ tar xzf tofu_1.12.6_linux_amd64.tar.gz tofu && install -m 755 tofu ~/.local/bin/
 | [opentofu/providers.tf](../opentofu/providers.tf) | The Proxmox endpoint and the Cloudflare provider |
 | [opentofu/variables.tf](../opentofu/variables.tf) | Values that come from SOPS: addresses, domain, zone, passphrase, a token |
 | [opentofu/main.tf](../opentofu/main.tf) | Reads the Proxmox version |
-| [opentofu/openbao.tf](../opentofu/openbao.tf) | The OpenBao container, its template and firewall |
+| [opentofu/templates.tf](../opentofu/templates.tf) | The Debian container template and cloud image |
+| [opentofu/services.tf](../opentofu/services.tf) | The services VM and its firewall |
 | [opentofu/garage.tf](../opentofu/garage.tf) | The Garage container, its data volume and firewall |
 | [opentofu/backups.tf](../opentofu/backups.tf) | The daily backup job for the containers |
-| [opentofu/dns.tf](../opentofu/dns.tf) | DNS records in Cloudflare |
+| [opentofu/dns.tf](../opentofu/dns.tf) | DNS records in Cloudflare, pointing at the services stack |
 | [opentofu/acme.tf](../opentofu/acme.tf) | The Let's Encrypt certificate for the Proxmox web UI |
 | [opentofu/run.sh](../opentofu/run.sh) | Runs `tofu` with the secrets from SOPS in its environment |
 | `opentofu/terraform.tfstate` | The state, encrypted, kept in git |
@@ -214,42 +215,29 @@ opentofu/run.sh plan
 # + proxmox_version = "9.2.20"
 ```
 
-## OpenBao container
+## Services VM
 
-The first real resources, in [opentofu/openbao.tf](../opentofu/openbao.tf).
-Why OpenBao runs in its own container is in
-[04. Secrets, OpenBao](04-secrets.md#openbao).
+In [opentofu/services.tf](../opentofu/services.tf). It replaced the first
+OpenBao container, which had the same ID and IP. What runs on it is in
+[07. Services VM](07-services.md).
 
 | Resource | What it does |
 |----------|--------------|
-| `proxmox_download_file.debian_13_lxc` | Downloads `debian-13-standard_13.6-1_amd64.tar.zst` to `local` and checks it against the SHA512 from Proxmox's template catalogue |
-| `proxmox_virtual_environment_container.openbao` | Container `130`, unprivileged, 1 core, 512 MB RAM, no swap, 8 GB on `local-lvm`, `192.168.1.30`, DNS `1.1.1.1`, starts at boot with `order = 1`, before the VMs |
-| `proxmox_virtual_environment_firewall_options.openbao` | Container firewall on, inbound `DROP`, outbound `ACCEPT` |
-| `proxmox_virtual_environment_firewall_rules.openbao` | Only UDP `41641` in, for Tailscale direct connections |
+| `proxmox_download_file.debian_13_cloud` | Downloads the dated Debian 13 cloud image to `local` (content type `import`) and checks it against Debian's SHA512 |
+| `proxmox_virtual_environment_vm.services` | VM `130`: q35, UEFI, 2 cores (`host`), 1.5 GB fixed, 32 GB disk imported from the image with `discard` and `iothread`, `192.168.1.30`, cloud-init user `debian` with my SSH public key, guest agent on, starts at boot with `order = 1` |
+| `proxmox_virtual_environment_firewall_options.services` | VM firewall on, inbound `DROP` |
+| `proxmox_virtual_environment_firewall_rules.services` | SSH only from `pve` (`.10`), UDP `41641` for Tailscale direct connections |
 
-`nesting` is on so `systemd` runs properly inside the container, the
-Proxmox default for Debian 12 and later. There is no root password and no
-SSH server: the container is reached through the host with `pct`.
+The container and the VM could not both be ID `130`, so the swap was two
+applies: first the container out of the config (`3 to destroy`, after its
+data and a protected backup were saved), then the VM in (`3 to add`).
 
-```bash
-opentofu/run.sh plan    # Plan: 4 to add, 0 to change, 0 to destroy.
-opentofu/run.sh apply   # shows the plan again, then asks for "yes"
-```
+The guest agent started disabled: Proxmox only adds the agent's serial
+port when the option is on, and the cloud image does not ship the agent.
+Once Ansible installed it, turning the option on restarted the VM once.
 
-`0 to destroy` is the line to read on every plan: anything destroyed that
-was not expected is a reason to stop.
-
-Checks on the host:
-
-```bash
-pct list                         # 130  running  openbao
-pct config 130                   # unprivileged: 1, memory: 512, onboot: 1, ...
-cat /etc/pve/firewall/130.fw     # policy_in: DROP, IN ACCEPT -p udp -dport 41641
-pct enter 130                    # a shell inside: Debian 13.6, eth0 192.168.1.30/24
-```
-
-The token's `TofuProvisioner` role was enough for all of it, firewall
-included: no extra privilege was needed.
+The SSH public key is read from `~/.ssh/id_ed25519.pub` at plan time, so
+it is not written in the repo.
 
 ## Garage container
 
@@ -325,8 +313,8 @@ Public A records in Cloudflare point each name at its tailnet IP:
 
 | Name | Points to |
 |------|-----------|
-| `pve.home.<domain>` | The Proxmox host's tailnet IP |
-| `openbao.home.<domain>` | The OpenBao container's tailnet IP |
+| `pve.home.<domain>` | The services stack's tailnet IP; Caddy forwards to the web UI |
+| `openbao.home.<domain>` | The services stack's tailnet IP; Caddy forwards to OpenBao |
 
 They resolve for anyone, but the `100.x` addresses only answer inside the
 tailnet. The other options were split DNS on the tailnet (one more
