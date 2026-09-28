@@ -52,8 +52,8 @@ Docker network, `backend`, which has no route out:
 
 | Service | Image | Does |
 |---------|-------|------|
-| `tailscale` (project `proxy`) | `tailscale/tailscale:v1.102.5`, pinned by digest | Joins the tailnet as one device, `services`, `tag:services`. Caddy shares its network, so the proxy is only reachable over the tailnet. Also on `backend` |
-| `caddy` (project `proxy`) | Built from [services/proxy/Dockerfile](../services/proxy/Dockerfile): `caddy:2.11.4` plus `caddy-dns/cloudflare` v0.2.4 | Listens on 443 of the tailnet address. Certificates for each name from Let's Encrypt through Cloudflare DNS-01 |
+| `tailscale` (project `caddy`) | `tailscale/tailscale:v1.102.5`, pinned by digest | Joins the tailnet as one device, `services`, `tag:services`. Caddy shares its network, so the proxy is only reachable over the tailnet. Also on `backend` |
+| `caddy` (project `caddy`) | Built from [services/caddy/Dockerfile](../services/caddy/Dockerfile): `caddy:2.11.4` plus `caddy-dns/cloudflare` v0.2.4 | Listens on 443 of the tailnet address. Certificates for each name from Let's Encrypt through Cloudflare DNS-01 |
 | `openbao` (project `openbao`) | `openbao/openbao:2.7.0`, pinned by digest | The same OpenBao, on `backend` only, port `8200`. Only Caddy reaches it |
 | `garage` | `dxflrs/garage:v2.4.1` | Later. The S3 API on the LAN for the cluster |
 
@@ -115,7 +115,7 @@ Same version on both sides, so the Raft data moved as it was:
 4. The data went into `/srv/openbao`, owned by the image's `openbao`
    user.
 5. Ansible started OpenBao, unsealed it with the same key, logged in as
-   `jotavare`, read the secrets and started the proxy.
+   `jotavare`, read the secrets and started Tailscale and Caddy.
 6. Both DNS names now point at the stack.
 
 Nothing inside OpenBao was created again: same unseal key, same login,
@@ -142,9 +142,9 @@ The VM uses about 0.5 GB of its 1.5 GB with the stack running.
 |------|------------|
 | [services/openbao/compose.yaml](../services/openbao/compose.yaml) | OpenBao, its config and data |
 | [services/openbao/openbao.hcl](../services/openbao/openbao.hcl) | Raft storage, listener on `8200` without TLS (Caddy does TLS) |
-| [services/proxy/compose.yaml](../services/proxy/compose.yaml) | Tailscale and Caddy, the secret files, UDP `41641` |
-| [services/proxy/Caddyfile](../services/proxy/Caddyfile) | The two names, DNS-01 through Cloudflare |
-| [services/proxy/Dockerfile](../services/proxy/Dockerfile) | Caddy with the Cloudflare module |
+| [services/caddy/compose.yaml](../services/caddy/compose.yaml) | Tailscale and Caddy, the secret files, UDP `41641` |
+| [services/caddy/Caddyfile](../services/caddy/Caddyfile) | The two names, DNS-01 through Cloudflare |
+| [services/caddy/Dockerfile](../services/caddy/Dockerfile) | Caddy with the Cloudflare module |
 | [ansible/roles/services/](../ansible/roles/services/) | Everything on the VM |
 
 The domain and the email reach the stack through a `.env` file per

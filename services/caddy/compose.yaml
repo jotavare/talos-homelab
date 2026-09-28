@@ -1,4 +1,4 @@
-name: proxy
+name: caddy
 
 services:
   tailscale:
@@ -27,7 +27,7 @@ services:
   caddy:
     container_name: caddy
     build: .
-    image: proxy-caddy:2.11.4
+    image: caddy-cloudflare:2.11.4
     restart: unless-stopped
     network_mode: service:tailscale
     environment:

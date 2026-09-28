@@ -48,7 +48,7 @@
     group: root
     mode: "0644"
     directory_mode: "0755"
-  loop: [openbao, proxy]
+  loop: [openbao, caddy]
 
 - name: Write the Compose settings
   ansible.builtin.copy:
@@ -59,7 +59,7 @@
     owner: root
     group: root
     mode: "0600"
-  loop: [openbao, proxy]
+  loop: [openbao, caddy]
 
 - name: Check the OpenBao data is in place
   ansible.builtin.find:
@@ -184,12 +184,12 @@
   changed_when: false
   check_mode: false
 
-- name: Start the proxy
+- name: Start Tailscale and Caddy
   ansible.builtin.command: docker compose up -d --build --wait
   args:
-    chdir: /opt/services/proxy
-  register: services_proxy_up
-  changed_when: "'Started' in services_proxy_up.stderr or 'Recreated' in services_proxy_up.stderr"
+    chdir: /opt/services/caddy
+  register: services_caddy_up
+  changed_when: "'Started' in services_caddy_up.stderr or 'Recreated' in services_caddy_up.stderr"
 
 - name: Verify the VM
   ansible.builtin.import_tasks: verify.yml
