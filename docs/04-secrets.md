@@ -216,6 +216,30 @@ ssh -J root@<PROXMOX_HOST> debian@192.168.1.30 sudo docker exec -it openbao bao 
 The Ansible `services` role also unseals it when it finds it sealed,
 asking for the key.
 
+## Rotation
+
+Every credential, how often it is replaced and how. "Now" means it was
+shared outside Bitwarden and is replaced first.
+
+| Credential | Lives in | Every | Next | How |
+|------------|----------|-------|------|-----|
+| OpenBao unseal key | Bitwarden, printed copy | Year | Now | `bao operator rekey -init -key-shares=1 -key-threshold=1`, then the old key; the new one goes to Bitwarden and paper |
+| OpenBao `jotavare` password | Bitwarden | 6 months | Now | `bao write auth/userpass/users/jotavare/password password=...` |
+| Cloudflare `caddy-dns` token | OpenBao `kv/services/caddy` | Year | Now | Roll in the dashboard, `bao kv put`, redeploy the services VM |
+| Cloudflare `opentofu-dns` token | OpenTofu's secrets | Year | 2027-09 | Roll in the dashboard, store the new value |
+| Cloudflare `pve-acme` token | OpenTofu's secrets, then Proxmox | Year | 2027-09 | Roll, store, raise `data_wo_version`, apply |
+| Proxmox API token `tofu@pve!opentofu` | OpenTofu's secrets | Year | 2027-09 | New token in the UI, store it, delete the old one |
+| OpenTofu state passphrase | OpenTofu's secrets | Year | 2027-09 | Add the new key with the old one as `fallback`, apply, then drop the old one |
+| age key | Laptop, Bitwarden, printed copy | Year | 2027-09 | New key, `sops updatekeys` on every file, remove the old one |
+| Tailscale auth keys | Used once | Each use | | Generate per device, single use, 7 days; nothing to rotate afterwards |
+| Proxmox `root@pam` password and 2FA recovery keys | Bitwarden | Year | 2027-09 | Web UI, then new recovery keys |
+| Gmail app password (SMTP) | Bitwarden, the host | Year | 2027-09 | New app password, update the notification target |
+| Garage access keys | OpenBao | Year | | `garage key create`, update the client, delete the old key |
+
+Rotating the Cloudflare tokens, the Proxmox token and the state
+passphrase does not need any downtime: the old value keeps working until
+it is deleted.
+
 ## Alternatives considered
 
 | Tool | Why not |

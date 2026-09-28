@@ -224,8 +224,6 @@ phase page.
 - [ ] Security audit pipeline in CI: secret scanning of every push and
       the full history, plus linting of the config files, before anything
       reaches the public repo.
-- [ ] Rotate the Cloudflare tokens once a year (roll in the dashboard,
-      new value into SOPS, raise `data_wo_version` for `pve-acme`).
 - [ ] Break-glass age key kept offline, plus separate age keys for Flux
       and CI, added as recipients with `sops updatekeys`.
 
@@ -235,9 +233,8 @@ phase page.
       and its Ansible role ([07. Services VM](docs/07-services.md)).
 - [ ] Remove the protected final backup of the OpenBao container once the
       services VM has run for a while.
-- [ ] Rekey OpenBao (`bao operator rekey`), change the `jotavare`
-      password and roll the `caddy-dns` token: all three were shared
-      outside Bitwarden during the move.
+- [ ] Rotate what is due in the rotation table
+      ([04. Secrets, Rotation](docs/04-secrets.md#rotation)).
 - [ ] Update the overview and Proxmox diagrams for the services VM.
 - [ ] Tailnet-only access for app admin UIs on the LoadBalancer pool
       (subnet router, `tailscale serve` or per-VM firewall), before any UI
