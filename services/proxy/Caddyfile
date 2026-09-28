@@ -1,0 +1,16 @@
+{
+	email {$ACME_EMAIL}
+	acme_dns cloudflare {file./run/secrets/cloudflare_token}
+}
+
+openbao.home.{$DOMAIN} {
+	reverse_proxy openbao:8200
+}
+
+pve.home.{$DOMAIN} {
+	reverse_proxy https://192.168.1.10:8006 {
+		transport http {
+			tls_server_name pve.home.{$DOMAIN}
+		}
+	}
+}
