@@ -6,6 +6,10 @@ terraform {
       source  = "bpg/proxmox"
       version = "~> 0.114"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5.26"
+    }
   }
 
   encryption {

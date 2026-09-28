@@ -8,3 +8,24 @@ variable "state_passphrase" {
   type        = string
   sensitive   = true
 }
+
+variable "domain" {
+  description = "Lab domain, from secrets/env.sops.yaml through run.sh."
+  type        = string
+}
+
+variable "cloudflare_zone_id" {
+  description = "Cloudflare zone of the lab domain, from secrets/env.sops.yaml through run.sh."
+  type        = string
+}
+
+variable "openbao_tailnet_ip" {
+  description = "OpenBao container address on the tailnet, from secrets/env.sops.yaml through run.sh."
+  type        = string
+}
+
+variable "cloudflare_pve_acme_token" {
+  description = "Cloudflare token Proxmox uses to renew its certificate, from SOPS through run.sh."
+  type        = string
+  sensitive   = true
+}
