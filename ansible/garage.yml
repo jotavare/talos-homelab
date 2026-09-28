@@ -1,0 +1,4 @@
+- name: Configure the Garage container
+  hosts: garage
+  roles:
+    - garage

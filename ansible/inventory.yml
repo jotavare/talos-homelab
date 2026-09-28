@@ -12,3 +12,10 @@ all:
           ansible_user: root
           ansible_connection: community.proxmox.proxmox_pct_remote
           proxmox_vmid: 130
+    garage:
+      hosts:
+        garage:
+          ansible_host: "{{ lookup('ansible.builtin.env', 'PROXMOX_HOST') }}"
+          ansible_user: root
+          ansible_connection: community.proxmox.proxmox_pct_remote
+          proxmox_vmid: 140

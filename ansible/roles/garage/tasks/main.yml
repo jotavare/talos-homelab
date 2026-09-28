@@ -1,0 +1,84 @@
+- name: Install base packages
+  ansible.builtin.apt:
+    name: [ca-certificates, openssl, unattended-upgrades]
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Remove the SSH server from the template
+  ansible.builtin.apt:
+    name: openssh-server
+    state: absent
+    purge: true
+
+- name: Keep security updates automatic
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../proxmox/apt/52unattended-upgrades-local"
+    dest: /etc/apt/apt.conf.d/52unattended-upgrades-local
+    mode: "0644"
+
+- name: Create the garage user
+  ansible.builtin.user:
+    name: garage
+    system: true
+    shell: /usr/sbin/nologin
+    home: /var/lib/garage
+    create_home: false
+
+- name: Create the Garage directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.owner }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: /etc/garage, owner: root, mode: "0755" }
+    - { path: /var/lib/garage, owner: garage, mode: "0750" }
+    - { path: /var/lib/garage/meta, owner: garage, mode: "0750" }
+    - { path: /var/lib/garage/data, owner: garage, mode: "0750" }
+
+- name: Download Garage
+  ansible.builtin.get_url:
+    url: "https://garagehq.deuxfleurs.fr/_releases/v{{ garage_version }}/x86_64-unknown-linux-musl/garage"
+    dest: /usr/local/bin/garage
+    checksum: "sha256:{{ garage_sha256 }}"
+    mode: "0755"
+  notify: Restart Garage
+
+- name: Generate the RPC secret once
+  ansible.builtin.shell: umask 077 && openssl rand -hex 32 > /etc/garage/rpc_secret
+  args:
+    creates: /etc/garage/rpc_secret
+
+- name: Keep the RPC secret readable by garage only
+  ansible.builtin.file:
+    path: /etc/garage/rpc_secret
+    owner: garage
+    group: garage
+    mode: "0600"
+
+- name: Configure Garage
+  ansible.builtin.copy:
+    src: "{{ garage_files }}/garage.toml"
+    dest: /etc/garage/garage.toml
+    mode: "0644"
+  notify: Restart Garage
+
+- name: Install the Garage unit
+  ansible.builtin.copy:
+    src: "{{ garage_files }}/garage.service"
+    dest: /etc/systemd/system/garage.service
+    mode: "0644"
+  notify: Restart Garage
+
+- name: Start Garage
+  ansible.builtin.systemd_service:
+    name: garage
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Verify the container
+  ansible.builtin.import_tasks: verify.yml
+  tags: [verify]
