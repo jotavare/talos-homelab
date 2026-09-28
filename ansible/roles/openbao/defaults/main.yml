@@ -1,4 +1,0 @@
-openbao_files: "{{ playbook_dir }}/../openbao"
-openbao_version: 2.7.0
-openbao_deb_sha256: 7412233fef6bbe0e5093aa5461f493dd3a0f6193c8d5a5ba3a7ff475f96f34a2
-openbao_tailscale_key_sha256: 3e03dacf222698c60b8e2f990b809ca1b3e104de127767864284e6c228f1fb39
