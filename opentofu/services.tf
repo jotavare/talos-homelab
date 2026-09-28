@@ -15,7 +15,7 @@ resource "proxmox_virtual_environment_vm" "services" {
   }
 
   agent {
-    enabled = false
+    enabled = true
   }
 
   cpu {
