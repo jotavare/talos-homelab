@@ -1,4 +1,0 @@
-- name: Configure the OpenBao container
-  hosts: openbao
-  roles:
-    - openbao
