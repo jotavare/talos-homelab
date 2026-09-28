@@ -1,3 +1,0 @@
-garage_files: "{{ playbook_dir }}/../garage"
-garage_version: 2.4.1
-garage_sha256: ae49f8de4aaee6b5ca305f7cbdccc8cd8a29b2804aac074649f18bfb83d0a2b6
