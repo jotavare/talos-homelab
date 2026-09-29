@@ -12,6 +12,6 @@ data "vault_kv_secret_v2" "services" {
 }
 
 locals {
-  files   = "${path.module}/../../services"
+  files   = "${path.module}/files"
   secrets = { for k, v in data.vault_kv_secret_v2.services : k => v.data }
 }
