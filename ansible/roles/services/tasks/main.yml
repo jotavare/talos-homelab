@@ -150,6 +150,7 @@
     group: root
     mode: "0400"
   loop: "{{ services_secrets }}"
+  register: services_secret_files
   no_log: true
 
 - name: Start Garage
@@ -168,6 +169,13 @@
     chdir: /opt/services/caddy
   register: services_caddy_up
   changed_when: "'Started' in services_caddy_up.stderr or 'Recreated' in services_caddy_up.stderr"
+
+- name: Restart the services whose secret changed
+  ansible.builtin.command: docker restart {{ item }}
+  loop: >-
+    {{ services_secret_files.results | selectattr('changed')
+    | map(attribute='item.service') | unique | list }}
+  changed_when: true
 
 - name: Reload Caddy when its config changed
   ansible.builtin.command: docker exec caddy caddy reload --config /etc/caddy/Caddyfile
