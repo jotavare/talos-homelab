@@ -108,7 +108,7 @@ together.
 | IaC | Terraform | **OpenTofu** |
 | Config management | Ansible | **Ansible** |
 | Remote access | Cloudflare Tunnel | **Tailscale** / **Headscale** |
-| Containers outside the cluster | Docker, Docker Compose | **Docker Compose** in a VM |
+| Containers outside the cluster | Docker, Docker Compose | **Docker** in a VM, managed by **OpenTofu** |
 | Reverse proxy outside the cluster | Traefik | **Caddy** / **Nginx Proxy Manager** |
 
 ### Delivery
@@ -190,7 +190,7 @@ with the tools, the options chosen and why.
 | [04. Secrets](docs/04-secrets.md) | Where secrets live, OpenBao set up and unsealed, rotation, a SOPS example |
 | [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, project, state encryption, OpenBao container |
 | [06. Object storage](docs/06-object-storage.md) | Garage for backups and the OpenTofu state |
-| [07. Services VM](docs/07-services.md) | Docker Compose stack with OpenBao, Caddy and Tailscale; OpenBao moved in from its container |
+| [07. Services VM](docs/07-services.md) | OpenBao, Garage, Caddy and Tailscale as containers, managed by a separate OpenTofu project |
 | [08. Talos](docs/08-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
 
 ## Backlog
@@ -228,6 +228,10 @@ phase page.
 
 ### Before Talos
 
+- [ ] Cloud-init for VM 130 (Docker, the guest agent, unattended upgrades,
+      the `docker` group), so a rebuilt VM needs no manual step.
+- [ ] State of both OpenTofu projects in a Cloudflare R2 bucket created
+      by OpenTofu, off the host; the foundation state leaves the laptop.
 - [ ] Break-glass copies of the Proxmox API token and the Garage key
       `opentofu` in Bitwarden
       ([04. Secrets](docs/04-secrets.md#the-loop-and-the-way-out)).

@@ -1,7 +1,7 @@
 # Object storage
 
 An S3-compatible bucket store for backups:
-[Garage](https://garagehq.deuxfleurs.fr/) in the Docker Compose stack
+[Garage](https://garagehq.deuxfleurs.fr/) as a container
 on the services VM, next to OpenBao and outside the cluster. Its first
 user is the OpenTofu state; the etcd snapshots, Velero and Longhorn
 backups follow once the cluster exists.
@@ -39,7 +39,7 @@ the copy off the host goes.
 
 | Item | Design | Why |
 |------|--------|-----|
-| Runs in | The Compose project `garage` on the services VM, image `dxflrs/garage:v2.4.1` pinned by digest ([07. Services VM](07-services.md)) | One place for the services outside the cluster |
+| Runs in | A container on the services VM, managed by OpenTofu, image `dxflrs/garage:v2.4.1` pinned by digest ([07. Services VM](07-services.md)) | One place for the services outside the cluster |
 | Mode | `--single-node`, replication factor 1, LMDB metadata with automatic snapshots every 6 hours | Garage sets up its own one-node layout. Metadata snapshots let it recover from a corrupted database |
 | Storage | `/srv/garage/meta` and `/srv/garage/data` on the VM's disk | Covered by the daily VM backup |
 | Listens on | S3 API `3900` on the internal `backend` network only. RPC `3901` inside the container | Nothing on the LAN reaches it directly |
@@ -105,12 +105,12 @@ daily backup and the break-glass copies in Bitwarden
 
 ## Setup
 
-The Compose files are in [services/garage/](../services/garage/), deployed
-by the `services` Ansible role ([07. Services VM](07-services.md#setup)):
+The container is in [opentofu/foundation/garage.tf](../opentofu/foundation/garage.tf)
+([07. Services VM](07-services.md#setup)):
 
 | File | What it is |
 |------|------------|
-| [compose.yaml](../services/garage/compose.yaml) | Garage on `backend`, the RPC secret from `/run/secrets/`, data under `/srv/garage` |
+| [garage.tf](../opentofu/foundation/garage.tf) | Garage on `backend`, the RPC secret in `/run/secrets/`, data under `/srv/garage` |
 | [garage.toml](../services/garage/garage.toml) | Replication factor 1, LMDB, S3 API on `3900`, region `garage` |
 
 Buckets and keys, made with the CLI inside the container:
@@ -123,10 +123,6 @@ sudo docker exec garage /garage bucket allow --read --write opentofu-state --key
 ```
 
 The key went straight into OpenBao (`kv/opentofu`), never printed.
-
-Checks, part of the `services` role: Garage running, `garage status` shows
-a healthy node, nothing listening on `3900` on the VM's own interfaces,
-the RPC secret root-only.
 
 ## References
 
