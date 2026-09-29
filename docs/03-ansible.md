@@ -36,7 +36,6 @@ ansible-galaxy collection install -r requirements.yml
 | [ansible/inventory.yml](../ansible/inventory.yml) | The host `pve` and the services VM. Addresses come from OpenBao, so the tailnet address stays out of the repo |
 | [ansible/group_vars/all.yml](../ansible/group_vars/all.yml) | Reads `kv/config` from OpenBao with the `community.hashi_vault` lookup |
 | [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook for the host |
-| [ansible/services.yml](../ansible/services.yml) | The playbook for the services VM, see [07. Services VM](07-services.md#setup) |
 | [ansible/requirements.yml](../ansible/requirements.yml) | The `community.proxmox` and `community.hashi_vault` collections |
 | [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | The tasks, handlers and compliance checks (`tasks/verify.yml`) |
 | [proxmox/](../proxmox/) | The config files the role copies. Each file lives in one place and is explained in 01. Proxmox |

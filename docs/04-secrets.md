@@ -11,7 +11,7 @@ only an example in the repo.
 |--------|-------|-----|
 | OpenTofu's tokens (Proxmox, Cloudflare) and the Garage key for its state | **OpenBao** `kv/opentofu`, read by the `vault` provider as ephemeral values | Never written to the state or to disk |
 | Settings (domain, zone ID, addresses, email) | **OpenBao** `kv/config` | Private rather than secret, but kept out of the public repo |
-| Secrets of the services stack | **OpenBao** `kv/services/*`, read by Ansible | Written to the VM as root-only files for Compose |
+| Secrets of the services stack | **OpenBao** `kv/services/*`, read by the foundation OpenTofu project | Copied into the containers, never onto the VM's disk |
 | OpenTofu state encryption | **OpenBao** Transit key `opentofu-state` | The key never leaves OpenBao, and there is no passphrase to keep |
 | App secrets (database passwords, API keys) | **OpenBao**, read by **External Secrets Operator** | Git holds only references, no values at all |
 | OpenBao unseal key, my OpenBao password, the age key | Bitwarden, plus a printed offline copy | They open everything else, so they cannot be inside it |
@@ -111,6 +111,7 @@ bao kv get -mount=kv config
 | `kv/config` | `proxmox_host`, `domain`, `cloudflare_zone_id`, `acme_email`, `services_tailnet_ip` |
 | `kv/opentofu` | The Proxmox API token, the two Cloudflare tokens, the Garage key for the state |
 | `kv/services/caddy`, `tailscale`, `garage` | The stack's secrets |
+| `kv/foundation` | The passphrase of the foundation project's state (also in Bitwarden) |
 | `transit/keys/opentofu-state` | The state encryption key, not exportable, not deletable |
 
 ## Commit guard
@@ -157,7 +158,7 @@ down with it, and the Talos secrets could not be stored there at all.
 
 | Item | Design | Why |
 |------|--------|-----|
-| Runs in | The Docker Compose stack on the services VM (`130`, `192.168.1.30`), image `openbao/openbao:2.7.0` pinned by digest | One readable Compose file for the services outside the cluster ([07. Services VM](07-services.md)) |
+| Runs in | A container on the services VM (`130`, `192.168.1.30`), managed by OpenTofu, image `openbao/openbao:2.7.0` pinned by digest | One readable Compose file for the services outside the cluster ([07. Services VM](07-services.md)) |
 | Created by | OpenTofu for the VM, Ansible for the stack | Same as every other machine |
 | Listens on | `8200` on the internal Docker network `backend` only, plain HTTP | Nothing on the LAN or the tailnet reaches it directly |
 | Reached through | Caddy in the same stack, on `https://openbao.home.<domain>`, only over the tailnet | One name, no port, a real certificate |
@@ -222,11 +223,8 @@ OpenBao starts sealed after the VM or the host restarts. Unseal it through
 `pve`, since the VM is only reachable from there:
 
 ```bash
-ssh -J root@<PROXMOX_HOST> debian@192.168.1.30 sudo docker exec -it openbao bao operator unseal
+ssh -t -J root@<PROXMOX_HOST> debian@192.168.1.30 docker exec -it openbao bao operator unseal
 ```
-
-The Ansible `services` role also unseals it when it finds it sealed,
-asking for the key.
 
 ## Rotation
 
