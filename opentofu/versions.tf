@@ -10,11 +10,16 @@ terraform {
       source  = "cloudflare/cloudflare"
       version = "~> 5.26"
     }
+    vault = {
+      source  = "hashicorp/vault"
+      version = "~> 5.12"
+    }
   }
 
   backend "s3" {
     bucket                      = "opentofu-state"
     key                         = "homelab/terraform.tfstate"
+    profile                     = "garage"
     region                      = "garage"
     use_path_style              = true
     use_lockfile                = true
@@ -26,18 +31,19 @@ terraform {
   }
 
   encryption {
-    key_provider "pbkdf2" "passphrase" {
-      passphrase = var.state_passphrase
+    key_provider "openbao" "transit" {
+      key_name = "opentofu-state"
+      token    = trimspace(file(pathexpand("~/.vault-token")))
     }
-    method "aes_gcm" "main" {
-      keys = key_provider.pbkdf2.passphrase
+    method "aes_gcm" "openbao" {
+      keys = key_provider.openbao.transit
     }
     state {
-      method   = method.aes_gcm.main
+      method   = method.aes_gcm.openbao
       enforced = true
     }
     plan {
-      method   = method.aes_gcm.main
+      method   = method.aes_gcm.openbao
       enforced = true
     }
   }
