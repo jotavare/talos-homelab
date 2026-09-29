@@ -1,8 +1,0 @@
-services_files: "{{ playbook_dir }}/../services"
-services_domain: "{{ homelab_config.domain }}"
-services_acme_email: "{{ homelab_config.acme_email }}"
-services_bao_unseal_key: "{{ lookup('ansible.builtin.env', 'BAO_UNSEAL_KEY') }}"
-services_secrets:
-  - { path: services/caddy, field: cloudflare_token, file: cloudflare_token, service: caddy }
-  - { path: services/tailscale, field: auth_key, file: tailscale_auth_key, service: tailscale }
-  - { path: services/garage, field: rpc_secret, file: garage_rpc_secret, service: garage }

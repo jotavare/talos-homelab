@@ -1,5 +1,0 @@
-- name: Configure the services VM
-  hosts: services
-  become: true
-  roles:
-    - services
