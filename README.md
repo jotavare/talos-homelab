@@ -10,14 +10,16 @@ Talos itself, and open source tools I have not used professionally. When
 something I already know is still the best fit, it stays.
 
 **Why public.** On purpose: to practise security in the open. Secrets
-live in three places:
+live in two places, and the repo holds none:
 
-- **This repo**, encrypted with [SOPS](https://github.com/getsops/sops)
-  and age: only the secrets that solve a chicken-and-egg problem, needed
-  before OpenBao exists, and a few private settings. Next to them sits an
-  encrypted OpenTofu state.
-- **OpenBao**: app secrets and everything else the cluster needs.
-- **My Bitwarden**: personal credentials and recovery keys, never here.
+- **OpenBao**, outside the cluster: every secret the infrastructure and
+  the apps use, read by OpenTofu and Ansible at run time. It also holds
+  the key that encrypts the OpenTofu state, which lives in Garage.
+- **My Bitwarden**: personal credentials, recovery keys and the unseal
+  key, never here.
+- **This repo**: no real secrets. One
+  [SOPS](https://github.com/getsops/sops) file with random values stays
+  as an example.
 
 The infrastructure is only reachable over a private tailnet. If you
 manage to decrypt anything, or find something that should not be public,
@@ -38,7 +40,7 @@ please tell me through a [private security report](.github/SECURITY.md).
 ## Diagrams
 
 <p align="center">
-  <img src="diagrams/overview.png" alt="Homelab overview: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs and the OpenBao and Garage containers, with admin access from a laptop or phone only over Tailscale">
+  <img src="diagrams/overview.png" alt="Homelab overview: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs and the services VM with OpenBao and Garage containers, with admin access from a laptop or phone only over Tailscale">
   <br>
   <sub><b>Overview.</b> One flat LAN, Talos VMs bridged onto it, management over Tailscale only.</sub>
 </p>
@@ -134,7 +136,7 @@ together.
 | Area | Already used | Candidate |
 |------|--------------|-----------|
 | SSO | Authentik, Keycloak | **Kanidm** / **Zitadel** / **Authelia** |
-| Secrets | HashiCorp Vault | **OpenBao** (outside the cluster) + **External Secrets Operator** + **SOPS** + **age** (bootstrap) |
+| Secrets | HashiCorp Vault | **OpenBao** (outside the cluster) + **External Secrets Operator** |
 | Policy | Kyverno | **Kyverno** / **OPA Gatekeeper** / **Kubewarden** |
 | Runtime security | Falco | **Falco** / **Tetragon** |
 | Brute-force protection | None | **CrowdSec** + **Envoy Gateway** rate limits |
@@ -171,9 +173,9 @@ written down and the homelab knowingly does something simpler.
 | Control plane size | Enough RAM for headroom, 8 GB or more | 4 GB, tight for etcd, the API server and the Cilium agent. Watch memory and take RAM from a worker if needed |
 | Block storage | Longhorn with three replicas on separate nodes and disks | Longhorn anyway, but every replica lands on the same QLC NVMe: no real redundancy, and more writes on a drive that wears fast. Use one replica per volume |
 | Secrets store | Vault or OpenBao as a cluster of three on dedicated machines, auto-unsealed by a cloud key service | One OpenBao in the services VM on the same host, unsealed by hand after a reboot. Survives a cluster rebuild, not the loss of the host |
-| OpenTofu state | Remote backend with locking and versioning (S3, GCS, Azure Blob) | Encrypted state file in git, no locking. Fine for one person on one laptop; old states stay in git history ([details](docs/05-opentofu.md#state-encryption)) |
-| Object storage | Several nodes with replication, versioning and object lock, plus a copy off site | One Garage container on the same host, one copy of each object, no versioning. Survives a cluster rebuild, not the loss of the host or the drive ([details](docs/06-object-storage.md#limits)) |
-| Backups | Proxmox Backup Server on a separate machine, plus a copy off site | A daily backup job for the containers to `local` now, Proxmox Backup Server as a VM on the same host later. Both protect against mistakes, not against losing the host ([details](docs/01-proxmox.md#container-backups)) |
+| OpenTofu state | Remote backend with locking and versioning (S3, GCS, Azure Blob) on separate infrastructure | Garage in the services VM, which OpenTofu itself created, encrypted with an OpenBao key. No versioning; the way back is the VM backup ([details](docs/04-secrets.md#the-loop-and-the-way-out)) |
+| Object storage | Several nodes with replication, versioning and object lock, plus a copy off site | One Garage in the services VM on the same host, one copy of each object, no versioning. Survives a cluster rebuild, not the loss of the host or the drive ([details](docs/06-object-storage.md#limits)) |
+| Backups | Proxmox Backup Server on a separate machine, plus a copy off site | A daily backup job for the services VM to `local` now, Proxmox Backup Server as a VM on the same host later. Both protect against mistakes, not against losing the host ([details](docs/01-proxmox.md#container-backups)) |
 
 ## Work in progress
 
@@ -185,9 +187,9 @@ with the tools, the options chosen and why.
 | [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install, planned VMs |
 | [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, hardening |
 | [03. Ansible](docs/03-ansible.md) | Proxmox host configuration as a playbook |
-| [04. Secrets](docs/04-secrets.md) | SOPS and age, OpenBao container set up and unsealed |
+| [04. Secrets](docs/04-secrets.md) | Where secrets live, OpenBao set up and unsealed, rotation, a SOPS example |
 | [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, project, state encryption, OpenBao container |
-| [06. Object storage](docs/06-object-storage.md) | Garage container for backups: design, OpenTofu, Ansible role |
+| [06. Object storage](docs/06-object-storage.md) | Garage for backups and the OpenTofu state |
 | [07. Services VM](docs/07-services.md) | Docker Compose stack with OpenBao, Caddy and Tailscale; OpenBao moved in from its container |
 | [08. Talos](docs/08-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
 
@@ -208,9 +210,6 @@ phase page.
 - [ ] UPS with NUT for a clean shutdown on power loss.
 - [ ] Test the web UI over tailnet IPv6 from a phone.
 
-- [ ] OpenTofu and Ansible: reach Proxmox as `pve.home.<domain>` with
-      certificate checks on, instead of the tailnet IP with
-      `insecure = true`.
 - [ ] Run the Ansible compliance checks on a schedule (a timer on the
       laptop or CI with a Tailscale runner), so drift shows up without a
       manual run.
@@ -224,13 +223,16 @@ phase page.
 - [ ] Security audit pipeline in CI: secret scanning of every push and
       the full history, plus linting of the config files, before anything
       reaches the public repo.
-- [ ] Break-glass age key kept offline, plus separate age keys for Flux
-      and CI, added as recipients with `sops updatekeys`.
+- [ ] OpenBao auth for Flux and CI (Kubernetes auth, AppRole or JWT), each
+      with its own narrow policy, instead of my own login.
 
 ### Before Talos
 
-- [ ] Move Garage into the services stack, then remove container `140`
-      and its Ansible role ([07. Services VM](docs/07-services.md)).
+- [ ] Break-glass copies of the Proxmox API token and the Garage key
+      `opentofu` in Bitwarden
+      ([04. Secrets](docs/04-secrets.md#the-loop-and-the-way-out)).
+- [ ] Restore test: VM `130` from its backup under a new ID with its
+      network off, OpenBao unsealed, then deleted.
 - [ ] Remove the protected final backup of the OpenBao container once the
       services VM has run for a while.
 - [ ] Rotate what is due in the rotation table
@@ -249,8 +251,6 @@ phase page.
       and the config file can be supplied without a bind mount.
 - [ ] Copy the Garage buckets off the host, encrypted, most likely to
       Cloudflare R2 (10 GB free), or to a second machine once there is one.
-- [ ] Restore test: the OpenBao container backup restored under a new ID
-      with its network off, unsealed, then deleted.
 - [ ] OpenBao configuration in OpenTofu (`hashicorp/vault` provider), in
       its own project `opentofu/openbao/` with its own encrypted state:
       policies (moved out of Ansible), auth methods (import `userpass`),
