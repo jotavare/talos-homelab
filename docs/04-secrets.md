@@ -11,7 +11,7 @@ only an example in the repo.
 |--------|-------|-----|
 | OpenTofu's tokens (Proxmox, Cloudflare) and the Garage key for its state | **OpenBao** `kv/opentofu`, read by the `vault` provider as ephemeral values | Never written to the state or to disk |
 | Settings (domain, zone ID, addresses, email) | **OpenBao** `kv/config` | Private rather than secret, but kept out of the public repo |
-| Secrets of the services stack | **OpenBao** `kv/services/*`, read by the foundation OpenTofu project | Copied into the containers, never onto the VM's disk |
+| Secrets of the services stack | **OpenBao** `kv/services/*`, read by the services OpenTofu project | Copied into the containers, never onto the VM's disk |
 | OpenTofu state encryption | **OpenBao** Transit key `opentofu-state` | The key never leaves OpenBao, and there is no passphrase to keep |
 | App secrets (database passwords, API keys) | **OpenBao**, read by **External Secrets Operator** | Git holds only references, no values at all |
 | OpenBao unseal key, my OpenBao password, the age key | Bitwarden, plus a printed offline copy | They open everything else, so they cannot be inside it |
@@ -111,7 +111,7 @@ bao kv get -mount=kv config
 | `kv/config` | `proxmox_host`, `domain`, `cloudflare_zone_id`, `acme_email`, `services_tailnet_ip` |
 | `kv/opentofu` | The Proxmox API token, the two Cloudflare tokens, the Garage key for the state |
 | `kv/services/caddy`, `tailscale`, `garage` | The stack's secrets |
-| `kv/foundation` | The passphrase of the foundation project's state (also in Bitwarden) |
+| `kv/services/opentofu` | The passphrase of the services project's state (also in Bitwarden) |
 | `transit/keys/opentofu-state` | The state encryption key, not exportable, not deletable |
 
 ## Commit guard
