@@ -23,8 +23,9 @@ Ansible runs on the laptop (WSL). Installed with
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-uv tool install ansible-core
+uv tool install --with hvac ansible-core
 uv tool install ansible-lint
+ansible-galaxy collection install -r requirements.yml
 ```
 
 ## Layout
@@ -32,12 +33,11 @@ uv tool install ansible-lint
 | Path | What it is |
 |------|------------|
 | [ansible/ansible.cfg](../ansible/ansible.cfg) | Settings: inventory, roles path, YAML output |
-| [ansible/inventory.yml](../ansible/inventory.yml) | The host `pve`. Its address comes from `PROXMOX_HOST`, so the tailnet address stays out of the inventory |
-| [ansible/run.sh](../ansible/run.sh) | Runs `ansible-playbook` with `PROXMOX_HOST` from `secrets/env.sops.yaml` in its environment |
+| [ansible/inventory.yml](../ansible/inventory.yml) | The host `pve` and the services VM. Addresses come from OpenBao, so the tailnet address stays out of the repo |
+| [ansible/group_vars/all.yml](../ansible/group_vars/all.yml) | Reads `kv/config` from OpenBao with the `community.hashi_vault` lookup |
 | [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook for the host |
 | [ansible/services.yml](../ansible/services.yml) | The playbook for the services VM, see [07. Services VM](07-services.md#setup) |
-| [ansible/garage.yml](../ansible/garage.yml) | The playbook for the Garage container, see [06. Object storage](06-object-storage.md#setup) |
-| [ansible/requirements.yml](../ansible/requirements.yml) | The `community.proxmox` collection, for reaching containers through `pve` |
+| [ansible/requirements.yml](../ansible/requirements.yml) | The `community.proxmox` and `community.hashi_vault` collections |
 | [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | The tasks, handlers and compliance checks (`tasks/verify.yml`) |
 | [proxmox/](../proxmox/) | The config files the role copies. Each file lives in one place and is explained in 01. Proxmox |
 
@@ -83,7 +83,7 @@ task and a pointer to the doc section.
 Only the checks, without touching anything:
 
 ```bash
-./run.sh proxmox.yml --check --tags verify
+ansible-playbook proxmox.yml --check --tags verify
 ```
 
 ## Firewall safety
@@ -107,11 +107,14 @@ The firewall stayed on the whole time.
 
 ## Running it
 
+There is no wrapper script. Ansible reads OpenBao with the same login as
+the `bao` CLI (`VAULT_ADDR` and `~/.vault-token`), so run `bao login` first:
+
 ```bash
 cd ansible
 ansible-lint proxmox.yml                # production profile passes
-./run.sh proxmox.yml --check --diff     # what would change
-./run.sh proxmox.yml                    # apply
+ansible-playbook proxmox.yml --check --diff   # what would change
+ansible-playbook proxmox.yml                  # apply
 ```
 
 Ansible in this terminal needs its output sent to a file or pipe that
