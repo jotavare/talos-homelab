@@ -203,8 +203,8 @@ ssh root@pve.<tailnet>.ts.net hostname                       # key: works
 ssh -o PubkeyAuthentication=no root@pve.<tailnet>.ts.net     # Permission denied (publickey)
 ```
 
-What the scripts need, such as the host's tailnet address, lives
-encrypted in `secrets/env.sops.yaml` ([04. Secrets](04-secrets.md)).
+What the tools need, such as the host's tailnet address, lives in
+OpenBao ([04. Secrets](04-secrets.md)).
 Passwords that no script uses stay only in Bitwarden.
 
 ### Repositories and upgrade
@@ -547,14 +547,14 @@ a separate file.
 | Setting | Value |
 |---------|-------|
 | Job | `daily-containers`, in `/etc/pve/jobs.cfg` |
-| Guests | `130` (services VM) and `140` (Garage) |
+| Guests | `130`, the services VM |
 | When | Every day at 03:00 |
 | Mode | `snapshot`: the guests keep running, OpenBao stays unsealed |
 | Where | `local` (`/var/lib/vz/dump`), `zstd` |
-| Retention | The last 7 per container |
+| Retention | The last 7 |
 
-The first run took 11 seconds: 434 MB for OpenBao, 160 MB for Garage,
-about 4 GB on `local` with seven of each. Failures go to the default
+The first run, still with two LXC containers, took 11 seconds and wrote
+under 600 MB. Failures go to the default
 notification matcher, so they arrive by email.
 
 The job is managed by OpenTofu
@@ -588,36 +588,32 @@ see [03. Ansible](03-ansible.md).
 
 ## Planned VMs
 
-The plan for the Talos VMs, the services VM and the Garage container, drawn
+The plan for the Talos VMs and the services VM, drawn
 before they exist. It changes if the numbers turn out wrong once the
 cluster runs.
 
-![Proxmox host plan: 32 GB of RAM split between the host, the OpenBao and Garage LXC containers, one control plane and three workers on the vmbr0 bridge, and the NVMe split into VM and LXC disks, ISOs and swap](../diagrams/proxmox.png)
+![Proxmox host plan: 32 GB of RAM split between the host, the services VM, one control plane and three workers on the vmbr0 bridge, and the NVMe split into VM and LXC disks, ISOs and swap](../diagrams/proxmox.png)
 
 | VM | vCPU | RAM | Disk | IP |
 |----|------|-----|------|----|
 | Control plane | 2 | 4 GB | 32 GB | `192.168.1.11` |
 | Worker 1 to 3 | 4 each | 8 GB each | 80 GB each | `192.168.1.21` to `.23` |
 | Services VM (OpenBao, Caddy, Tailscale) | 2 | 1.5 GB | 32 GB | `192.168.1.30` |
-| Garage (LXC container) | 1 | 0.5 GB | 4 GB + 10 GB | `192.168.1.40` |
 | Kubernetes API VIP | | | | `192.168.1.20` |
 | Cilium LoadBalancer pool | | | | `192.168.1.50` to `.99` |
 
-- **RAM:** 2 GB stays with the host, 1.5 GB goes to the services VM, 0.5
-  GB to Garage and 28 GB to the Talos VMs. Once Garage moves into the
-  services VM, the host gets 2.5 GB. No overcommit, so a busy VM never pushes the host into swap.
+- **RAM:** 2.5 GB stays with the host, 1.5 GB goes to the services VM
+  and 28 GB to the Talos VMs. No overcommit, so a busy VM never pushes the host into swap.
 - **vCPU:** 16 on 12 threads. CPU overcommit is fine, the VMs are rarely
   all busy at once.
-- **Disk:** 294 GB of the 348 GB `local-lvm` thin pool, leaving room for
+- **Disk:** 304 GB of the 348 GB `local-lvm` thin pool, leaving room for
   snapshots and an extra VM. `local` (96 GB) keeps the Talos ISO.
 - **API VIP:** with a single control plane the VIP is not needed yet, but
   pointing clients at it from day one means a second or third control
   plane can join later without new certificates or kubeconfigs.
-- **OpenBao outside the cluster:** the cluster depends on its secrets, so
-  it runs on the services VM and survives a cluster rebuild. See
-  [04. Secrets](04-secrets.md#openbao).
-- **Garage outside the cluster:** backups of the cluster cannot live in
-  it. See [06. Object storage](06-object-storage.md).
+- **OpenBao and Garage outside the cluster:** the cluster depends on its
+  secrets, and its backups cannot live in it, so both run on the services
+  VM and survive a cluster rebuild. See [07. Services VM](07-services.md).
 
 **Why one control plane and not three.** Production clusters run three
 control planes, so etcd keeps quorum when one fails, and that is the
