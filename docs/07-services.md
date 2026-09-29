@@ -149,7 +149,8 @@ apply that replaced one would cut the ground from under itself: a sealed
 OpenBao cannot encrypt the state at the end of the run.
 
 So the stack has its own project, `opentofu/foundation/`, which does not
-stand on it:
+stand on it. It is called foundation because everything else is built on
+what it runs:
 
 | | Main project `opentofu/` | Foundation `opentofu/foundation/` |
 |--|--------------------------|-----------------------------------|
