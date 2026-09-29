@@ -40,15 +40,15 @@ please tell me through a [private security report](.github/SECURITY.md).
 ## Diagrams
 
 <p align="center">
-  <img src="diagrams/overview.png" alt="Homelab overview: ISP router, Wi-Fi access point and a Proxmox host running the Talos VMs and the services VM with OpenBao and Garage containers, with admin access from a laptop or phone only over Tailscale">
+  <img src="diagrams/overview.png" alt="Homelab overview: ISP router, Wi-Fi access point and a Proxmox host running a services VM with Caddy, OpenBao and Garage, and the planned Talos VMs, with admin access from a laptop or phone only over Tailscale">
   <br>
-  <sub><b>Overview.</b> One flat LAN, Talos VMs bridged onto it, management over Tailscale only.</sub>
+  <sub><b>Overview.</b> One flat LAN, a services VM and the planned Talos VMs bridged onto it, management over Tailscale only.</sub>
 </p>
 
 <p align="center">
-  <img src="diagrams/proxmox.png" alt="Proxmox host plan: 32 GB of RAM split between the host, the OpenBao and Garage LXC containers, one control plane and three workers on the vmbr0 bridge, and the NVMe split into VM and LXC disks, ISOs and swap">
+  <img src="diagrams/proxmox.png" alt="Proxmox host plan: 32 GB of RAM split between the host, the services VM and the planned control plane and three workers on the vmbr0 bridge, and the NVMe split into VM disks, ISOs and swap">
   <br>
-  <sub><b>Proxmox.</b> Planned split of RAM and disk between the host, OpenBao, one control plane and three workers. Production needs three control planes for etcd quorum; one is used here to leave more room for apps (<a href="docs/01-proxmox.md#planned-vms">why</a>).</sub>
+  <sub><b>Proxmox.</b> Split of RAM and disk between the host, the services VM, and the planned control plane and three workers. Production needs three control planes for etcd quorum; one is used here to leave more room for apps (<a href="docs/01-proxmox.md#planned-vms">why</a>).</sub>
 </p>
 
 <p align="center">
@@ -237,7 +237,6 @@ phase page.
       services VM has run for a while.
 - [ ] Rotate what is due in the rotation table
       ([04. Secrets, Rotation](docs/04-secrets.md#rotation)).
-- [ ] Update the overview and Proxmox diagrams for the services VM.
 - [ ] Tailnet-only access for app admin UIs on the LoadBalancer pool
       (subnet router, `tailscale serve` or per-VM firewall), before any UI
       goes live.
