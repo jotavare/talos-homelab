@@ -1,0 +1,1 @@
+homelab_config: "{{ lookup('community.hashi_vault.vault_kv2_get', 'config', engine_mount_point='kv').secret }}"

@@ -142,54 +142,15 @@
   no_log: true
   changed_when: true
 
-- name: Ask for the OpenBao password
-  ansible.builtin.pause:
-    prompt: "OpenBao password for {{ services_bao_user }}"
-    echo: false
-  register: services_bao_password_prompt
-  when: services_bao_password | length == 0
-
-- name: Log in to OpenBao
-  ansible.builtin.uri:
-    url: "http://{{ services_bao_ip.stdout }}:8200/v1/auth/userpass/login/{{ services_bao_user }}"
-    method: POST
-    body_format: json
-    body:
-      password: "{{ services_bao_password if services_bao_password | length > 0 else services_bao_password_prompt.user_input }}"
-  register: services_bao_login
-  no_log: true
-  check_mode: false
-
-- name: Read the stack's secrets from OpenBao
-  ansible.builtin.uri:
-    url: "http://{{ services_bao_ip.stdout }}:8200/v1/kv/data/{{ item.path }}"
-    headers:
-      X-Vault-Token: "{{ services_bao_login.json.auth.client_token }}"
-  loop: "{{ services_secrets }}"
-  register: services_bao_secrets
-  no_log: true
-  check_mode: false
-
-- name: Write the secrets for Compose
+- name: Write the secrets for Compose from OpenBao
   ansible.builtin.copy:
-    content: "{{ item.json.data.data[item.item.field] }}"
-    dest: "/srv/secrets/{{ item.item.file }}"
+    content: "{{ lookup('community.hashi_vault.vault_kv2_get', item.path, engine_mount_point='kv').secret[item.field] }}"
+    dest: "/srv/secrets/{{ item.file }}"
     owner: root
     group: root
     mode: "0400"
-  loop: "{{ services_bao_secrets.results }}"
+  loop: "{{ services_secrets }}"
   no_log: true
-
-- name: Log out of OpenBao
-  ansible.builtin.uri:
-    url: "http://{{ services_bao_ip.stdout }}:8200/v1/auth/token/revoke-self"
-    method: POST
-    headers:
-      X-Vault-Token: "{{ services_bao_login.json.auth.client_token }}"
-    status_code: [204]
-  no_log: true
-  changed_when: false
-  check_mode: false
 
 - name: Start Garage
   ansible.builtin.command: >-
