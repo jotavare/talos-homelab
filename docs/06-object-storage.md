@@ -105,13 +105,13 @@ daily backup and the break-glass copies in Bitwarden
 
 ## Setup
 
-The container is in [opentofu/foundation/garage.tf](../opentofu/foundation/garage.tf)
+The container is in [opentofu/services/garage.tf](../opentofu/services/garage.tf)
 ([07. Services VM](07-services.md#setup)):
 
 | File | What it is |
 |------|------------|
-| [garage.tf](../opentofu/foundation/garage.tf) | Garage on `backend`, the RPC secret in `/run/secrets/`, data under `/srv/garage` |
-| [garage.toml](../services/garage/garage.toml) | Replication factor 1, LMDB, S3 API on `3900`, region `garage` |
+| [garage.tf](../opentofu/services/garage.tf) | Garage on `backend`, the RPC secret in `/run/secrets/`, data under `/srv/garage` |
+| [garage.toml](../opentofu/services/files/garage/garage.toml) | Replication factor 1, LMDB, S3 API on `3900`, region `garage` |
 
 Buckets and keys, made with the CLI inside the container:
 

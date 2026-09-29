@@ -231,7 +231,7 @@ phase page.
 - [ ] Cloud-init for VM 130 (Docker, the guest agent, unattended upgrades,
       the `docker` group), so a rebuilt VM needs no manual step.
 - [ ] State of both OpenTofu projects in a Cloudflare R2 bucket created
-      by OpenTofu, off the host; the foundation state leaves the laptop.
+      by OpenTofu, off the host; the services state leaves the laptop.
 - [ ] Break-glass copies of the Proxmox API token and the Garage key
       `opentofu` in Bitwarden
       ([04. Secrets](docs/04-secrets.md#the-loop-and-the-way-out)).
