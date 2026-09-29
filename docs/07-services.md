@@ -1,9 +1,8 @@
 # Services VM
 
 The services that run outside the cluster, as one Docker Compose stack
-in a VM: OpenBao, a Caddy reverse proxy and Tailscale, later Garage. It
-replaced the OpenBao container (`130`), and the Garage container (`140`)
-moves in next.
+in a VM: OpenBao, Garage, a Caddy reverse proxy and Tailscale. It
+replaced the OpenBao container (`130`) and the Garage container (`140`).
 
 ## Why
 
@@ -17,7 +16,7 @@ volumes, which ports, how the services reach each other.
 |--------|--------|-----|
 | Where Docker runs | A VM | Proxmox recommends a VM for Docker. Docker inside an LXC container shares the host kernel, and updates to Docker, `runc`, LXC or the kernel have broken it before |
 | Reverse proxy | Caddy | The whole config is a short `Caddyfile` in git, and it gets Let's Encrypt certificates by itself |
-| Secrets for the stack | OpenBao | App secrets live in OpenBao ([04. Secrets](04-secrets.md#what-stays-in-sops)) |
+| Secrets for the stack | OpenBao | App secrets live in OpenBao ([04. Secrets](04-secrets.md#where-secrets-live)) |
 
 Reverse proxies considered:
 
@@ -55,7 +54,7 @@ Docker network, `backend`, which has no route out:
 | `tailscale` (project `caddy`) | `tailscale/tailscale:v1.102.5`, pinned by digest | Joins the tailnet as one device, `services`, `tag:services`. Caddy shares its network, so the proxy is only reachable over the tailnet. Also on `backend` |
 | `caddy` (project `caddy`) | Built from [services/caddy/Dockerfile](../services/caddy/Dockerfile): `caddy:2.11.4` plus `caddy-dns/cloudflare` v0.2.4 | Listens on 443 of the tailnet address. Certificates for each name from Let's Encrypt through Cloudflare DNS-01 |
 | `openbao` (project `openbao`) | `openbao/openbao:2.7.0`, pinned by digest | The same OpenBao, on `backend` only, port `8200`. Only Caddy reaches it |
-| `garage` | `dxflrs/garage:v2.4.1` | Later. The S3 API on the LAN for the cluster |
+| `garage` (project `garage`) | `dxflrs/garage:v2.4.1`, pinned by digest | S3 API on `backend`, reached through Caddy as `s3.home.<domain>` ([06. Object storage](06-object-storage.md)) |
 
 Every image is pinned to a version and a digest, so an update is a
 commit.
@@ -80,27 +79,27 @@ before Tailscale has a key, which the deploy needs (below).
 
 ### Secrets
 
-The stack's secrets come from OpenBao, not SOPS:
+The stack's secrets come from OpenBao:
 
 | Secret | OpenBao path | Used by |
 |--------|--------------|---------|
 | Cloudflare token for DNS-01 | `kv/services/caddy` | Caddy |
 | Tailscale auth key, pre-signed for Tailnet Lock | `kv/services/tailscale` | The `tailscale` container, first start only |
-| Garage keys | `kv/services/garage` | Later |
+| Garage RPC secret | `kv/services/garage` | Garage |
 
 | Step | How |
 |------|-----|
 | Store | By hand with `bao kv put`, logged in as `jotavare` |
-| Deploy | Ansible reads them from OpenBao on the VM itself, over `backend`, logging in as `jotavare`, then writes them as files only root can read in `/srv/secrets/` and logs out |
+| Deploy | Ansible on the laptop reads them with my `bao login` token (`community.hashi_vault`) and writes them to the VM as files only root can read in `/srv/secrets/` |
 | Use | Compose `secrets:` mount them at `/run/secrets/`. Tailscale reads `TS_AUTHKEY=file:/run/secrets/...`, Caddy reads `{file./run/secrets/cloudflare_token}`. Never environment variables with the value |
 
 After a reboot OpenBao starts sealed, but the stack still comes up:
 Caddy keeps its certificates on a volume and Tailscale its node state, so
 neither needs a secret until a renewal or a new deploy.
 
-What stays in SOPS does not change: the Proxmox token, the state
-passphrase and the two Cloudflare tokens OpenTofu uses. OpenTofu creates
-this VM, so those are needed before OpenBao is there.
+OpenTofu's own secrets are in OpenBao too, even though OpenTofu creates
+this VM. The way out of that loop is in
+[04. Secrets](04-secrets.md#the-loop-and-the-way-out).
 
 ### Moving OpenBao
 
@@ -125,15 +124,16 @@ same data.
 
 | Resource | Before | Now | After Garage moves in |
 |----------|--------|-----|-----------------------|
-| RAM for the host | 3 GB | 2 GB | 2.5 GB |
-| Guests outside the cluster | Two containers, 1 GB | VM 1.5 GB, Garage 0.5 GB | VM 1.5 GB |
+| RAM for the host | 3 GB | 2.5 GB | 2.5 GB |
+| Guests outside the cluster | Two containers, 1 GB | VM 1.5 GB | VM 1.5 GB |
 
 The VM uses about 0.5 GB of its 1.5 GB with the stack running.
 
 ### What went away
 
 - Tailscale inside the OpenBao container, and Tailscale Serve on `pve`.
-- The OpenBao Ansible role. The Garage role goes when Garage moves in.
+- The OpenBao and Garage containers, their Ansible roles, and the Debian
+  container template.
 - The `lego` idea for OpenBao's certificate.
 
 ## Setup
@@ -143,12 +143,13 @@ The VM uses about 0.5 GB of its 1.5 GB with the stack running.
 | [services/openbao/compose.yaml](../services/openbao/compose.yaml) | OpenBao, its config and data |
 | [services/openbao/openbao.hcl](../services/openbao/openbao.hcl) | Raft storage, listener on `8200` without TLS (Caddy does TLS) |
 | [services/caddy/compose.yaml](../services/caddy/compose.yaml) | Tailscale and Caddy, the secret files, UDP `41641` |
-| [services/caddy/Caddyfile](../services/caddy/Caddyfile) | The two names, DNS-01 through Cloudflare |
+| [services/caddy/conf/Caddyfile](../services/caddy/conf/Caddyfile) | The three names, DNS-01 through Cloudflare. The folder is mounted, not the file, so an edit reaches the container |
+| [services/garage/](../services/garage/) | Garage, see [06. Object storage](06-object-storage.md#setup) |
 | [services/caddy/Dockerfile](../services/caddy/Dockerfile) | Caddy with the Cloudflare module |
 | [ansible/roles/services/](../ansible/roles/services/) | Everything on the VM |
 
 The domain and the email reach the stack through a `.env` file per
-project that Ansible writes from SOPS, so neither is in the repo.
+project that Ansible writes from OpenBao's `kv/config`, so neither is in the repo.
 
 What the role does, in order:
 
@@ -156,16 +157,17 @@ What the role does, in order:
 |------|--------|
 | Packages | `docker.io`, `docker-compose`, `qemu-guest-agent`, `unattended-upgrades` with the host's drop-in |
 | Network | Creates `backend` with `--internal` |
-| Files | Copies both projects and writes their `.env` |
+| Files | Copies the three projects and writes their `.env` |
 | Data guard | Stops if `/srv/openbao` is empty, so it never starts a blank OpenBao by mistake |
 | OpenBao | Gives the data to the image's user, starts the project and waits for it |
 | Unseal | Only if sealed; the key comes from `BAO_UNSEAL_KEY` or a hidden prompt |
-| Secrets | Logs in (`BAO_PASSWORD` or a hidden prompt), reads `kv/services/*`, writes `/srv/secrets/*` as `0400`, logs out |
-| Proxy | Builds Caddy and starts the project |
+| Secrets | Reads `kv/services/*` from the laptop, writes `/srv/secrets/*` as `0400` |
+| Garage | Starts the project |
+| Caddy | Builds Caddy, starts Tailscale and Caddy, reloads Caddy when its config changed |
 
 ```bash
 cd ansible
-./run.sh services.yml    # asks for the password, and the unseal key if sealed
+ansible-playbook services.yml    # after bao login; asks for the unseal key only if sealed
 ```
 
 Checks at the end of every run:
