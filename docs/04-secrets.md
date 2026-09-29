@@ -237,7 +237,7 @@ shared outside Bitwarden and is replaced first.
 |------------|----------|-------|------|-----|
 | OpenBao unseal key | Bitwarden, printed copy | Year | Now | `bao operator rekey -init -key-shares=1 -key-threshold=1`, then the old key; the new one goes to Bitwarden and paper |
 | OpenBao `jotavare` password | Bitwarden | 6 months | Now | `bao write auth/userpass/users/jotavare/password password=...` |
-| Cloudflare `caddy-dns` token | OpenBao `kv/services/caddy` | Year | Now | Roll in the dashboard, `bao kv put`, redeploy the services VM |
+| Cloudflare `caddy-dns` token | OpenBao `kv/services/caddy` | Year | 2027-09 | Roll in the dashboard, `bao kv put`, run the `services` playbook: it restarts Caddy when the secret changed |
 | Cloudflare `opentofu-dns` token | OpenBao `kv/opentofu` | Year | 2027-09 | Roll in the dashboard, store the new value |
 | Cloudflare `pve-acme` token | OpenBao `kv/opentofu`, then Proxmox | Year | 2027-09 | Roll, store, raise `data_wo_version`, apply |
 | Proxmox API token `tofu@pve!opentofu` | OpenBao `kv/opentofu`, Bitwarden | Year | 2027-09 | New token in the UI, store it, delete the old one |

@@ -161,7 +161,7 @@ What the role does, in order:
 | Data guard | Stops if `/srv/openbao` is empty, so it never starts a blank OpenBao by mistake |
 | OpenBao | Gives the data to the image's user, starts the project and waits for it |
 | Unseal | Only if sealed; the key comes from `BAO_UNSEAL_KEY` or a hidden prompt |
-| Secrets | Reads `kv/services/*` from the laptop, writes `/srv/secrets/*` as `0400` |
+| Secrets | Reads `kv/services/*` from the laptop, writes `/srv/secrets/*` as `0400`, and restarts the service whose secret changed |
 | Garage | Starts the project |
 | Caddy | Builds Caddy, starts Tailscale and Caddy, reloads Caddy when its config changed |
 
