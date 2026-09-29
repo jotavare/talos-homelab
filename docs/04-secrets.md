@@ -1,59 +1,57 @@
 # Secrets
 
-How secrets are kept in a public repo: OpenBao, outside the cluster, for
-almost everything, and SOPS in git for the few secrets needed before
-OpenBao exists.
+How secrets are kept in a public repo: every secret lives in OpenBao,
+outside the cluster, and OpenTofu and Ansible read it from there at run
+time. SOPS started as the store for the first few secrets and is now
+only an example in the repo.
 
-## Why two tools
-
-OpenBao runs in its own container on Proxmox, created by OpenTofu. The
-few secrets OpenTofu needs to create it cannot live in it yet.
+## Where secrets live
 
 | Secret | Where | Why |
 |--------|-------|-----|
-| Bootstrap secrets (Proxmox API token for OpenTofu) | Encrypted in git with **SOPS + age** | Needed before OpenBao exists. The repo alone rebuilds everything, with one key |
-| Talos machine secrets, the Garage keys, the Tailscale auth key for the nodes | **OpenBao** | OpenBao runs outside the cluster, so it is there before the cluster is |
-| Secrets of the services stack (Caddy's Cloudflare token, the Tailscale auth key) | **OpenBao**, read by Ansible at deploy time | The stack runs next to OpenBao, so it reads them from there |
+| OpenTofu's tokens (Proxmox, Cloudflare) and the Garage key for its state | **OpenBao** `kv/opentofu`, read by the `vault` provider as ephemeral values | Never written to the state or to disk |
+| Settings (domain, zone ID, addresses, email) | **OpenBao** `kv/config` | Private rather than secret, but kept out of the public repo |
+| Secrets of the services stack | **OpenBao** `kv/services/*`, read by Ansible | Written to the VM as root-only files for Compose |
+| OpenTofu state encryption | **OpenBao** Transit key `opentofu-state` | The key never leaves OpenBao, and there is no passphrase to keep |
 | App secrets (database passwords, API keys) | **OpenBao**, read by **External Secrets Operator** | Git holds only references, no values at all |
-| The age private key | Bitwarden, plus a printed offline copy | It decrypts every SOPS file, so it cannot be in the repo |
-| OpenBao unseal keys and root token | Bitwarden, plus a printed offline copy | They open OpenBao, so they cannot be inside it |
+| OpenBao unseal key, my OpenBao password, the age key | Bitwarden, plus a printed offline copy | They open everything else, so they cannot be inside it |
+| Break-glass copies of the Proxmox token and the Garage state key | Bitwarden | Enough to reach Proxmox and the state if OpenBao is gone |
 
-Keeping the bootstrap secrets only in Bitwarden would mean one tool
-fewer, but a rebuild would then need each secret copied by hand, against
-the Reproducible and GitOps goals. With SOPS, a rebuild needs the repo
-and one key.
+### The loop, and the way out
+
+OpenTofu reads its tokens from OpenBao, keeps its state in Garage and
+encrypts it with an OpenBao key, and all of that runs in the services VM
+that OpenTofu itself created. So OpenTofu cannot run while the VM is down
+or OpenBao is sealed, including the day the VM needs rebuilding.
+
+The way out needs no OpenTofu:
+
+1. Restore VM `130` from its daily Proxmox backup
+   (`qmrestore <archive> 130`), or the whole host from backups.
+2. Unseal OpenBao with the key from Bitwarden.
+3. Everything else works again as before.
+
+If the backups are gone too, the break-glass copies in Bitwarden are
+enough to create a new VM by hand, start OpenBao from its Raft data and
+point OpenTofu at it.
 
 ### SOPS or OpenBao
 
-Almost every secret here is one an app in the cluster needs: off-the-shelf
-software that reads a Kubernetes Secret. Both tools can deliver that; they
-differ in where the secret lives.
+Both can deliver secrets; they differ in where the secret lives.
 
-| | SOPS + age | OpenBao + External Secrets Operator |
-|--|------------|-------------------------------------|
+| | SOPS + age | OpenBao |
+|--|------------|---------|
 | Extra service to run | None | Yes, it must stay up, unsealed and backed up |
 | Where secrets live | In git, encrypted | In OpenBao's storage, never in git |
-| Off-the-shelf apps | Yes | Yes: ESO writes a plain Kubernetes Secret, the app never knows |
 | Rotating a secret | Edit, commit, push | An API call, no git change |
 | Audit log of every read | No, only git history | Yes |
 | Dynamic, short-lived credentials | No | Yes |
 | Order at startup | None | OpenBao must be up before anything that needs it |
-| Backup | Every clone is one | Its storage is the only copy |
+| Backup | Every clone is one | Its storage and the VM backup |
 
-OpenBao is not a layer under SOPS; they are two answers to the same
-question. SOPS covers what has to exist before OpenBao does, OpenBao
-covers the rest.
-
-### What stays in SOPS
-
-The rule is one question: is it needed to create or restore OpenBao? The
-Proxmox API token creates the OpenBao container, and the state passphrase
-decrypts the state that describes it. Stored in OpenBao, a rebuild would
-need them from the very thing being rebuilt. OpenBao also starts sealed
-after every reboot, so every OpenTofu or Ansible run would first need an
-unseal and a login. The host address and the domain are private rather
-than secret, and every run needs them before OpenBao is reachable.
-Anything else goes to OpenBao.
+The first version kept the secrets needed before OpenBao existed in SOPS.
+Once OpenBao ran, they moved into it, so one tool holds everything. SOPS
+is still set up, with one example file, to show how it works.
 
 ## Tools
 
@@ -64,6 +62,7 @@ Installed on the laptop from the official GitHub releases into
 |------|---------|------|
 | [age](https://github.com/FiloSottile/age) | 1.3.2 | The key pair: a public key to encrypt, a private key to decrypt |
 | [SOPS](https://github.com/getsops/sops) | 3.13.3 | Encrypts the values in YAML files, keeps the keys readable |
+| [OpenBao CLI](https://github.com/openbao/openbao/releases) (`bao`) | 2.7.0 | Logs in to OpenBao and reads or writes secrets |
 
 ## The age key
 
@@ -79,33 +78,47 @@ SOPS finds the key at that path by itself. The private key went to
 Bitwarden straight from the terminal. The public key is in
 [.sops.yaml](../.sops.yaml) and is safe to publish.
 
-## Rules
+## SOPS example
 
 [.sops.yaml](../.sops.yaml) encrypts every file named `*.sops.yaml` with
-that key. Only the values become ciphertext, so diffs still show which
-key changed.
+the age key. Only the values become ciphertext, so diffs still show which
+key changed. [secrets/example.sops.yaml](../secrets/example.sops.yaml)
+holds two random values, only to try it:
 
 ```bash
-sops encrypt -i secrets/env.sops.yaml       # encrypt in place
-sops decrypt secrets/env.sops.yaml          # print the plaintext
-sops secrets/env.sops.yaml                  # edit, re-encrypts on save
+sops decrypt secrets/example.sops.yaml          # print the plaintext
+sops secrets/example.sops.yaml                  # edit, re-encrypts on save
+sops encrypt -i secrets/<new>.sops.yaml         # encrypt a new file in place
 ```
-
-All SOPS files live in [secrets/](../secrets/):
-
-| File | Holds |
-|------|-------|
-| `env.sops.yaml` | Private settings the scripts read: the host's and OpenBao's tailnet addresses, the lab domain, its Cloudflare zone ID, the Let's Encrypt contact |
-| `opentofu.sops.yaml` | The Proxmox API token for OpenTofu, the state encryption passphrase and the two Cloudflare tokens ([05. OpenTofu](05-opentofu.md)) |
 
 Without the key, `sops decrypt` fails with "at least one key has to be
 successful, but none were".
+
+## Using OpenBao from the laptop
+
+`~/.bashrc` sets `BAO_ADDR` and `VAULT_ADDR` to
+`https://openbao.home.<domain>`. One login gives a token for 8 hours,
+stored in `~/.vault-token`, which the `bao` CLI, OpenTofu and Ansible all
+read:
+
+```bash
+bao login -method=userpass username=<user>
+bao kv get -mount=kv config
+```
+
+| Path | Holds |
+|------|-------|
+| `kv/config` | `proxmox_host`, `domain`, `cloudflare_zone_id`, `acme_email`, `services_tailnet_ip` |
+| `kv/opentofu` | The Proxmox API token, the two Cloudflare tokens, the Garage key for the state |
+| `kv/services/caddy`, `tailscale`, `garage` | The stack's secrets |
+| `transit/keys/opentofu-state` | The state encryption key, not exportable, not deletable |
 
 ## Commit guard
 
 A versioned git hook, [.githooks/pre-commit](../.githooks/pre-commit),
 refuses a `*.sops.yaml` file that is not encrypted, and an OpenTofu state
-without `encrypted_data`. It is enabled once
+without `encrypted_data` (the state now lives in Garage, and `*.tfstate`
+is ignored). It is enabled once
 per clone:
 
 ```bash
@@ -118,8 +131,7 @@ second check on GitHub.
 
 ## Key management
 
-One age key encrypts everything today, which is fine for one person on one
-laptop. How it grows:
+How SOPS keys would grow, if SOPS held real secrets again:
 
 - **Several recipients per rule.** A comma-separated list of public keys
   in a `.sops.yaml` rule means any one of them can decrypt. That is how a
@@ -130,8 +142,8 @@ laptop. How it grows:
 - **A break-glass key.** One extra key in every rule, kept offline and on
   no machine: the way back if the main key is lost or has to be rotated.
 - **Rules by path.** The first matching rule wins, so a path can be
-  limited to fewer keys, for example CI reading `env.sops.yaml` but not
-  `opentofu.sops.yaml`.
+  limited to fewer keys, for example CI reading one file but not
+  another.
 - **Re-encrypting after a change.** Adding or removing a recipient takes
   `sops updatekeys <file>` for every affected file. Old copies in git
   history stay readable by the old key, so a leaked key means rotating the
@@ -226,18 +238,19 @@ shared outside Bitwarden and is replaced first.
 | OpenBao unseal key | Bitwarden, printed copy | Year | Now | `bao operator rekey -init -key-shares=1 -key-threshold=1`, then the old key; the new one goes to Bitwarden and paper |
 | OpenBao `jotavare` password | Bitwarden | 6 months | Now | `bao write auth/userpass/users/jotavare/password password=...` |
 | Cloudflare `caddy-dns` token | OpenBao `kv/services/caddy` | Year | Now | Roll in the dashboard, `bao kv put`, redeploy the services VM |
-| Cloudflare `opentofu-dns` token | OpenTofu's secrets | Year | 2027-09 | Roll in the dashboard, store the new value |
-| Cloudflare `pve-acme` token | OpenTofu's secrets, then Proxmox | Year | 2027-09 | Roll, store, raise `data_wo_version`, apply |
-| Proxmox API token `tofu@pve!opentofu` | OpenTofu's secrets | Year | 2027-09 | New token in the UI, store it, delete the old one |
-| OpenTofu state passphrase | OpenTofu's secrets | Year | 2027-09 | Add the new key with the old one as `fallback`, apply, then drop the old one |
-| age key | Laptop, Bitwarden, printed copy | Year | 2027-09 | New key, `sops updatekeys` on every file, remove the old one |
+| Cloudflare `opentofu-dns` token | OpenBao `kv/opentofu` | Year | 2027-09 | Roll in the dashboard, store the new value |
+| Cloudflare `pve-acme` token | OpenBao `kv/opentofu`, then Proxmox | Year | 2027-09 | Roll, store, raise `data_wo_version`, apply |
+| Proxmox API token `tofu@pve!opentofu` | OpenBao `kv/opentofu`, Bitwarden | Year | 2027-09 | New token in the UI, store it, delete the old one |
+| OpenTofu state key (Transit) | OpenBao | Year | 2027-09 | `bao write -f transit/keys/opentofu-state/rotate`; new writes use the new version, old ones still decrypt |
+| Garage key `opentofu` | OpenBao `kv/opentofu`, Bitwarden | Year | 2027-09 | `garage key create`, allow it on the bucket, update OpenBao, delete the old key |
+| age key | Laptop, Bitwarden, printed copy | Only if leaked | | Only the example uses it now |
 | Tailscale auth keys | Used once | Each use | | Generate per device, single use, 7 days; nothing to rotate afterwards |
 | Proxmox `root@pam` password and 2FA recovery keys | Bitwarden | Year | 2027-09 | Web UI, then new recovery keys |
 | Gmail app password (SMTP) | Bitwarden, the host | Year | 2027-09 | New app password, update the notification target |
 | Garage access keys | OpenBao | Year | | `garage key create`, update the client, delete the old key |
 
-Rotating the Cloudflare tokens, the Proxmox token and the state
-passphrase does not need any downtime: the old value keeps working until
+Rotating the Cloudflare tokens, the Proxmox token and the state key
+does not need any downtime: the old value keeps working until
 it is deleted.
 
 ## Alternatives considered
