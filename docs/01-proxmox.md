@@ -592,7 +592,7 @@ The plan for the Talos VMs and the services VM, drawn
 before they exist. It changes if the numbers turn out wrong once the
 cluster runs.
 
-![Proxmox host plan: 32 GB of RAM split between the host, the services VM, one control plane and three workers on the vmbr0 bridge, and the NVMe split into VM and LXC disks, ISOs and swap](../diagrams/proxmox.png)
+![Proxmox host plan: 32 GB of RAM split between the host, the services VM and the planned control plane and three workers on the vmbr0 bridge, and the NVMe split into VM disks, ISOs and swap](../diagrams/proxmox.png)
 
 | VM | vCPU | RAM | Disk | IP |
 |----|------|-----|------|----|
