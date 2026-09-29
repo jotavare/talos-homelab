@@ -77,28 +77,19 @@ API Tokens → Add**:
 | Privilege Separation | unticked |
 | Expire | never |
 
-The popup shows the secret once. It went straight into a SOPS file (see
-[04. Secrets](04-secrets.md)), from a terminal outside the editor:
+The popup shows the secret once. It went into OpenBao at `kv/opentofu`
+as `proxmox_api_token`, in the format token ID, `=`, secret
+(`tofu@pve!opentofu=<secret>`), with a break-glass copy in Bitwarden. It
+first lived in a SOPS file, until OpenBao was running.
+
+A check that never prints the secret:
 
 ```bash
-EDITOR=nano sops secrets/opentofu.sops.yaml
+curl -s -H "Authorization: PVEAPIToken=$(bao kv get -mount=kv -field=proxmox_api_token opentofu)" \
+  https://pve.home.<domain>/api2/json/version   # version 9.2.20
 ```
 
-```yaml
-proxmox_api_token: "tofu@pve!opentofu=<secret>"
-```
-
-The format is the token ID, `=`, then the secret. Checks that never print
-the secret:
-
-```bash
-grep -c "ENC\[" secrets/opentofu.sops.yaml   # 2: one value plus the SOPS MAC
-curl -sk -H "Authorization: PVEAPIToken=$(sops decrypt --extract '["proxmox_api_token"]' secrets/opentofu.sops.yaml)" \
-  https://pve.<tailnet>.ts.net:8006/api2/json/version   # version 9.2.20
-```
-
-Without the header the same request gets `401`. There is no copy in
-Bitwarden: if the file is lost, the token is removed and a new one made.
+Without the header the same request gets `401`.
 
 ## Install
 
@@ -115,94 +106,93 @@ tar xzf tofu_1.12.6_linux_amd64.tar.gz tofu && install -m 755 tofu ~/.local/bin/
 
 | File | What it is |
 |------|------------|
-| [opentofu/versions.tf](../opentofu/versions.tf) | OpenTofu and provider versions, state encryption |
-| [opentofu/providers.tf](../opentofu/providers.tf) | The Proxmox endpoint and the Cloudflare provider |
-| [opentofu/variables.tf](../opentofu/variables.tf) | Values that come from SOPS: addresses, domain, zone, passphrase, a token |
+| [opentofu/versions.tf](../opentofu/versions.tf) | Provider versions, the state backend in Garage, state encryption with OpenBao |
+| [opentofu/providers.tf](../opentofu/providers.tf) | Reads OpenBao, configures Proxmox and Cloudflare with what it read |
 | [opentofu/main.tf](../opentofu/main.tf) | Reads the Proxmox version |
-| [opentofu/templates.tf](../opentofu/templates.tf) | The Debian container template and cloud image |
+| [opentofu/templates.tf](../opentofu/templates.tf) | The Debian cloud image |
 | [opentofu/services.tf](../opentofu/services.tf) | The services VM and its firewall |
-| [opentofu/garage.tf](../opentofu/garage.tf) | The Garage container, its data volume and firewall |
-| [opentofu/backups.tf](../opentofu/backups.tf) | The daily backup job for the containers |
+| [opentofu/backups.tf](../opentofu/backups.tf) | The daily backup job |
 | [opentofu/dns.tf](../opentofu/dns.tf) | DNS records in Cloudflare, pointing at the services stack |
 | [opentofu/acme.tf](../opentofu/acme.tf) | The Let's Encrypt certificate for the Proxmox web UI |
-| [opentofu/run.sh](../opentofu/run.sh) | Runs `tofu` with the secrets from SOPS in its environment |
-| `opentofu/terraform.tfstate` | The state, encrypted, kept in git |
-| `opentofu/.terraform.lock.hcl` | Pinned provider checksums, kept in git |
+| `opentofu/.terraform.lock.hcl` | Pinned provider checksums, kept in git, as OpenTofu recommends |
 
-`run.sh` is a table: each `load` line names an environment variable, the
-SOPS file in [secrets/](../secrets/) and the key to decrypt into it, for
-that one command. Nothing is written to disk in plain text. A new value
-is one more line:
-
-```sh
-load TF_VAR_domain                     env.sops.yaml       DOMAIN
-load CLOUDFLARE_API_TOKEN              opentofu.sops.yaml  cloudflare_dns_token
-```
-
-Run it with:
+There is no wrapper script. After one `bao login`, plain `tofu` works:
 
 ```bash
-opentofu/run.sh init
-opentofu/run.sh plan
-opentofu/run.sh apply
+bao login -method=userpass username=<user>
+cd opentofu
+tofu init
+tofu plan
+tofu apply
 ```
 
-The provider talks to the web UI by its tailnet IP, so it cannot check
-the certificate (`insecure = true`). The traffic stays inside the
-tailnet. The web UI now has a real certificate
-([DNS and certificates](#dns-and-certificates)); switching the provider
-to that name is in the Backlog.
+### Secrets from OpenBao
+
+The `hashicorp/vault` provider works with OpenBao. It finds OpenBao
+through `VAULT_ADDR` and the login through `~/.vault-token`:
+
+| Block | Reads | Kept in the state |
+|-------|-------|-------------------|
+| `ephemeral "vault_kv_secret_v2" "opentofu"` | The Proxmox and Cloudflare tokens | No: ephemeral values only exist during the run |
+| `data "vault_kv_secret_v2" "config"` | Domain, zone ID, addresses | Yes, encrypted with the rest; none of it is secret |
+
+The Proxmox and Cloudflare providers take the tokens straight from the
+ephemeral values. The `pve-acme` token reaches Proxmox through `data_wo`,
+a write-only argument, so it is never stored either.
+
+The provider warns that the `config` data source is deprecated in favour
+of ephemeral reads. Ephemeral values cannot go into normal resource
+arguments such as a DNS record's name, so for settings the data source
+stays.
+
+OpenTofu reaches Proxmox as `https://pve.home.<domain>`, through Caddy,
+with the certificate checked.
+
+### State in Garage
+
+The state lives in the Garage bucket `opentofu-state`
+([06. Object storage](06-object-storage.md)) through the `s3` backend,
+with `use_lockfile` for locking. Credentials and the endpoint come from a
+local AWS profile, not from the repo:
+
+```ini
+[profile garage]
+region = garage
+endpoint_url = https://s3.home.<domain>
+credential_process = bao kv get -format=json -mount=kv opentofu | python3 -c '...'
+```
+
+`credential_process` is the AWS SDK's own hook: it runs the command when
+it needs a key, and the command prints the Garage key from OpenBao as
+JSON. The key is never written to disk.
+
+The state was first a file in git, then moved with
+`tofu init -migrate-state`. It was then removed from every commit in the
+history with `git filter-branch`, so no old state is left in the repo.
 
 ## State encryption
 
-The state records everything OpenTofu manages, including secrets: later
-the Talos cluster CA and etcd keys, the kubeconfig and the talosconfig.
-OpenTofu encrypts the state and every saved plan with AES-GCM, using a key
-derived (PBKDF2) from a passphrase. `enforced = true` makes it refuse to
-write anything unencrypted.
+The state records everything OpenTofu manages, and later the Talos
+cluster CA and etcd keys. OpenTofu encrypts the state and every saved
+plan with AES-GCM, and `enforced = true` makes it refuse to write
+anything unencrypted.
 
-The passphrase was generated straight into the SOPS file, never shown:
+The key comes from OpenBao's Transit engine, through OpenTofu's built-in
+`openbao` key provider:
 
 ```bash
-openssl rand -base64 32 \
-  | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read().strip()))' \
-  | sops set --value-stdin secrets/opentofu.sops.yaml '["state_passphrase"]'
+bao secrets enable transit
+bao write -f transit/keys/opentofu-state type=aes256-gcm96
 ```
 
-Encrypted, the state can live in git, and the repo is its backup. It only
-contains `encrypted_data`; with a wrong passphrase OpenTofu stops with
-"decryption failed for all provided methods". The commit guard
-([04. Secrets](04-secrets.md#commit-guard)) also refuses a state without
-`encrypted_data`.
+OpenTofu asks Transit for a data key on every write, and Transit keeps the
+master key, which cannot be exported or deleted. There is no passphrase to
+store or leak. With OpenBao sealed, OpenTofu cannot read the state at all.
 
-The passphrase for this project stays in SOPS: this state creates
-OpenBao, so its key cannot live in OpenBao
-([04. Secrets, What stays in SOPS](04-secrets.md#what-stays-in-sops)).
-Later projects that do not build OpenBao, such as its configuration, can
-use OpenBao as their key provider.
-
-A single state file in git has no locking. That is fine with one person
-running OpenTofu from one laptop. Every old state also stays in git
-history: if the passphrase and the age key ever leaked, those could be
-read too, and a new passphrase only protects new commits. The production
-way is a remote backend with locking; see the POC trade-offs in the
-[readme](../README.md#poc-trade-offs).
-
-The Garage bucket ([06. Object storage](06-object-storage.md)) could be
-that backend, but not for this project. This state creates the Garage
-container, so losing Garage would lose the state needed to rebuild it.
-Garage also has no versioning and no copy off the host, while git has
-both. A remote backend fits later projects, once the buckets have a copy
-off the host.
-
-Every run needs the age private key, which lives only on the laptop
-(`~/.config/sops/age/keys.txt`): it decrypts the SOPS file, which holds
-the passphrase that decrypts the state. Another machine needs a copy of
-the key from Bitwarden. CI would get its own age key, added as a second
-recipient in `.sops.yaml`, never this one.
-
-`.terraform.lock.hcl` is in git as well, as OpenTofu recommends: it pins
-the provider versions and checksums and holds no secrets.
+The first version used a passphrase (PBKDF2) kept in SOPS. The switch was
+one run with both methods, the passphrase as `fallback`: OpenTofu read
+the state with the old key and wrote it with the new one. Then the
+fallback and the passphrase were removed.
 
 ## First plan
 
@@ -210,7 +200,7 @@ Only reads Proxmox, to prove the connection, the token and the
 encryption:
 
 ```bash
-opentofu/run.sh plan
+tofu plan
 # data.proxmox_version.pve: Read complete
 # + proxmox_version = "9.2.20"
 ```
@@ -241,35 +231,10 @@ it is not written in the repo.
 
 ## Garage container
 
-In [opentofu/garage.tf](../opentofu/garage.tf), next to OpenBao and from
-the same template. The design is in
-[06. Object storage](06-object-storage.md#design).
-
-| Resource | What it does |
-|----------|--------------|
-| `proxmox_virtual_environment_container.garage` | Container `140`, unprivileged, 1 core, 512 MB RAM, no swap, 4 GB root plus a 10 GB data volume at `/var/lib/garage/data`, `192.168.1.40`, starts at boot with `order = 1` |
-| `proxmox_virtual_environment_firewall_options.garage` | Container firewall on, inbound `DROP`, outbound `ACCEPT` |
-| `proxmox_virtual_environment_firewall_rules.garage` | Only TCP `3900` in, and only from OpenBao (`192.168.1.30`) |
-
-The data volume sets `backup = true`: Proxmox leaves mount point volumes
-out of backups unless told otherwise.
-
-```bash
-opentofu/run.sh plan    # Plan: 3 to add, 0 to change, 0 to destroy.
-opentofu/run.sh apply
-```
-
-Checks on the host:
-
-```bash
-pct config 140                  # mp0: local-lvm:vm-140-disk-1,mp=/var/lib/garage/data,backup=1,size=10G
-cat /etc/pve/firewall/140.fw    # policy_in: DROP, IN ACCEPT -source 192.168.1.30 -p tcp -dport 3900
-pct exec 140 -- df -h /var/lib/garage/data
-```
-
-Idle, the container uses under 20 MB of its 512 MB. Like OpenBao, it
-comes with an SSH server from the template, which the Ansible role
-removes.
+Garage first ran in its own container `140`, created here from the Debian
+container template. It moved into the services VM
+([06. Object storage](06-object-storage.md)), and the container, its
+firewall and the template were removed (`4 to destroy`).
 
 ## Backup job
 
@@ -290,8 +255,8 @@ import {
 ```
 
 ```bash
-opentofu/run.sh plan    # Plan: 1 to import, 0 to add, 0 to change, 0 to destroy.
-opentofu/run.sh apply
+tofu plan    # Plan: 1 to import, 0 to add, 0 to change, 0 to destroy.
+tofu apply
 ```
 
 Drift test: `keep-last` changed to 3 on the host showed up in the next
@@ -331,10 +296,11 @@ can be revoked alone:
 
 | Token | Used by | Kept in |
 |-------|---------|---------|
-| `opentofu-dns` | OpenTofu, for the records (`CLOUDFLARE_API_TOKEN`) | `opentofu.sops.yaml` |
-| `pve-acme` | Proxmox, to renew its certificate | `opentofu.sops.yaml`, then Proxmox's own plugin config |
+| `opentofu-dns` | OpenTofu, for the records | OpenBao `kv/opentofu` |
+| `pve-acme` | Proxmox, to renew its certificate | OpenBao `kv/opentofu`, then Proxmox's own plugin config |
+| `caddy-dns` | Caddy, for the services stack | OpenBao `kv/services/caddy` |
 
-The zone ID is in `env.sops.yaml`, so the tokens need no Zone Read
+The zone ID is in `kv/config`, so the tokens need no Zone Read
 permission. The `pve-acme` token reaches Proxmox through `data_wo`, a
 write-only argument: OpenTofu sends it but never stores it in the state.
 Changing it means raising `data_wo_version`.
@@ -353,8 +319,8 @@ plain labels, so `*` is refused. With per-host certificates that does not
 matter.
 
 ```bash
-opentofu/run.sh plan    # Plan: 4 to add, 0 to change, 0 to destroy.
-opentofu/run.sh apply   # the certificate took 51 seconds
+tofu plan    # Plan: 4 to add, 0 to change, 0 to destroy.
+tofu apply   # the certificate took 51 seconds
 ```
 
 Checks:
