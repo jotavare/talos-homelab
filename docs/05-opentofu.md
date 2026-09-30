@@ -115,7 +115,7 @@ One project in [opentofu/](../opentofu/), one state:
 | [templates.tf](../opentofu/templates.tf), [services.tf](../opentofu/services.tf) | The Debian cloud image, the services VM and its firewall |
 | [backups.tf](../opentofu/backups.tf) | The daily backup job |
 | [dns.tf](../opentofu/dns.tf), [acme.tf](../opentofu/acme.tf) | DNS records, the Proxmox certificate |
-| [network.tf](../opentofu/network.tf), [openbao.tf](../opentofu/openbao.tf), [garage.tf](../opentofu/garage.tf), [caddy.tf](../opentofu/caddy.tf) | The containers on the services VM, with their config in [files/](../opentofu/files/) ([07. Services VM](07-services.md)) |
+| [network.tf](../opentofu/network.tf), [openbao.tf](../opentofu/openbao.tf), [garage.tf](../opentofu/garage.tf), [caddy.tf](../opentofu/caddy.tf), [pocketid.tf](../opentofu/pocketid.tf) | The containers on the services VM, with their config in [files/](../opentofu/files/) ([07. Services VM](07-services.md)) |
 | [vault.tf](../opentofu/vault.tf) | OpenBao's own configuration: `kv`, `userpass`, the `admin` policy, my user's token settings |
 | [tailscale.tf](../opentofu/tailscale.tf) | The tailnet policy ([02. Tailscale](02-tailscale.md#policy-in-opentofu)) |
 | `terraform.tfstate`, `terraform.tfvars` | Local only, git-ignored |
@@ -260,6 +260,7 @@ Public A records in Cloudflare point each name at its tailnet IP:
 | `pve.home.<domain>` | The services stack's tailnet IP; Caddy forwards to the web UI |
 | `proxmox.home.<domain>` | `pve`'s own tailnet IP, port `8006`; used by OpenTofu |
 | `s3.home.<domain>` | The services stack's tailnet IP; Caddy forwards to Garage |
+| `auth.home.<domain>` | The services stack's tailnet IP; Caddy forwards to Pocket ID |
 | `openbao.home.<domain>` | The services stack's tailnet IP; Caddy forwards to OpenBao |
 
 They resolve for anyone, but the `100.x` addresses only answer inside the
