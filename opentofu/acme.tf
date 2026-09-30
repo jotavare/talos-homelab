@@ -13,10 +13,15 @@ resource "proxmox_acme_dns_plugin" "cloudflare" {
 resource "proxmox_acme_certificate" "pve" {
   node_name = "pve"
   account   = "default"
+  force     = true
 
   domains = [
     {
       domain = cloudflare_dns_record.pve.name
+      plugin = proxmox_acme_dns_plugin.cloudflare.plugin
+    },
+    {
+      domain = cloudflare_dns_record.proxmox.name
       plugin = proxmox_acme_dns_plugin.cloudflare.plugin
     },
   ]

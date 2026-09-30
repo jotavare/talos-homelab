@@ -10,40 +10,30 @@ terraform {
       source  = "cloudflare/cloudflare"
       version = "~> 5.26"
     }
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 4.6"
+    }
     vault = {
       source  = "hashicorp/vault"
       version = "~> 5.12"
     }
   }
 
-  backend "s3" {
-    bucket                      = "opentofu-state"
-    key                         = "homelab/terraform.tfstate"
-    profile                     = "garage"
-    region                      = "garage"
-    use_path_style              = true
-    use_lockfile                = true
-    skip_credentials_validation = true
-    skip_region_validation      = true
-    skip_requesting_account_id  = true
-    skip_metadata_api_check     = true
-    skip_s3_checksum            = true
-  }
 
   encryption {
-    key_provider "openbao" "transit" {
-      key_name = "opentofu-state"
-      token    = trimspace(file(pathexpand("~/.vault-token")))
+    key_provider "pbkdf2" "passphrase" {
+      passphrase = var.state_passphrase
     }
-    method "aes_gcm" "openbao" {
-      keys = key_provider.openbao.transit
+    method "aes_gcm" "passphrase" {
+      keys = key_provider.pbkdf2.passphrase
     }
     state {
-      method   = method.aes_gcm.openbao
+      method   = method.aes_gcm.passphrase
       enforced = true
     }
     plan {
-      method   = method.aes_gcm.openbao
+      method   = method.aes_gcm.passphrase
       enforced = true
     }
   }

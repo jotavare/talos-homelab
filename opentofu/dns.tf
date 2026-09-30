@@ -24,3 +24,12 @@ resource "cloudflare_dns_record" "s3" {
   ttl     = 300
   proxied = false
 }
+
+resource "cloudflare_dns_record" "proxmox" {
+  zone_id = local.config["cloudflare_zone_id"]
+  name    = "proxmox.home.${local.domain}"
+  type    = "A"
+  content = var.proxmox_host
+  ttl     = 300
+  proxied = false
+}
