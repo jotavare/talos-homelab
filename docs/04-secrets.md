@@ -9,31 +9,31 @@ only an example in the repo.
 
 | Secret | Where | Why |
 |--------|-------|-----|
-| OpenTofu's tokens (Proxmox, Cloudflare) and the Garage key for its state | **OpenBao** `kv/opentofu`, read by the `vault` provider as ephemeral values | Never written to the state or to disk |
+| OpenTofu's tokens (Proxmox, Cloudflare, Tailscale) | **OpenBao** `kv/opentofu`, read by the `vault` provider as ephemeral values | Never written to the state or to disk |
 | Settings (domain, zone ID, addresses, email) | **OpenBao** `kv/config` | Private rather than secret, but kept out of the public repo |
-| Secrets of the services stack | **OpenBao** `kv/services/*`, read by the services OpenTofu project | Copied into the containers, never onto the VM's disk |
-| OpenTofu state encryption | **OpenBao** Transit key `opentofu-state` | The key never leaves OpenBao, and there is no passphrase to keep |
+| Secrets of the services stack | **OpenBao** `kv/services/*`, read by OpenTofu | Copied into the containers, never onto the VM's disk. They are also in the state, encrypted |
+| OpenTofu state encryption | A passphrase in **Bitwarden**, with a copy in OpenBao `kv/services/opentofu` for everyday runs | The state must stay readable when OpenBao is down |
 | App secrets (database passwords, API keys) | **OpenBao**, read by **External Secrets Operator** | Git holds only references, no values at all |
 | OpenBao unseal key, my OpenBao password, the age key | Bitwarden, plus a printed offline copy | They open everything else, so they cannot be inside it |
-| Break-glass copies of the Proxmox token and the Garage state key | Bitwarden | Enough to reach Proxmox and the state if OpenBao is gone |
+| Break-glass copy of the Proxmox token | Bitwarden | Enough to reach Proxmox if OpenBao is gone |
 
-### The loop, and the way out
+### When OpenBao is down
 
-OpenTofu reads its tokens from OpenBao, keeps its state in Garage and
-encrypts it with an OpenBao key, and all of that runs in the services VM
-that OpenTofu itself created. So OpenTofu cannot run while the VM is down
-or OpenBao is sealed, including the day the VM needs rebuilding.
+OpenTofu reads its tokens from OpenBao, and OpenBao runs in the services
+VM that OpenTofu created. The state does not depend on it: it is a local
+file encrypted with a passphrase, and OpenTofu reaches Proxmox directly,
+not through the services VM.
 
-The way out needs no OpenTofu:
+If OpenBao is sealed, unseal it. If the VM is broken:
 
 1. Restore VM `130` from its daily Proxmox backup
    (`qmrestore <archive> 130`), or the whole host from backups.
 2. Unseal OpenBao with the key from Bitwarden.
-3. Everything else works again as before.
 
-If the backups are gone too, the break-glass copies in Bitwarden are
-enough to create a new VM by hand, start OpenBao from its Raft data and
-point OpenTofu at it.
+If only the OpenBao container is broken, OpenTofu can recreate it without
+OpenBao: `tofu apply -target=docker_container.openbao`, with the
+passphrase from Bitwarden. The domain and addresses it needs come from
+the local `terraform.tfvars`.
 
 ### SOPS or OpenBao
 
@@ -109,10 +109,9 @@ bao kv get -mount=kv config
 | Path | Holds |
 |------|-------|
 | `kv/config` | `proxmox_host`, `domain`, `cloudflare_zone_id`, `acme_email`, `services_tailnet_ip` |
-| `kv/opentofu` | The Proxmox API token, the two Cloudflare tokens, the Garage key for the state |
+| `kv/opentofu` | The Proxmox API token, the two Cloudflare tokens, the Tailscale OAuth client |
 | `kv/services/caddy`, `tailscale`, `garage` | The stack's secrets |
-| `kv/services/opentofu` | The passphrase of the services project's state (also in Bitwarden) |
-| `transit/keys/opentofu-state` | The state encryption key, not exportable, not deletable |
+| `kv/services/opentofu` | The passphrase of the OpenTofu state (also in Bitwarden) |
 
 ## Commit guard
 
@@ -239,16 +238,16 @@ shared outside Bitwarden and is replaced first.
 | Cloudflare `opentofu-dns` token | OpenBao `kv/opentofu` | Year | 2027-09 | Roll in the dashboard, store the new value |
 | Cloudflare `pve-acme` token | OpenBao `kv/opentofu`, then Proxmox | Year | 2027-09 | Roll, store, raise `data_wo_version`, apply |
 | Proxmox API token `tofu@pve!opentofu` | OpenBao `kv/opentofu`, Bitwarden | Year | 2027-09 | New token in the UI, store it, delete the old one |
-| OpenTofu state key (Transit) | OpenBao | Year | 2027-09 | `bao write -f transit/keys/opentofu-state/rotate`; new writes use the new version, old ones still decrypt |
-| Garage key `opentofu` | OpenBao `kv/opentofu`, Bitwarden | Year | 2027-09 | `garage key create`, allow it on the bucket, update OpenBao, delete the old key |
+| OpenTofu state passphrase | Bitwarden, OpenBao `kv/services/opentofu` | Year | 2027-09 | Add the new passphrase with the old one as `fallback`, `tofu apply -refresh-only`, then drop the old one |
 | age key | Laptop, Bitwarden, printed copy | Only if leaked | | Only the example uses it now |
+| Tailscale OAuth client `opentofu` (policy file only) | OpenBao `kv/opentofu` | Year | Now | Create a new client in Trust credentials, `bao kv patch`, revoke the old one |
 | Tailscale auth keys | Used once | Each use | | Generate per device, single use, 7 days; nothing to rotate afterwards |
 | Proxmox `root@pam` password and 2FA recovery keys | Bitwarden | Year | 2027-09 | Web UI, then new recovery keys |
 | Gmail app password (SMTP) | Bitwarden, the host | Year | 2027-09 | New app password, update the notification target |
 | Garage access keys | OpenBao | Year | | `garage key create`, update the client, delete the old key |
 
-Rotating the Cloudflare tokens, the Proxmox token and the state key
-does not need any downtime: the old value keeps working until
+Rotating the Cloudflare tokens, the Proxmox token and the state
+passphrase does not need any downtime: the old value keeps working until
 it is deleted.
 
 ## Alternatives considered
