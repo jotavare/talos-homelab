@@ -231,9 +231,6 @@ phase page.
 - [ ] An encrypted copy of the OpenTofu state off the laptop.
 - [ ] Break-glass copies in Bitwarden: the Proxmox API token and the state
       passphrase ([04. Secrets](docs/04-secrets.md#when-openbao-is-down)).
-- [ ] Remove what the old state setup left: the `opentofu-state` bucket
-      and key in Garage, the Transit engine in OpenBao, the `garage`
-      profile in `~/.aws/config`.
 - [ ] Restore test: VM `130` from its backup under a new ID with its
       network off, OpenBao unsealed, then deleted.
 - [ ] Remove the protected final backup of the OpenBao container once the
