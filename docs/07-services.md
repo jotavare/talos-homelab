@@ -1,9 +1,9 @@
 # Services VM
 
 The services that run outside the cluster, as Docker containers in a VM
-managed by OpenTofu: OpenBao, Garage, a Caddy reverse proxy and
-Tailscale. It
-replaced the OpenBao container (`130`) and the Garage container (`140`).
+managed by OpenTofu: OpenBao, Garage, Pocket ID, a Caddy reverse proxy
+and Tailscale. It replaced the OpenBao container (`130`) and the Garage
+container (`140`).
 
 ## Why
 
@@ -58,6 +58,7 @@ Docker network, `backend`, which has no route out; Tailscale is also on
 | `tailscale` | `tailscale/tailscale:v1.102.5`, pinned by digest | Joins the tailnet as one device, `services`, `tag:services`. Caddy shares its network, so the proxy is only reachable over the tailnet. Also on `backend` |
 | `caddy` | Built from [services/caddy/Dockerfile](../opentofu/files/caddy/Dockerfile): `caddy:2.11.4` plus `caddy-dns/cloudflare` v0.2.4 | Listens on 443 of the tailnet address. Certificates for each name from Let's Encrypt through Cloudflare DNS-01 |
 | `openbao` | `openbao/openbao:2.7.0`, pinned by digest | The same OpenBao, on `backend` only, port `8200`. Only Caddy reaches it |
+| `pocket-id` | `pocketid/pocket-id:v2.16.0`, pinned by digest | Single sign-on with passkeys, reached as `auth.home.<domain>` ([SSO with Pocket ID](#sso-with-pocket-id)) |
 | `garage` | `dxflrs/garage:v2.4.1`, pinned by digest | S3 API on `backend`, reached through Caddy as `s3.home.<domain>` ([06. Object storage](06-object-storage.md)) |
 
 Every image is pinned to a version and a digest, so an update is a
@@ -90,6 +91,7 @@ The stack's secrets come from OpenBao:
 | Cloudflare token for DNS-01 | `kv/services/caddy` | Caddy |
 | Tailscale auth key, pre-signed for Tailnet Lock | `kv/services/tailscale` | The `tailscale` container, first start only |
 | Garage RPC secret | `kv/services/garage` | Garage |
+| Pocket ID database encryption key | `kv/services/pocket-id` | Pocket ID |
 
 | Step | How |
 |------|-----|
@@ -168,21 +170,48 @@ service (more machines, same dependency).
 | File | What it is |
 |------|------------|
 | [opentofu/network.tf](../opentofu/network.tf) | `backend`, `services` and the three volumes |
-| [opentofu/openbao.tf](../opentofu/openbao.tf), [garage.tf](../opentofu/garage.tf), [caddy.tf](../opentofu/caddy.tf) | Images and containers |
+| [opentofu/openbao.tf](../opentofu/openbao.tf), [garage.tf](../opentofu/garage.tf), [caddy.tf](../opentofu/caddy.tf), [pocketid.tf](../opentofu/pocketid.tf) | Images and containers |
 | [files/openbao/openbao.hcl](../opentofu/files/openbao/openbao.hcl) | Raft storage, listener on `8200` without TLS (Caddy does TLS) |
 | [files/garage/garage.toml](../opentofu/files/garage/garage.toml) | Garage, see [06. Object storage](06-object-storage.md#setup) |
-| [files/caddy/Caddyfile](../opentofu/files/caddy/Caddyfile) | The three names, DNS-01 through Cloudflare |
+| [files/caddy/Caddyfile](../opentofu/files/caddy/Caddyfile) | The four names, DNS-01 through Cloudflare |
 | [files/caddy/Dockerfile](../opentofu/files/caddy/Dockerfile) | Caddy with the Cloudflare module, built on the VM's Docker (`use_legacy_builder`, since the laptop has no Docker) |
 
 The config files are copied in with `upload` blocks, so a changed file
 replaces only its own container. Run it like the rest of the project
 ([05. OpenTofu](05-opentofu.md#project)).
 
+Every stateful container has `destroy_grace_seconds = 30`: OpenTofu's
+default is to kill a container it replaces, which left Pocket ID with a
+stale "already running" lock in its database. With a clean stop, a
+replacement takes about a second.
+
 An apply that replaces `openbao` leaves it sealed. Unseal it afterwards:
 
 ```bash
 ssh -t -J root@<PROXMOX_HOST> debian@192.168.1.30 docker exec -it openbao bao operator unseal
 ```
+
+## SSO with Pocket ID
+
+[Pocket ID](https://pocket-id.org/) is an OIDC provider that only knows
+passkeys: no passwords at all. Apps log in through it with OIDC.
+
+| Choice | Why |
+|--------|-----|
+| Pocket ID over Authentik, Keycloak, Authelia, Kanidm, Zitadel | New to me, tiny (tens of MB), and passkeys cannot be phished. Authentik and Keycloak are already known from work and need over 1 GB |
+| Passkeys over GitHub login | Nothing outside the lab can let anyone in. Passkeys live in Bitwarden and sync to every device |
+| On the services VM | Available before and without the cluster, and small enough for the VM's RAM |
+
+| Item | Value |
+|------|-------|
+| URL | `https://auth.home.<domain>`, tailnet only |
+| Storage | SQLite in `/srv/pocket-id`, covered by the VM backup |
+| Encryption key | `kv/services/pocket-id`, as a file in `/run/secrets/` |
+| Outbound | None: `ANALYTICS_DISABLED` and `VERSION_CHECK_DISABLED`, since `backend` has no route out |
+
+First setup: open `https://auth.home.<domain>/setup`, create the admin
+account and register a passkey in Bitwarden, then a second one on
+another authenticator as a fallback.
 
 ### The switch from Compose
 
