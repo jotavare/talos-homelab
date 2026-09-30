@@ -6,7 +6,7 @@ ephemeral "vault_kv_secret_v2" "opentofu" {
 }
 
 data "vault_kv_secret_v2" "services" {
-  for_each = toset(["caddy", "tailscale", "garage"])
+  for_each = toset(["caddy", "tailscale", "garage", "pocket-id"])
   mount    = "kv"
   name     = "services/${each.key}"
 }

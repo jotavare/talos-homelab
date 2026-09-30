@@ -18,10 +18,11 @@ resource "docker_image" "caddy" {
 }
 
 resource "docker_container" "tailscale" {
-  name     = "tailscale"
-  image    = docker_image.tailscale.image_id
-  hostname = "services"
-  restart  = "unless-stopped"
+  name                  = "tailscale"
+  image                 = docker_image.tailscale.image_id
+  hostname              = "services"
+  restart               = "unless-stopped"
+  destroy_grace_seconds = 30
 
   env = [
     "TS_AUTHKEY=file:/run/secrets/tailscale_auth_key",
@@ -60,10 +61,11 @@ resource "docker_container" "tailscale" {
 }
 
 resource "docker_container" "caddy" {
-  name         = "caddy"
-  image        = docker_image.caddy.image_id
-  restart      = "unless-stopped"
-  network_mode = "container:${docker_container.tailscale.id}"
+  name                  = "caddy"
+  image                 = docker_image.caddy.image_id
+  restart               = "unless-stopped"
+  destroy_grace_seconds = 30
+  network_mode          = "container:${docker_container.tailscale.id}"
 
   env = [
     "DOMAIN=${var.domain}",

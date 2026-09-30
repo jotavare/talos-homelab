@@ -4,11 +4,12 @@ resource "docker_image" "openbao" {
 }
 
 resource "docker_container" "openbao" {
-  name    = "openbao"
-  image   = docker_image.openbao.image_id
-  command = ["server", "-config=/openbao/config/openbao.hcl"]
-  restart = "unless-stopped"
-  env     = ["BAO_API_ADDR=https://openbao.home.${var.domain}"]
+  name                  = "openbao"
+  image                 = docker_image.openbao.image_id
+  command               = ["server", "-config=/openbao/config/openbao.hcl"]
+  restart               = "unless-stopped"
+  destroy_grace_seconds = 30
+  env                   = ["BAO_API_ADDR=https://openbao.home.${var.domain}"]
 
   upload {
     file    = "/openbao/config/openbao.hcl"

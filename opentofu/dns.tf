@@ -33,3 +33,12 @@ resource "cloudflare_dns_record" "proxmox" {
   ttl     = 300
   proxied = false
 }
+
+resource "cloudflare_dns_record" "auth" {
+  zone_id = local.config["cloudflare_zone_id"]
+  name    = "auth.home.${local.domain}"
+  type    = "A"
+  content = local.config["services_tailnet_ip"]
+  ttl     = 300
+  proxied = false
+}
