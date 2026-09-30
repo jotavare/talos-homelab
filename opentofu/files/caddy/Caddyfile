@@ -18,3 +18,7 @@ pve.home.{$DOMAIN} {
 s3.home.{$DOMAIN} {
 	reverse_proxy garage:3900
 }
+
+auth.home.{$DOMAIN} {
+	reverse_proxy pocket-id:1411
+}

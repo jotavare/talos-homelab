@@ -4,10 +4,11 @@ resource "docker_image" "garage" {
 }
 
 resource "docker_container" "garage" {
-  name    = "garage"
-  image   = docker_image.garage.image_id
-  command = ["/garage", "server", "--single-node"]
-  restart = "unless-stopped"
+  name                  = "garage"
+  image                 = docker_image.garage.image_id
+  command               = ["/garage", "server", "--single-node"]
+  restart               = "unless-stopped"
+  destroy_grace_seconds = 30
 
   upload {
     file    = "/etc/garage.toml"
