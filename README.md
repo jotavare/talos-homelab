@@ -134,7 +134,7 @@ together.
 
 | Area | Already used | Candidate |
 |------|--------------|-----------|
-| SSO | Authentik, Keycloak | **Kanidm** / **Zitadel** / **Authelia** |
+| SSO | Authentik, Keycloak | **Pocket ID** (passkeys only) |
 | Secrets | HashiCorp Vault | **OpenBao** (outside the cluster) + **External Secrets Operator** |
 | Policy | Kyverno | **Kyverno** / **OPA Gatekeeper** / **Kubewarden** |
 | Runtime security | Falco | **Falco** / **Tetragon** |
