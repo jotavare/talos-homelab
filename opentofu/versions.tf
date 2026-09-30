@@ -14,6 +14,10 @@ terraform {
       source  = "kreuzwerker/docker"
       version = "~> 4.6"
     }
+    tailscale = {
+      source  = "tailscale/tailscale"
+      version = "~> 0.29"
+    }
     vault = {
       source  = "hashicorp/vault"
       version = "~> 5.12"
