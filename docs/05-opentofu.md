@@ -104,27 +104,35 @@ tar xzf tofu_1.12.6_linux_amd64.tar.gz tofu && install -m 755 tofu ~/.local/bin/
 
 ## Project
 
+One project in [opentofu/](../opentofu/), one state:
+
 | File | What it is |
 |------|------------|
-| [opentofu/versions.tf](../opentofu/versions.tf) | Provider versions, the state backend in Garage, state encryption with OpenBao |
-| [opentofu/providers.tf](../opentofu/providers.tf) | Reads OpenBao, configures Proxmox and Cloudflare with what it read |
-| [opentofu/main.tf](../opentofu/main.tf) | Reads the Proxmox version |
-| [opentofu/templates.tf](../opentofu/templates.tf) | The Debian cloud image |
-| [opentofu/services.tf](../opentofu/services.tf) | The services VM and its firewall |
-| [opentofu/backups.tf](../opentofu/backups.tf) | The daily backup job |
-| [opentofu/dns.tf](../opentofu/dns.tf) | DNS records in Cloudflare, pointing at the services stack |
-| [opentofu/acme.tf](../opentofu/acme.tf) | The Let's Encrypt certificate for the Proxmox web UI |
-| `opentofu/.terraform.lock.hcl` | Pinned provider checksums, kept in git, as OpenTofu recommends |
+| [versions.tf](../opentofu/versions.tf) | Provider versions, state encryption |
+| [variables.tf](../opentofu/variables.tf) | The passphrase, the `pve` address, the domain, the email |
+| [providers.tf](../opentofu/providers.tf) | Reads OpenBao, configures Proxmox, Cloudflare and Docker with it |
+| [main.tf](../opentofu/main.tf) | Reads the Proxmox version |
+| [templates.tf](../opentofu/templates.tf), [services.tf](../opentofu/services.tf) | The Debian cloud image, the services VM and its firewall |
+| [backups.tf](../opentofu/backups.tf) | The daily backup job |
+| [dns.tf](../opentofu/dns.tf), [acme.tf](../opentofu/acme.tf) | DNS records, the Proxmox certificate |
+| [network.tf](../opentofu/network.tf), [openbao.tf](../opentofu/openbao.tf), [garage.tf](../opentofu/garage.tf), [caddy.tf](../opentofu/caddy.tf) | The containers on the services VM, with their config in [files/](../opentofu/files/) ([07. Services VM](07-services.md)) |
+| [vault.tf](../opentofu/vault.tf) | OpenBao's own configuration: `kv`, `userpass`, the `admin` policy, my user's token settings |
+| [tailscale.tf](../opentofu/tailscale.tf) | The tailnet policy ([02. Tailscale](02-tailscale.md#policy-in-opentofu)) |
+| `terraform.tfstate`, `terraform.tfvars` | Local only, git-ignored |
+| `.terraform.lock.hcl` | Pinned provider checksums, kept in git |
 
-There is no wrapper script. After one `bao login`, plain `tofu` works:
+Running it, after one `bao login`:
 
 ```bash
-bao login -method=userpass username=<user>
 cd opentofu
-tofu init
+export TF_VAR_state_passphrase="$(bao kv get -mount=kv -field=state_passphrase services/opentofu)"
 tofu plan
 tofu apply
 ```
+
+`terraform.tfvars` holds the domain, the `pve` tailnet address and the
+Let's Encrypt email: the settings OpenTofu needs even when OpenBao is
+down. Everything secret comes from OpenBao.
 
 ### Secrets from OpenBao
 
@@ -133,66 +141,44 @@ through `VAULT_ADDR` and the login through `~/.vault-token`:
 
 | Block | Reads | Kept in the state |
 |-------|-------|-------------------|
-| `ephemeral "vault_kv_secret_v2" "opentofu"` | The Proxmox and Cloudflare tokens | No: ephemeral values only exist during the run |
-| `data "vault_kv_secret_v2" "config"` | Domain, zone ID, addresses | Yes, encrypted with the rest; none of it is secret |
+| `ephemeral "vault_kv_secret_v2" "opentofu"` | The Proxmox, Cloudflare and Tailscale credentials | No: ephemeral values only exist during the run |
+| `data "vault_kv_secret_v2" "config"` | Zone ID, the services tailnet IP | Yes, none of it is secret |
+| `data "vault_kv_secret_v2" "services"` | The stack's secrets | Yes, encrypted: the `docker` provider has no write-only arguments |
 
-The Proxmox and Cloudflare providers take the tokens straight from the
-ephemeral values. The `pve-acme` token reaches Proxmox through `data_wo`,
-a write-only argument, so it is never stored either.
+The Proxmox, Cloudflare and Tailscale providers take the tokens straight
+from the ephemeral values. The `pve-acme` token reaches Proxmox through
+`data_wo`, a write-only argument, so it is never stored either. The
+provider warns that the data sources are deprecated in favour of
+ephemeral reads, but values in normal resource arguments cannot be
+ephemeral.
 
-The provider warns that the `config` data source is deprecated in favour
-of ephemeral reads. Ephemeral values cannot go into normal resource
-arguments such as a DNS record's name, so for settings the data source
-stays.
+### Reaching Proxmox
 
-OpenTofu reaches Proxmox as `https://pve.home.<domain>`, through Caddy,
-with the certificate checked.
+OpenTofu talks to `https://proxmox.home.<domain>:8006`: a DNS record
+pointing straight at `pve`'s tailnet IP, and a second name on Proxmox's
+own Let's Encrypt certificate. It does not go through Caddy, so an apply
+that replaces Caddy or Tailscale on the services VM cannot cut its own
+connection halfway.
 
-### State in Garage
+### How the state got here
 
-The state lives in the Garage bucket `opentofu-state`
-([06. Object storage](06-object-storage.md)) through the `s3` backend,
-with `use_lockfile` for locking. Credentials and the endpoint come from a
-local AWS profile, not from the repo:
+The state was first a file in git, then in Garage with OpenBao's Transit
+engine as the key, then split in two projects. Each step solved one loop
+and found the next: a state in Garage or encrypted by OpenBao cannot be
+written by an apply that restarts Garage or leaves OpenBao sealed. The
+answer was one local state with a passphrase, and nothing in the path
+running on the services VM. The old states were removed from the git
+history.
 
-```ini
-[profile garage]
-region = garage
-endpoint_url = https://s3.home.<domain>
-credential_process = bao kv get -format=json -mount=kv opentofu | python3 -c '...'
-```
-
-`credential_process` is the AWS SDK's own hook: it runs the command when
-it needs a key, and the command prints the Garage key from OpenBao as
-JSON. The key is never written to disk.
-
-The state was first a file in git, then moved with
-`tofu init -migrate-state`. It was then removed from every commit in the
-history with `git filter-branch`, so no old state is left in the repo.
+A local state has no copy off the laptop. It can be rebuilt with imports
+if lost, and a copy off the laptop is in the Backlog.
 
 ## State encryption
 
-The state records everything OpenTofu manages, and later the Talos
-cluster CA and etcd keys. OpenTofu encrypts the state and every saved
-plan with AES-GCM, and `enforced = true` makes it refuse to write
-anything unencrypted.
-
-The key comes from OpenBao's Transit engine, through OpenTofu's built-in
-`openbao` key provider:
-
-```bash
-bao secrets enable transit
-bao write -f transit/keys/opentofu-state type=aes256-gcm96
-```
-
-OpenTofu asks Transit for a data key on every write, and Transit keeps the
-master key, which cannot be exported or deleted. There is no passphrase to
-store or leak. With OpenBao sealed, OpenTofu cannot read the state at all.
-
-The first version used a passphrase (PBKDF2) kept in SOPS. The switch was
-one run with both methods, the passphrase as `fallback`: OpenTofu read
-the state with the old key and wrote it with the new one. Then the
-fallback and the passphrase were removed.
+OpenTofu encrypts the state and every saved plan with AES-GCM, with a key
+derived (PBKDF2) from the passphrase, and `enforced = true` makes it
+refuse to write anything unencrypted. `tofu` asks for the passphrase if
+`TF_VAR_state_passphrase` is not set.
 
 ## First plan
 
@@ -228,13 +214,6 @@ Once Ansible installed it, turning the option on restarted the VM once.
 
 The SSH public key is read from `~/.ssh/id_ed25519.pub` at plan time, so
 it is not written in the repo.
-
-## Garage container
-
-Garage first ran in its own container `140`, created here from the Debian
-container template. It moved into the services VM
-([06. Object storage](06-object-storage.md)), and the container, its
-firewall and the template were removed (`4 to destroy`).
 
 ## Backup job
 
@@ -279,6 +258,8 @@ Public A records in Cloudflare point each name at its tailnet IP:
 | Name | Points to |
 |------|-----------|
 | `pve.home.<domain>` | The services stack's tailnet IP; Caddy forwards to the web UI |
+| `proxmox.home.<domain>` | `pve`'s own tailnet IP, port `8006`; used by OpenTofu |
+| `s3.home.<domain>` | The services stack's tailnet IP; Caddy forwards to Garage |
 | `openbao.home.<domain>` | The services stack's tailnet IP; Caddy forwards to OpenBao |
 
 They resolve for anyone, but the `100.x` addresses only answer inside the
@@ -311,7 +292,7 @@ Changing it means raising `data_wo_version`.
 |------|-------|-----|
 | ACME account `default`, Let's Encrypt | Ansible ([03. Ansible](03-ansible.md)) | The API only lets `root@pam` register an account |
 | DNS plugin `cloudflare` (`proxmox_acme_dns_plugin`) | OpenTofu | Needs `Sys.Modify` on `/`, already in the role |
-| Certificate for `pve.home.<domain>` (`proxmox_acme_certificate`) | OpenTofu | Needs `Sys.Modify` on `/nodes/pve`, already in the role |
+| Certificate for `pve.home.<domain>` and `proxmox.home.<domain>` (`proxmox_acme_certificate`) | OpenTofu, with `force = true` so a change of names can replace the current certificate | Needs `Sys.Modify` on `/nodes/pve`, already in the role |
 | Renewal | Proxmox's daily `pve-daily-update` timer | Renews by itself 30 days before expiry, no OpenTofu run needed |
 
 Proxmox cannot issue a wildcard: its ACME domain format only allows

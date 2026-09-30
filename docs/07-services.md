@@ -13,7 +13,7 @@ its own way of being installed, reached and given a certificate.
 Containers put all of it in one readable place: which images, which
 volumes, which ports, how the services reach each other. They started as
 Docker Compose files deployed by Ansible, and are now OpenTofu
-resources ([Why OpenTofu, and why a separate project](#why-opentofu-and-why-a-separate-project)).
+resources ([Why OpenTofu](#why-opentofu)).
 
 | Choice | Picked | Why |
 |--------|--------|-----|
@@ -41,7 +41,7 @@ Written before building and corrected where the build changed it.
 | Size | 2 vCPU, 1.5 GB RAM, 32 GB disk | Debian, Docker and the stack use well under 1 GB idle. The data volumes live on the same disk |
 | Image | Debian 13 cloud image, cloud-init with my SSH key | Same OS as the containers, no installer to click through |
 | Created by | OpenTofu | Like every other machine |
-| Containers managed by | The OpenTofu project `opentofu/services/`, over SSH as `debian` (in the `docker` group), through `pve` as a jump host | The VM itself is not on the tailnet, only the stack is |
+| Containers managed by | OpenTofu, over SSH as `debian` (in the `docker` group), through `pve` as a jump host | The VM itself is not on the tailnet, only the stack is |
 | Docker | Debian's `docker.io` package | Security updates through `unattended-upgrades`, like the rest. Installed once; cloud-init for a rebuilt VM is in the Backlog |
 | VM firewall | Inbound `DROP`. SSH from `pve` (`.10`) only. Garage's S3 port later, from its clients | Nothing else needs to reach the VM on the LAN |
 | Backups | Added to the daily backup job | Same as the containers |
@@ -49,14 +49,14 @@ Written before building and corrected where the build changed it.
 ### Stack
 
 Four containers, each a `docker_container` resource in
-[opentofu/services/](../opentofu/services/). They share one internal
+[opentofu/](../opentofu/). They share one internal
 Docker network, `backend`, which has no route out; Tailscale is also on
 `services`, a normal bridge, for the way out to the internet:
 
 | Service | Image | Does |
 |---------|-------|------|
 | `tailscale` | `tailscale/tailscale:v1.102.5`, pinned by digest | Joins the tailnet as one device, `services`, `tag:services`. Caddy shares its network, so the proxy is only reachable over the tailnet. Also on `backend` |
-| `caddy` | Built from [services/caddy/Dockerfile](../opentofu/services/files/caddy/Dockerfile): `caddy:2.11.4` plus `caddy-dns/cloudflare` v0.2.4 | Listens on 443 of the tailnet address. Certificates for each name from Let's Encrypt through Cloudflare DNS-01 |
+| `caddy` | Built from [services/caddy/Dockerfile](../opentofu/files/caddy/Dockerfile): `caddy:2.11.4` plus `caddy-dns/cloudflare` v0.2.4 | Listens on 443 of the tailnet address. Certificates for each name from Let's Encrypt through Cloudflare DNS-01 |
 | `openbao` | `openbao/openbao:2.7.0`, pinned by digest | The same OpenBao, on `backend` only, port `8200`. Only Caddy reaches it |
 | `garage` | `dxflrs/garage:v2.4.1`, pinned by digest | S3 API on `backend`, reached through Caddy as `s3.home.<domain>` ([06. Object storage](06-object-storage.md)) |
 
@@ -102,7 +102,7 @@ Caddy keeps its certificates on a volume and Tailscale its node state, so
 neither needs a secret until a renewal or a new deploy.
 
 The `docker` provider has no write-only arguments, so these secrets are
-also in the services project's state, encrypted with its passphrase.
+also in the OpenTofu state, encrypted with its passphrase.
 
 ### Moving OpenBao
 
@@ -140,64 +140,43 @@ The VM uses about 0.5 GB of its 1.5 GB with the stack running.
 - The Compose files and the Ansible `services` role.
 - The `lego` idea for OpenBao's certificate.
 
-## Why OpenTofu, and why a separate project
+## Why OpenTofu
 
-Every container here is something the main OpenTofu project needs during
-its own runs: OpenBao for its tokens and state key, Garage for its state,
-Caddy and Tailscale to reach both. If the main project managed them, an
-apply that replaced one would cut the ground from under itself: a sealed
-OpenBao cannot encrypt the state at the end of the run.
+The containers are `docker_container` resources in the same OpenTofu
+project as everything else ([05. OpenTofu](05-opentofu.md#project)). Two
+things keep that safe even though OpenTofu depends on what runs here:
 
-So the stack has its own project, `opentofu/services/`, which does not
-stand on it.:
+- The state is a local file encrypted with a passphrase, so an apply that
+  restarts Garage or leaves OpenBao sealed can still save it.
+- OpenTofu reaches Docker over SSH through `pve` and Proxmox directly, not
+  through Caddy, so replacing Caddy or Tailscale does not cut the run.
 
-| | Main project `opentofu/` | Services project `opentofu/services/` |
-|--|--------------------------|-----------------------------------|
-| Manages | VM 130, DNS, backups, certificates, later Talos | The containers, images, network and volumes inside VM 130 |
-| Reaches its target | Proxmox and Cloudflare APIs | Docker on the VM, over SSH through `pve`, not through Caddy |
-| State | Garage, Transit key in OpenBao | A local file on the laptop for now, encrypted with a passphrase |
-| Secrets | Ephemeral reads from OpenBao | Read from OpenBao at plan time, kept in its encrypted state |
+Settings the `openbao` container needs (the domain) come from the local
+`terraform.tfvars`, not from OpenBao. When OpenBao itself is broken,
+`tofu apply -target=docker_container.openbao` still works.
 
-Settings the `openbao` container needs (the domain) come from a local,
-git-ignored `terraform.tfvars`, not from OpenBao. When OpenBao itself is
-broken, `tofu apply -target=docker_container.openbao` still works without
-it.
-
-Other options were considered and dropped: Ansible (works, but the goal
-is OpenTofu wherever possible), the `docker_compose` resource (does not
-notice a changed Compose file, and relative bind mounts point at the
-laptop), Portainer with GitOps (secrets in its own database, one more
-service), and one LXC container per service (same loop, more machines).
+Other options were tried or considered: Ansible with Compose (worked, but
+the goal is OpenTofu wherever possible), a separate OpenTofu project for
+the stack (merged back into one, once the state was local), the
+`docker_compose` resource (does not notice a changed Compose file, and
+relative bind mounts point at the laptop), Portainer with GitOps (secrets
+in its own database, one more service), and one LXC container per
+service (more machines, same dependency).
 
 ## Setup
 
 | File | What it is |
 |------|------------|
-| [opentofu/services/versions.tf](../opentofu/services/versions.tf) | Providers, state encryption with the passphrase |
-| [opentofu/services/providers.tf](../opentofu/services/providers.tf) | Docker over SSH, the secrets from OpenBao |
-| [opentofu/services/variables.tf](../opentofu/services/variables.tf) | The passphrase, the `pve` address, the domain and the email |
-| [opentofu/services/network.tf](../opentofu/services/network.tf) | `backend`, `services` and the three volumes |
-| [opentofu/services/openbao.tf](../opentofu/services/openbao.tf), [garage.tf](../opentofu/services/garage.tf), [caddy.tf](../opentofu/services/caddy.tf) | Images and containers |
-| [services/openbao/openbao.hcl](../opentofu/services/files/openbao/openbao.hcl) | Raft storage, listener on `8200` without TLS (Caddy does TLS) |
-| [services/garage/garage.toml](../opentofu/services/files/garage/garage.toml) | Garage, see [06. Object storage](06-object-storage.md#setup) |
-| [services/caddy/Caddyfile](../opentofu/services/files/caddy/Caddyfile) | The three names, DNS-01 through Cloudflare |
-| [services/caddy/Dockerfile](../opentofu/services/files/caddy/Dockerfile) | Caddy with the Cloudflare module, built on the VM's Docker (`use_legacy_builder`, since the laptop has no Docker) |
+| [opentofu/network.tf](../opentofu/network.tf) | `backend`, `services` and the three volumes |
+| [opentofu/openbao.tf](../opentofu/openbao.tf), [garage.tf](../opentofu/garage.tf), [caddy.tf](../opentofu/caddy.tf) | Images and containers |
+| [files/openbao/openbao.hcl](../opentofu/files/openbao/openbao.hcl) | Raft storage, listener on `8200` without TLS (Caddy does TLS) |
+| [files/garage/garage.toml](../opentofu/files/garage/garage.toml) | Garage, see [06. Object storage](06-object-storage.md#setup) |
+| [files/caddy/Caddyfile](../opentofu/files/caddy/Caddyfile) | The three names, DNS-01 through Cloudflare |
+| [files/caddy/Dockerfile](../opentofu/files/caddy/Dockerfile) | Caddy with the Cloudflare module, built on the VM's Docker (`use_legacy_builder`, since the laptop has no Docker) |
 
 The config files are copied in with `upload` blocks, so a changed file
-replaces only its own container.
-
-Running it:
-
-```bash
-bao login -method=userpass username=<user>
-cd opentofu/services
-export TF_VAR_state_passphrase="$(bao kv get -mount=kv -field=state_passphrase services/opentofu)"
-tofu plan
-tofu apply
-```
-
-The passphrase is in OpenBao for everyday runs and in Bitwarden for the
-day OpenBao is down. Without the variable set, `tofu` asks for it.
+replaces only its own container. Run it like the rest of the project
+([05. OpenTofu](05-opentofu.md#project)).
 
 An apply that replaces `openbao` leaves it sealed. Unseal it afterwards:
 

@@ -226,7 +226,7 @@ The Windows app can also sign from a link shown in the admin console.
 
 The default policy lets every device reach every other device on every
 port. Replaced with [tailscale/policy.hujson](../tailscale/policy.hujson),
-pasted into admin console → **Access controls**:
+applied by OpenTofu ([Policy in OpenTofu](#policy-in-opentofu)):
 
 - **Tags** mark what a device is. Tagged devices belong to the tailnet, not
   a person, and never expire. A tag must exist in the policy
@@ -272,8 +272,22 @@ Checked from the laptop after the change:
 | laptop → `pve:111` over the tailnet | blocked |
 | `pve` → laptop over the tailnet | blocked |
 
-The repo file is the reference copy. Syncing it automatically from git
-(Tailscale's GitOps action) comes with the CI setup.
+### Policy in OpenTofu
+
+The policy file is the `tailscale_acl` resource in
+[opentofu/tailscale.tf](../opentofu/tailscale.tf), read straight from
+`tailscale/policy.hujson`. A change is an edit and `tofu apply`; the
+tests in the file still run on Tailscale's side, so a broken rule fails
+the apply.
+
+| Item | Value |
+|------|-------|
+| Credential | An OAuth client with only the **Policy File** write scope, in OpenBao `kv/opentofu` |
+| Created in | Admin console → Settings → **Trust credentials** |
+| First run | `tofu apply` imported the live policy with `0 changed` |
+| Console | Settings → Policy file management: **Lock editor** on, external reference to the file on GitHub |
+
+With the editor locked, the admin console cannot drift from git.
 
 ## Hardening
 

@@ -13,8 +13,7 @@ something I already know is still the best fit, it stays.
 live in two places, and the repo holds none:
 
 - **OpenBao**, outside the cluster: every secret the infrastructure and
-  the apps use, read by OpenTofu and Ansible at run time. It also holds
-  the key that encrypts the OpenTofu state, which lives in Garage.
+  the apps use, read by OpenTofu and Ansible at run time.
 - **My Bitwarden**: personal credentials, recovery keys and the unseal
   key, never here.
 - **This repo**: no real secrets. One
@@ -173,7 +172,7 @@ written down and the homelab knowingly does something simpler.
 | Control plane size | Enough RAM for headroom, 8 GB or more | 4 GB, tight for etcd, the API server and the Cilium agent. Watch memory and take RAM from a worker if needed |
 | Block storage | Longhorn with three replicas on separate nodes and disks | Longhorn anyway, but every replica lands on the same QLC NVMe: no real redundancy, and more writes on a drive that wears fast. Use one replica per volume |
 | Secrets store | Vault or OpenBao as a cluster of three on dedicated machines, auto-unsealed by a cloud key service | One OpenBao in the services VM on the same host, unsealed by hand after a reboot. Survives a cluster rebuild, not the loss of the host |
-| OpenTofu state | Remote backend with locking and versioning (S3, GCS, Azure Blob) on separate infrastructure | Garage in the services VM, which OpenTofu itself created, encrypted with an OpenBao key. No versioning; the way back is the VM backup ([details](docs/04-secrets.md#the-loop-and-the-way-out)) |
+| OpenTofu state | Remote backend with locking and versioning (S3, GCS, Azure Blob) on separate infrastructure | One local state file on my laptop, encrypted with a passphrase. No locking, no history, no copy elsewhere; fine for one person on one laptop, and it can be rebuilt with imports ([details](docs/05-opentofu.md#how-the-state-got-here)) |
 | Object storage | Several nodes with replication, versioning and object lock, plus a copy off site | One Garage in the services VM on the same host, one copy of each object, no versioning. Survives a cluster rebuild, not the loss of the host or the drive ([details](docs/06-object-storage.md#limits)) |
 | Backups | Proxmox Backup Server on a separate machine, plus a copy off site | A daily backup job for the services VM to `local` now, Proxmox Backup Server as a VM on the same host later. Both protect against mistakes, not against losing the host ([details](docs/01-proxmox.md#container-backups)) |
 
@@ -189,7 +188,7 @@ with the tools, the options chosen and why.
 | [03. Ansible](docs/03-ansible.md) | Proxmox host configuration as a playbook |
 | [04. Secrets](docs/04-secrets.md) | Where secrets live, OpenBao set up and unsealed, rotation, a SOPS example |
 | [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, project, state encryption, OpenBao container |
-| [06. Object storage](docs/06-object-storage.md) | Garage for backups and the OpenTofu state |
+| [06. Object storage](docs/06-object-storage.md) | Garage for backups |
 | [07. Services VM](docs/07-services.md) | OpenBao, Garage, Caddy and Tailscale as containers, managed by a separate OpenTofu project |
 | [08. Talos](docs/08-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
 
@@ -216,7 +215,6 @@ phase page.
 
 ### Tailscale
 
-- [ ] Sync `tailscale/policy.hujson` to the tailnet from git (GitOps).
 
 ### Repository
 
@@ -230,11 +228,12 @@ phase page.
 
 - [ ] Cloud-init for VM 130 (Docker, the guest agent, unattended upgrades,
       the `docker` group), so a rebuilt VM needs no manual step.
-- [ ] State of both OpenTofu projects in a Cloudflare R2 bucket created
-      by OpenTofu, off the host; the services state leaves the laptop.
-- [ ] Break-glass copies of the Proxmox API token and the Garage key
-      `opentofu` in Bitwarden
-      ([04. Secrets](docs/04-secrets.md#the-loop-and-the-way-out)).
+- [ ] An encrypted copy of the OpenTofu state off the laptop.
+- [ ] Break-glass copies in Bitwarden: the Proxmox API token and the state
+      passphrase ([04. Secrets](docs/04-secrets.md#when-openbao-is-down)).
+- [ ] Remove what the old state setup left: the `opentofu-state` bucket
+      and key in Garage, the Transit engine in OpenBao, the `garage`
+      profile in `~/.aws/config`.
 - [ ] Restore test: VM `130` from its backup under a new ID with its
       network off, OpenBao unsealed, then deleted.
 - [ ] Remove the protected final backup of the OpenBao container once the
@@ -254,12 +253,7 @@ phase page.
       and the config file can be supplied without a bind mount.
 - [ ] Copy the Garage buckets off the host, encrypted, most likely to
       Cloudflare R2 (10 GB free), or to a second machine once there is one.
-- [ ] OpenBao configuration in OpenTofu (`hashicorp/vault` provider), in
-      its own project `opentofu/openbao/` with its own encrypted state:
-      policies (moved out of Ansible), auth methods (import `userpass`),
-      `kv-v2`, later Kubernetes auth. OpenTofu logs in with my own
-      short-lived `userpass` token. Init, unseal and my password stay
-      manual.
+- [ ] OpenBao Kubernetes auth for External Secrets Operator, in OpenTofu.
 - [ ] External Secrets Operator in the cluster, reading from OpenBao.
 - [ ] Flux bootstrap: which git remote and which credential.
 - [ ] PBS VM sizing: RAM, vCPU and a datastore disk.

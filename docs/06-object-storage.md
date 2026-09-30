@@ -2,8 +2,7 @@
 
 An S3-compatible bucket store for backups:
 [Garage](https://garagehq.deuxfleurs.fr/) as a container
-on the services VM, next to OpenBao and outside the cluster. Its first
-user is the OpenTofu state; the etcd snapshots, Velero and Longhorn
+on the services VM, next to OpenBao and outside the cluster. The etcd snapshots, Velero and Longhorn
 backups follow once the cluster exists.
 
 ## Why outside the cluster
@@ -57,7 +56,6 @@ it held any data, and the container was removed.
 
 | Bucket | Client | When |
 |--------|--------|------|
-| `opentofu-state` | OpenTofu's state backend, key `opentofu` | Now |
 | `openbao-snapshots` | OpenBao, daily timer | Optional |
 | `etcd-snapshots` | Talos etcd backup job in the cluster | With the cluster |
 | `velero` | Velero | With the cluster |
@@ -98,20 +96,19 @@ host, most likely to Cloudflare R2, is in the Backlog.
 
 ### The OpenTofu state
 
-The OpenTofu state lives here, even though OpenTofu creates the VM that
-Garage runs in. That loop is accepted on purpose; the way out is the VM's
-daily backup and the break-glass copies in Bitwarden
-([04. Secrets, The loop](04-secrets.md#the-loop-and-the-way-out)).
+The OpenTofu state lived here for a while and moved to a local file: an
+apply that restarted Garage could not save its own state
+([05. OpenTofu](05-opentofu.md#how-the-state-got-here)).
 
 ## Setup
 
-The container is in [opentofu/services/garage.tf](../opentofu/services/garage.tf)
+The container is in [opentofu/garage.tf](../opentofu/garage.tf)
 ([07. Services VM](07-services.md#setup)):
 
 | File | What it is |
 |------|------------|
-| [garage.tf](../opentofu/services/garage.tf) | Garage on `backend`, the RPC secret in `/run/secrets/`, data under `/srv/garage` |
-| [garage.toml](../opentofu/services/files/garage/garage.toml) | Replication factor 1, LMDB, S3 API on `3900`, region `garage` |
+| [garage.tf](../opentofu/garage.tf) | Garage on `backend`, the RPC secret in `/run/secrets/`, data under `/srv/garage` |
+| [garage.toml](../opentofu/files/garage/garage.toml) | Replication factor 1, LMDB, S3 API on `3900`, region `garage` |
 
 Buckets and keys, made with the CLI inside the container:
 
