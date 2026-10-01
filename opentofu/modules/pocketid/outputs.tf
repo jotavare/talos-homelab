@@ -10,3 +10,12 @@ output "openbao_client_secret" {
   value     = pocketid_client.openbao.client_secret
   sensitive = true
 }
+
+output "proxmox_client_id" {
+  value = pocketid_client.proxmox.client_id
+}
+
+output "proxmox_client_secret" {
+  value     = pocketid_client.proxmox.client_secret
+  sensitive = true
+}

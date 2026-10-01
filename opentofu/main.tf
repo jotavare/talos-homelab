@@ -11,6 +11,9 @@ module "proxmox" {
   cloudflare_zone_id    = local.config["cloudflare_zone_id"]
   cloudflare_acme_token = ephemeral.vault_kv_secret_v2.opentofu.data["cloudflare_pve_acme_token"]
   acme_domains          = [module.dns.names["pve"], module.dns.names["proxmox"]]
+  oidc_issuer           = "https://auth.home.${var.domain}"
+  oidc_client_id        = module.pocketid.proxmox_client_id
+  oidc_client_secret    = module.pocketid.proxmox_client_secret
 }
 
 module "services" {
