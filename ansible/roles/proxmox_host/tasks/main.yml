@@ -151,6 +151,58 @@
     | selectattr('roleid', 'equalto', proxmox_host_tofu_backup_role) | list | length == 0
   changed_when: true
 
+- name: Create the OpenTofu realm role
+  ansible.builtin.command: >-
+    pveum role add {{ proxmox_host_tofu_realm_role }}
+    --privs {{ proxmox_host_tofu_realm_privs | join(',') }}
+  when: proxmox_host_tofu_realm_role not in proxmox_host_roles
+  changed_when: true
+
+- name: Keep the OpenTofu realm role privileges exact
+  ansible.builtin.command: >-
+    pveum role modify {{ proxmox_host_tofu_realm_role }}
+    --privs {{ proxmox_host_tofu_realm_privs | join(',') }}
+  when:
+    - proxmox_host_tofu_realm_role in proxmox_host_roles
+    - (proxmox_host_roles[proxmox_host_tofu_realm_role] | default('')).split(',') | sort != proxmox_host_tofu_realm_privs | sort
+  changed_when: true
+
+- name: Give the OpenTofu user the realm role on realms only
+  ansible.builtin.command: >-
+    pveum acl modify {{ proxmox_host_tofu_realm_path }} --users {{ proxmox_host_tofu_user }}
+    --roles {{ proxmox_host_tofu_realm_role }}
+  when: >-
+    proxmox_host_acl | selectattr('ugid', 'equalto', proxmox_host_tofu_user)
+    | selectattr('path', 'equalto', proxmox_host_tofu_realm_path)
+    | selectattr('roleid', 'equalto', proxmox_host_tofu_realm_role) | list | length == 0
+  changed_when: true
+
+- name: Read the realms
+  ansible.builtin.command: pveum realm list --output-format json
+  register: proxmox_host_realms
+  changed_when: false
+  check_mode: false
+
+- name: Create the SSO admin once OpenTofu made the realm
+  ansible.builtin.command: >-
+    pveum user add {{ proxmox_host_sso_admin }}
+    --comment "Admin through Pocket ID"
+  when:
+    - proxmox_host_sso_realm in (proxmox_host_realms.stdout | from_json | map(attribute='realm') | list)
+    - proxmox_host_sso_admin not in proxmox_host_users
+  changed_when: true
+
+- name: Give the SSO admin Administrator on /
+  ansible.builtin.command: >-
+    pveum acl modify / --users {{ proxmox_host_sso_admin }} --roles Administrator
+  when:
+    - proxmox_host_sso_realm in (proxmox_host_realms.stdout | from_json | map(attribute='realm') | list)
+    - >-
+      proxmox_host_acl | selectattr('ugid', 'equalto', proxmox_host_sso_admin)
+      | selectattr('path', 'equalto', '/')
+      | selectattr('roleid', 'equalto', 'Administrator') | list | length == 0
+  changed_when: true
+
 - name: Read the ACME accounts
   ansible.builtin.command: pvesh get /cluster/acme/account --output-format json
   register: proxmox_host_acme_accounts

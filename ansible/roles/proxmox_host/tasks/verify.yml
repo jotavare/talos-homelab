@@ -102,13 +102,17 @@
     that:
       - proxmox_host_tofu_roles[proxmox_host_tofu_role].split(',') | sort == proxmox_host_tofu_privs | sort
       - proxmox_host_tofu_roles[proxmox_host_tofu_backup_role].split(',') | sort == proxmox_host_tofu_backup_privs | sort
-      - proxmox_host_tofu_acl | length == 2
+      - proxmox_host_tofu_roles[proxmox_host_tofu_realm_role].split(',') | sort == proxmox_host_tofu_realm_privs | sort
+      - proxmox_host_tofu_acl | length == 3
       - >-
         proxmox_host_tofu_acl | selectattr('path', 'equalto', '/')
         | selectattr('roleid', 'equalto', proxmox_host_tofu_role) | list | length == 1
       - >-
         proxmox_host_tofu_acl | selectattr('path', 'equalto', proxmox_host_tofu_backup_path)
         | selectattr('roleid', 'equalto', proxmox_host_tofu_backup_role) | list | length == 1
+      - >-
+        proxmox_host_tofu_acl | selectattr('path', 'equalto', proxmox_host_tofu_realm_path)
+        | selectattr('roleid', 'equalto', proxmox_host_tofu_realm_role) | list | length == 1
       - proxmox_host_tofu_tokens | selectattr('tokenid', 'equalto', 'opentofu') | list | length == 1
     quiet: true
     fail_msg: OpenTofu user, role or token drifted, see docs/05-opentofu.md

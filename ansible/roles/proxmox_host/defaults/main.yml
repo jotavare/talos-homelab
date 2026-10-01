@@ -36,3 +36,11 @@ proxmox_host_tofu_backup_privs:
   - Datastore.AllocateSpace
   - Datastore.AllocateTemplate
   - Datastore.Audit
+
+proxmox_host_tofu_realm_role: TofuRealms
+proxmox_host_tofu_realm_path: /access/realm
+proxmox_host_tofu_realm_privs:
+  - Realm.Allocate
+
+proxmox_host_sso_realm: pocket-id
+proxmox_host_sso_admin: "jotavare@{{ proxmox_host_sso_realm }}"
