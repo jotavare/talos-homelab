@@ -53,6 +53,8 @@ ansible-galaxy collection install -r requirements.yml
 | Tailscale `--accept-dns=false --auto-update` | The OpenTofu API token (a secret) |
 | OpenTofu user `tofu@pve` and role `TofuProvisioner` | |
 | Role `TofuBackupStorage` on `/storage/local` only | |
+| Role `TofuRealms` on `/access/realm` only | |
+| User `jotavare@pocket-id` with `Administrator` on `/`, once OpenTofu made the realm | |
 | Let's Encrypt ACME account `default` (only `root@pam` can register one) | The Cloudflare tokens (secrets) |
 | Firewall files, behind a dead-man switch | |
 

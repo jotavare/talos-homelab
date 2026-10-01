@@ -245,11 +245,13 @@ applied by OpenTofu ([Policy in OpenTofu](#policy-in-opentofu)):
   |------|----|-------|
   | My devices (user `jotavare@github`: laptop, phone) | `tag:server` | `22`, `8006` |
   | My devices | `tag:talos` | `6443`, `50000` |
-  | My devices and `tag:talos` | `tag:services` | `443` |
+  | My devices, `tag:talos` and `tag:server` | `tag:services` | `443` |
 
 - **Nothing in the other direction:** a compromised server, container or
   node cannot start a connection to the laptop, and none of them can reach
-  each other except Talos to the services stack.
+  each other except Talos and `pve` to the services stack. `pve` needs
+  it for OIDC: Proxmox fetches Pocket ID's keys and tokens itself
+  ([07. Services VM](07-services.md#logging-in-to-openbao-and-proxmox)).
 - **`tests`** run on every save, so a broken rule is rejected before it
   applies. They check every row above plus the ports and directions that
   must stay closed.

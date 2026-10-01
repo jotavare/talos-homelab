@@ -110,7 +110,7 @@ bao kv get -mount=kv config
 |------|-------|
 | `kv/config` | `proxmox_host`, `domain`, `cloudflare_zone_id`, `acme_email`, `services_tailnet_ip` |
 | `kv/opentofu` | The Proxmox API token, the two Cloudflare tokens, the Tailscale OAuth client |
-| `kv/services/caddy`, `tailscale`, `garage` | The stack's secrets |
+| `kv/services/caddy`, `tailscale`, `garage`, `pocket-id` | The stack's secrets |
 | `kv/services/opentofu` | The passphrase of the OpenTofu state (also in Bitwarden) |
 
 ## Commit guard
@@ -245,6 +245,8 @@ shared outside Bitwarden and is replaced first.
 | Proxmox `root@pam` password and 2FA recovery keys | Bitwarden | Year | 2027-09 | Web UI, then new recovery keys |
 | Gmail app password (SMTP) | Bitwarden, the host | Year | 2027-09 | New app password, update the notification target |
 | Garage access keys | OpenBao | Year | | `garage key create`, update the client, delete the old key |
+| Pocket ID static API key | OpenBao `kv/services/pocket-id` | Year | 2027-10 | `bao kv patch` a new random value, `tofu apply` replaces Pocket ID with it |
+| Pocket ID client secrets (OpenBao, Proxmox) | OpenTofu state, OpenBao, Proxmox | Year | 2027-10 | Set `client_secret` on the client, raise both `_wo_version`s, apply |
 
 Rotating the Cloudflare tokens, the Proxmox token and the state
 passphrase does not need any downtime: the old value keeps working until
