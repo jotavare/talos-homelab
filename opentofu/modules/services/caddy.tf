@@ -56,7 +56,8 @@ resource "docker_container" "tailscale" {
   }
 
   networks_advanced {
-    name = docker_network.backend.name
+    name    = docker_network.backend.name
+    aliases = ["auth.home.${var.domain}"]
   }
 }
 
