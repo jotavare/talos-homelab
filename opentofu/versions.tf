@@ -18,12 +18,15 @@ terraform {
       source  = "tailscale/tailscale"
       version = "~> 0.29"
     }
+    pocketid = {
+      source  = "trozz/pocketid"
+      version = "~> 2.5"
+    }
     vault = {
       source  = "hashicorp/vault"
       version = "~> 5.12"
     }
   }
-
 
   encryption {
     key_provider "pbkdf2" "passphrase" {

@@ -1,0 +1,12 @@
+output "admin_id" {
+  value = data.pocketid_user.admin.id
+}
+
+output "openbao_client_id" {
+  value = pocketid_client.openbao.client_id
+}
+
+output "openbao_client_secret" {
+  value     = pocketid_client.openbao.client_secret
+  sensitive = true
+}

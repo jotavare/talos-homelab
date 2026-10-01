@@ -19,3 +19,8 @@ provider "tailscale" {
   oauth_client_secret = ephemeral.vault_kv_secret_v2.opentofu.data["tailscale_oauth_client_secret"]
   scopes              = ["policy_file"]
 }
+
+provider "pocketid" {
+  base_url  = "https://auth.home.${var.domain}"
+  api_token = local.secrets["pocket-id"]["api_key"]
+}
