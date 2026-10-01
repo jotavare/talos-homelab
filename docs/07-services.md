@@ -48,15 +48,15 @@ Written before building and corrected where the build changed it.
 
 ### Stack
 
-Four containers, each a `docker_container` resource in
-[opentofu/](../opentofu/). They share one internal
+Five containers, each a `docker_container` resource in
+[opentofu/modules/services/](../opentofu/modules/services/). They share one internal
 Docker network, `backend`, which has no route out; Tailscale is also on
 `services`, a normal bridge, for the way out to the internet:
 
 | Service | Image | Does |
 |---------|-------|------|
 | `tailscale` | `tailscale/tailscale:v1.102.5`, pinned by digest | Joins the tailnet as one device, `services`, `tag:services`. Caddy shares its network, so the proxy is only reachable over the tailnet. Also on `backend` |
-| `caddy` | Built from [services/caddy/Dockerfile](../opentofu/files/caddy/Dockerfile): `caddy:2.11.4` plus `caddy-dns/cloudflare` v0.2.4 | Listens on 443 of the tailnet address. Certificates for each name from Let's Encrypt through Cloudflare DNS-01 |
+| `caddy` | Built from [caddy/Dockerfile](../opentofu/modules/services/caddy/Dockerfile): `caddy:2.11.4` plus `caddy-dns/cloudflare` v0.2.4 | Listens on 443 of the tailnet address. Certificates for each name from Let's Encrypt through Cloudflare DNS-01 |
 | `openbao` | `openbao/openbao:2.7.0`, pinned by digest | The same OpenBao, on `backend` only, port `8200`. Only Caddy reaches it |
 | `pocket-id` | `pocketid/pocket-id:v2.16.0`, pinned by digest | Single sign-on with passkeys, reached as `auth.home.<domain>` ([SSO with Pocket ID](#sso-with-pocket-id)) |
 | `garage` | `dxflrs/garage:v2.4.1`, pinned by digest | S3 API on `backend`, reached through Caddy as `s3.home.<domain>` ([06. Object storage](06-object-storage.md)) |
@@ -167,14 +167,16 @@ service (more machines, same dependency).
 
 ## Setup
 
+All in [opentofu/modules/services/](../opentofu/modules/services/):
+
 | File | What it is |
 |------|------------|
-| [opentofu/network.tf](../opentofu/network.tf) | `backend`, `services` and the three volumes |
-| [opentofu/openbao.tf](../opentofu/openbao.tf), [garage.tf](../opentofu/garage.tf), [caddy.tf](../opentofu/caddy.tf), [pocketid.tf](../opentofu/pocketid.tf) | Images and containers |
-| [files/openbao/openbao.hcl](../opentofu/files/openbao/openbao.hcl) | Raft storage, listener on `8200` without TLS (Caddy does TLS) |
-| [files/garage/garage.toml](../opentofu/files/garage/garage.toml) | Garage, see [06. Object storage](06-object-storage.md#setup) |
-| [files/caddy/Caddyfile](../opentofu/files/caddy/Caddyfile) | The four names, DNS-01 through Cloudflare |
-| [files/caddy/Dockerfile](../opentofu/files/caddy/Dockerfile) | Caddy with the Cloudflare module, built on the VM's Docker (`use_legacy_builder`, since the laptop has no Docker) |
+| [network.tf](../opentofu/modules/services/network.tf) | `backend`, `services` and the three volumes |
+| [openbao.tf](../opentofu/modules/services/openbao.tf), [garage.tf](../opentofu/modules/services/garage.tf), [caddy.tf](../opentofu/modules/services/caddy.tf), [pocketid.tf](../opentofu/modules/services/pocketid.tf) | Images and containers |
+| [openbao/openbao.hcl](../opentofu/modules/services/openbao/openbao.hcl) | Raft storage, listener on `8200` without TLS (Caddy does TLS) |
+| [garage/garage.toml](../opentofu/modules/services/garage/garage.toml) | Garage, see [06. Object storage](06-object-storage.md#setup) |
+| [caddy/Caddyfile](../opentofu/modules/services/caddy/Caddyfile) | The four names, DNS-01 through Cloudflare |
+| [caddy/Dockerfile](../opentofu/modules/services/caddy/Dockerfile) | Caddy with the Cloudflare module, built on the VM's Docker (`use_legacy_builder`, since the laptop has no Docker) |
 
 The config files are copied in with `upload` blocks, so a changed file
 replaces only its own container. Run it like the rest of the project
