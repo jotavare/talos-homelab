@@ -17,7 +17,7 @@
       "ip":  ["tcp:6443", "tcp:50000"],
     },
     {
-      "src": ["jotavare@github", "tag:talos"],
+      "src": ["jotavare@github", "tag:talos", "tag:server"],
       "dst": ["tag:services"],
       "ip":  ["tcp:443"],
     },
@@ -35,8 +35,9 @@
       "deny":   ["tag:server:22", "tag:server:8006", "tag:services:22", "jotavare@github:22"],
     },
     {
-      "src":  "tag:server",
-      "deny": ["jotavare@github:22", "jotavare@github:443", "tag:services:443"],
+      "src":    "tag:server",
+      "accept": ["tag:services:443"],
+      "deny":   ["jotavare@github:22", "jotavare@github:443", "tag:services:22"],
     },
     {
       "src":  "tag:services",
