@@ -38,7 +38,7 @@ The role's privileges:
 | `VM.Config.*` (CD-ROM, CPU, Cloudinit, Disk, HWType, Memory, Network, Options) | Configure them |
 | `VM.GuestAgent.Audit` | Read the IPs reported by the guest agent |
 
-Not included: managing users, permissions, realms or groups, the console,
+Not included: managing users, permissions or groups, the console,
 host power, snapshots and migration.
 
 A backup job also needs `Datastore.Allocate` on the storage it writes to.
@@ -50,6 +50,7 @@ it, backups included, so it is not in the main role. A second role,
 |------|------|------------|
 | `TofuProvisioner` | `/` | The table above |
 | `TofuBackupStorage` | `/storage/local` | `Datastore.Allocate`, `Datastore.AllocateSpace`, `Datastore.AllocateTemplate`, `Datastore.Audit` |
+| `TofuRealms` | `/access/realm` | `Realm.Allocate`, for the Pocket ID realm ([07. Services VM](07-services.md#logging-in-to-openbao-and-proxmox)) |
 
 The second role repeats the storage privileges of the first on purpose.
 In Proxmox a permission entry on a more specific path replaces the
@@ -112,17 +113,18 @@ OpenBao, configures the providers and calls one module per area:
 | [versions.tf](../opentofu/versions.tf) | Provider versions, state encryption |
 | [variables.tf](../opentofu/variables.tf) | The passphrase, the `pve` address, the domain, the email |
 | [secrets.tf](../opentofu/secrets.tf) | Reads `kv/opentofu`, `kv/config` and `kv/services/*` from OpenBao |
-| [providers.tf](../opentofu/providers.tf) | Proxmox, Cloudflare, Docker, Tailscale and OpenBao, configured with those secrets |
+| [providers.tf](../opentofu/providers.tf) | Proxmox, Cloudflare, Docker, Tailscale, OpenBao and Pocket ID, configured with those secrets |
 | [main.tf](../opentofu/main.tf) | The module calls, and the Proxmox version as an output |
 | `terraform.tfstate`, `terraform.tfvars` | Local only, git-ignored |
 | `.terraform.lock.hcl` | Pinned provider checksums, kept in git |
 
 | Module | What it manages |
 |--------|-----------------|
-| [proxmox](../opentofu/modules/proxmox/) | The Debian cloud image, the services VM and its firewall, the daily backup job, the ACME plugin and certificate |
+| [proxmox](../opentofu/modules/proxmox/) | The Debian cloud image, the services VM and its firewall, the daily backup job, the ACME plugin and certificate, the Pocket ID realm |
 | [dns](../opentofu/modules/dns/) | The `*.home.<domain>` records |
 | [services](../opentofu/modules/services/) | The containers on the services VM, each config file next to its `.tf` ([07. Services VM](07-services.md)) |
-| [openbao](../opentofu/modules/openbao/) | OpenBao's own configuration: `kv`, `userpass`, the `admin` policy, my user's token settings |
+| [pocketid](../opentofu/modules/pocketid/) | The OIDC clients for OpenBao and Proxmox |
+| [openbao](../opentofu/modules/openbao/) | OpenBao's own configuration: `kv`, `userpass`, the `admin` policy, my user's token settings, OIDC login |
 | [tailscale](../opentofu/modules/tailscale/) | The tailnet policy ([02. Tailscale](02-tailscale.md#policy-in-opentofu)) |
 
 Providers are configured only in the root and passed down by default.
