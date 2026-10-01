@@ -10,7 +10,7 @@ resource "vault_auth_backend" "userpass" {
 
 resource "vault_policy" "admin" {
   name   = "admin"
-  policy = file("${local.files}/openbao/policies/admin.hcl")
+  policy = file("${path.module}/policies/admin.hcl")
 }
 
 resource "vault_generic_endpoint" "admin_user" {

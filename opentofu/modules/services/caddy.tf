@@ -8,12 +8,12 @@ resource "docker_image" "caddy" {
   keep_locally = true
 
   build {
-    context            = "${local.files}/caddy"
+    context            = "${path.module}/caddy"
     use_legacy_builder = true
   }
 
   triggers = {
-    dockerfile = filesha256("${local.files}/caddy/Dockerfile")
+    dockerfile = filesha256("${path.module}/caddy/Dockerfile")
   }
 }
 
@@ -36,7 +36,7 @@ resource "docker_container" "tailscale" {
 
   upload {
     file        = "/run/secrets/tailscale_auth_key"
-    content     = local.secrets["tailscale"]["auth_key"]
+    content     = var.secrets["tailscale"]["auth_key"]
     permissions = "0600"
   }
 
@@ -74,12 +74,12 @@ resource "docker_container" "caddy" {
 
   upload {
     file    = "/etc/caddy/Caddyfile"
-    content = file("${local.files}/caddy/Caddyfile")
+    content = file("${path.module}/caddy/Caddyfile")
   }
 
   upload {
     file        = "/run/secrets/cloudflare_token"
-    content     = local.secrets["caddy"]["cloudflare_token"]
+    content     = var.secrets["caddy"]["cloudflare_token"]
     permissions = "0600"
   }
 

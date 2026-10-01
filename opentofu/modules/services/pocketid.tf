@@ -21,7 +21,7 @@ resource "docker_container" "pocket_id" {
 
   upload {
     file        = "/run/secrets/encryption_key"
-    content     = local.secrets["pocket-id"]["encryption_key"]
+    content     = var.secrets["pocket-id"]["encryption_key"]
     permissions = "0600"
     owner       = 1000
     group       = 1000

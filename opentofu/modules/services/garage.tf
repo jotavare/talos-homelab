@@ -12,12 +12,12 @@ resource "docker_container" "garage" {
 
   upload {
     file    = "/etc/garage.toml"
-    content = file("${local.files}/garage/garage.toml")
+    content = file("${path.module}/garage/garage.toml")
   }
 
   upload {
     file        = "/run/secrets/garage_rpc_secret"
-    content     = local.secrets["garage"]["rpc_secret"]
+    content     = var.secrets["garage"]["rpc_secret"]
     permissions = "0600"
   }
 
