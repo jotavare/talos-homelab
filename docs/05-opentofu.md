@@ -104,22 +104,36 @@ tar xzf tofu_1.12.6_linux_amd64.tar.gz tofu && install -m 755 tofu ~/.local/bin/
 
 ## Project
 
-One project in [opentofu/](../opentofu/), one state:
+One root in [opentofu/](../opentofu/), one state. The root reads
+OpenBao, configures the providers and calls one module per area:
 
 | File | What it is |
 |------|------------|
 | [versions.tf](../opentofu/versions.tf) | Provider versions, state encryption |
 | [variables.tf](../opentofu/variables.tf) | The passphrase, the `pve` address, the domain, the email |
-| [providers.tf](../opentofu/providers.tf) | Reads OpenBao, configures Proxmox, Cloudflare and Docker with it |
-| [main.tf](../opentofu/main.tf) | Reads the Proxmox version |
-| [templates.tf](../opentofu/templates.tf), [services.tf](../opentofu/services.tf) | The Debian cloud image, the services VM and its firewall |
-| [backups.tf](../opentofu/backups.tf) | The daily backup job |
-| [dns.tf](../opentofu/dns.tf), [acme.tf](../opentofu/acme.tf) | DNS records, the Proxmox certificate |
-| [network.tf](../opentofu/network.tf), [openbao.tf](../opentofu/openbao.tf), [garage.tf](../opentofu/garage.tf), [caddy.tf](../opentofu/caddy.tf), [pocketid.tf](../opentofu/pocketid.tf) | The containers on the services VM, with their config in [files/](../opentofu/files/) ([07. Services VM](07-services.md)) |
-| [vault.tf](../opentofu/vault.tf) | OpenBao's own configuration: `kv`, `userpass`, the `admin` policy, my user's token settings |
-| [tailscale.tf](../opentofu/tailscale.tf) | The tailnet policy ([02. Tailscale](02-tailscale.md#policy-in-opentofu)) |
+| [secrets.tf](../opentofu/secrets.tf) | Reads `kv/opentofu`, `kv/config` and `kv/services/*` from OpenBao |
+| [providers.tf](../opentofu/providers.tf) | Proxmox, Cloudflare, Docker, Tailscale and OpenBao, configured with those secrets |
+| [main.tf](../opentofu/main.tf) | The module calls, and the Proxmox version as an output |
 | `terraform.tfstate`, `terraform.tfvars` | Local only, git-ignored |
 | `.terraform.lock.hcl` | Pinned provider checksums, kept in git |
+
+| Module | What it manages |
+|--------|-----------------|
+| [proxmox](../opentofu/modules/proxmox/) | The Debian cloud image, the services VM and its firewall, the daily backup job, the ACME plugin and certificate |
+| [dns](../opentofu/modules/dns/) | The `*.home.<domain>` records |
+| [services](../opentofu/modules/services/) | The containers on the services VM, each config file next to its `.tf` ([07. Services VM](07-services.md)) |
+| [openbao](../opentofu/modules/openbao/) | OpenBao's own configuration: `kv`, `userpass`, the `admin` policy, my user's token settings |
+| [tailscale](../opentofu/modules/tailscale/) | The tailnet policy ([02. Tailscale](02-tailscale.md#policy-in-opentofu)) |
+
+Providers are configured only in the root and passed down by default.
+Secrets reach a module as inputs: the ACME token is an `ephemeral`
+variable, so it never lands in the state, and the service secrets are a
+`sensitive` map.
+
+The move from flat files to modules was one apply with `moved` blocks:
+33 resources changed address, and only the Caddy image was rebuilt,
+because its build context path changed. The `moved` blocks were deleted
+after the apply.
 
 Running it, after one `bao login`:
 
@@ -187,13 +201,13 @@ encryption:
 
 ```bash
 tofu plan
-# data.proxmox_version.pve: Read complete
+# module.proxmox.data.proxmox_version.pve: Read complete
 # + proxmox_version = "9.2.20"
 ```
 
 ## Services VM
 
-In [opentofu/services.tf](../opentofu/services.tf). It replaced the first
+In [modules/proxmox/vm.tf](../opentofu/modules/proxmox/vm.tf). It replaced the first
 OpenBao container, which had the same ID and IP. What runs on it is in
 [07. Services VM](07-services.md).
 
@@ -217,7 +231,7 @@ it is not written in the repo.
 
 ## Backup job
 
-In [opentofu/backups.tf](../opentofu/backups.tf): the daily backup of
+In [modules/proxmox/backups.tf](../opentofu/modules/proxmox/backups.tf): the daily backup of
 both containers, described in
 [01. Proxmox, Container backups](01-proxmox.md#container-backups). The
 guests come from the container resources, so a new container is one line

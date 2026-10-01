@@ -275,7 +275,7 @@ Checked from the laptop after the change:
 ### Policy in OpenTofu
 
 The policy file is the `tailscale_acl` resource in
-[opentofu/tailscale.tf](../opentofu/tailscale.tf), read straight from
+[opentofu/modules/tailscale/](../opentofu/modules/tailscale/), read straight from
 `tailscale/policy.hujson`. A change is an edit and `tofu apply`; the
 tests in the file still run on Tailscale's side, so a broken rule fails
 the apply.
