@@ -13,7 +13,7 @@ resource "docker_container" "openbao" {
 
   upload {
     file    = "/openbao/config/openbao.hcl"
-    content = file("${local.files}/openbao/openbao.hcl")
+    content = file("${path.module}/openbao/openbao.hcl")
   }
 
   volumes {
