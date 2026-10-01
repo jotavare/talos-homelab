@@ -13,6 +13,7 @@ resource "docker_container" "pocket_id" {
     "APP_URL=https://auth.home.${var.domain}",
     "TRUST_PROXY=true",
     "ENCRYPTION_KEY_FILE=/run/secrets/encryption_key",
+    "STATIC_API_KEY_FILE=/run/secrets/api_key",
     "PUID=1000",
     "PGID=1000",
     "ANALYTICS_DISABLED=true",
@@ -22,6 +23,14 @@ resource "docker_container" "pocket_id" {
   upload {
     file        = "/run/secrets/encryption_key"
     content     = var.secrets["pocket-id"]["encryption_key"]
+    permissions = "0600"
+    owner       = 1000
+    group       = 1000
+  }
+
+  upload {
+    file        = "/run/secrets/api_key"
+    content     = var.secrets["pocket-id"]["api_key"]
     permissions = "0600"
     owner       = 1000
     group       = 1000
