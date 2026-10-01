@@ -20,8 +20,18 @@ module "services" {
   secrets    = local.secrets
 }
 
+module "pocketid" {
+  source = "./modules/pocketid"
+  domain = var.domain
+  admin  = "jotavare"
+}
+
 module "openbao" {
-  source = "./modules/openbao"
+  source             = "./modules/openbao"
+  domain             = var.domain
+  oidc_client_id     = module.pocketid.openbao_client_id
+  oidc_client_secret = module.pocketid.openbao_client_secret
+  admin_subject      = module.pocketid.admin_id
 }
 
 module "tailscale" {
