@@ -66,16 +66,22 @@ commit and a `tofu apply`.
 
 ### Names
 
-| Name | Caddy sends it to |
-|------|-------------------|
-| `https://openbao.home.<domain>` | `openbao:8200`, OpenBao |
-| `https://pve.home.<domain>` | `192.168.1.10:8006`, the Proxmox web UI |
+Every `*.home.<domain>` name, and who serves it:
 
-Caddy only serves what runs outside the cluster: OpenBao, Pocket ID,
-Garage and Proxmox. Apps in the cluster have their own entry point, the
-Cilium Gateway ([09. Talos, Gateway](09-talos.md#9-secrets-certificates-and-the-gateway)).
+| Name | Served by | Goes to |
+|------|-----------|---------|
+| `https://openbao.home.<domain>` | Caddy | `openbao:8200`, OpenBao |
+| `https://auth.home.<domain>` | Caddy | `pocket-id:1411`, Pocket ID |
+| `https://s3.home.<domain>` | Caddy | `garage:3900`, Garage's S3 API |
+| `https://pve.home.<domain>` | Caddy | `192.168.1.10:8006`, the Proxmox web UI |
+| `https://proxmox.home.<domain>:8006` | Proxmox itself | `pve`'s tailnet IP, for OpenTofu ([05. OpenTofu](05-opentofu.md#reaching-proxmox)) |
+| `https://immich.home.<domain>` | Cilium Gateway in the cluster | Immich ([09. Talos, Gateway](09-talos.md#9-secrets-certificates-and-the-gateway)) |
 
-Both DNS records point to the stack's tailnet IP. No port, no browser
+Caddy only serves what runs outside the cluster. Apps in the cluster have
+their own entry point, the Cilium Gateway, with its own wildcard
+certificate.
+
+The Caddy records point to the stack's tailnet IP. No port, no browser
 warning. The Proxmox UI keeps working on `:8006` too, with its own
 certificate.
 
