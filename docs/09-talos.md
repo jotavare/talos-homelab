@@ -144,9 +144,11 @@ order:
 gitops/
   flux/                 Flux itself, plus one Kustomization per folder below
   infrastructure/
-    cilium/             network: Helm release and its settings together
+    cilium/             network: the Helm release
+      config/           its settings: LoadBalancer IP pool
     longhorn/
-    nfs/                NFS CSI driver and the storage class for the NAS
+    nfs/                NFS CSI driver
+      config/           the storage class for the NAS
   projects/
     immich/
 ```
@@ -154,12 +156,13 @@ gitops/
 | Folder | Holds |
 |--------|-------|
 | `flux/` | What Flux runs and the order: `infrastructure/longhorn` after `infrastructure/cilium`, every project after the infrastructure it needs (`dependsOn`) |
-| `infrastructure/<name>/` | A cluster component: its Helm release and its settings in one place |
+| `infrastructure/<name>/` | A cluster component: its Helm release, and its settings in `config/` next to it |
 | `projects/<name>/` | An app, as at work |
 
-A component's settings sometimes use types its own chart brings (a Cilium
-IP pool needs Cilium installed first). Inside one folder Flux retries
-until they apply, so they stay together.
+Settings often use types the chart itself brings: a Cilium IP pool only
+exists once Cilium is installed. Flux checks a whole folder before it
+applies any of it, so a pool next to the release would block the release
+too. `config/` is its own Flux step that waits for the release.
 
 ## References
 
