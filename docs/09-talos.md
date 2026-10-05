@@ -134,6 +134,60 @@ talosctl -n 192.168.1.15 get extensions --insecure
 certificates yet. Once a node has its config, the API needs the client
 certificate from `talosconfig`.
 
+### 3. Config and bootstrap
+
+[iac/modules/talos/config.tf](../iac/modules/talos/config.tf):
+
+| Resource | Does |
+|----------|------|
+| `talos_machine_secrets` | The cluster's CAs, tokens and etcd encryption key, once. Kept only in the encrypted state |
+| `talos_machine_configuration` (data) | One config per node: the generated defaults plus the patches below |
+| `talos_machine_configuration_apply` | Sends it to the node in maintenance mode; the node installs and reboots |
+| `talos_machine_bootstrap` | Starts etcd on `talos-cp-1`, once |
+| `talos_cluster_kubeconfig`, `talos_client_configuration` | The admin `kubeconfig` and `talosconfig`, as sensitive outputs |
+
+Talos 1.14 splits the machine config into many small documents
+(`UnattendedInstallConfig`, `ResolverConfig`, `KubeNodeConfig`,
+`KubeProxyConfig`, ...). The old `machine.install`,
+`machine.network.nameservers` and `machine.kubelet.nodeIP` fields are
+rejected next to them (`.machine.install is already set in v1alpha1
+config`), so the patches target the documents:
+
+| Patch | Nodes | Why |
+|-------|-------|-----|
+| `UnattendedInstallConfig`: the Image Factory installer of the schematic, disk `/dev/sda` | All | Upgrades keep the extensions. The disk selector must be repeated, a patch replaces the document's `provisioning` |
+| `ResolverConfig`: `1.1.1.1` | All | Same DNS as the host |
+| `KubeNodeConfig`: node IP from `192.168.1.0/24` | All | With Tailscale on the node, the kubelet could pick the tailnet address |
+| `KubeFlannelCNIConfig` with `$patch: delete` | All | No default CNI, Cilium comes next |
+| `machine.sysctls` | All | IPv6 router advertisements and autoconf off |
+| `ExtensionServiceConfig` `tailscale`: the pre-signed key, `TS_ACCEPT_DNS=false` | All | Joins the tailnet as `tag:talos` without a manual signature |
+| `KubeProxyConfig`: `enabled: false` | Control plane | Cilium replaces kube-proxy. The document only exists on control planes |
+| `KubeAPIServerConfig.certExtraSANs`, `machine.certSANs` | Control plane | The VIP, the LAN IP and the tailnet name are valid for the API and Talos API |
+| `cluster.etcd.advertisedSubnets` | Control plane | etcd peers on the LAN, not the tailnet |
+| `Layer2VIPConfig`: `192.168.1.20` on `eth0` | Control plane | The shared API address |
+
+The patches were tried first with `talosctl gen config --config-patch`
+and `talosctl validate --mode metal`, which caught the last two errors
+before any apply.
+
+The tailnet key is a `tailscale_tailnet_key` in OpenTofu (reusable,
+`tag:talos`, pre-authorized), signed once on `pve` with
+`tailscale lock sign` and stored signed in OpenBao `kv/talos`. Every node
+joined the tailnet on its first boot.
+
+The configs for local use are written outside the repo:
+
+```bash
+cd iac
+tofu output -raw talosconfig > ~/.talos/config
+tofu output -raw kubeconfig  > ~/.kube/config
+talosctl -n 192.168.1.15 get members   # all three, LAN, tailnet and VIP addresses
+kubectl get nodes                      # three nodes, NotReady until there is a CNI
+```
+
+The guest agent was turned on afterwards, which made Proxmox reboot each
+VM once. All three answer `qm agent <id> ping`.
+
 ## GitOps layout
 
 The Kubernetes manifests go in `gitops/`, read by Flux. One folder per
