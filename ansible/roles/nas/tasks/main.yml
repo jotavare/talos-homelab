@@ -85,6 +85,7 @@
   ansible.builtin.file:
     path: "/{{ nas_pool }}/{{ item.path }}"
     state: directory
+    mode: "0755"
   loop: "{{ nas_quotas }}"
 
 - name: Find files outside the project of each quota folder
