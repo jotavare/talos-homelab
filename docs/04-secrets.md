@@ -14,7 +14,8 @@ only an example in the repo.
 | Secrets of the services stack | **OpenBao** `kv/services/*`, read by OpenTofu | Copied into the containers, never onto the VM's disk. They are also in the state, encrypted |
 | OpenTofu state encryption | A passphrase in **Bitwarden**, with a copy in OpenBao `kv/services/opentofu` for everyday runs | The state must stay readable when OpenBao is down |
 | App secrets (database passwords, API keys) | **OpenBao**, read by **External Secrets Operator** | Git holds only references, no values at all |
-| OpenBao unseal key, my OpenBao password, the age key | Bitwarden, plus a printed offline copy | They open everything else, so they cannot be inside it |
+| OpenBao unseal key, my OpenBao password, the age key | Bitwarden, plus a printed offline copy. The unseal key and password also in OpenBao `kv/openbao` | They open everything else, so the copy that counts is outside. The one inside keeps every password in one place, and is useless while OpenBao is sealed |
+| Root passwords of `pve` and `pve-desktop` | **OpenBao** `kv/hosts/<host>`, set on the host by Ansible, plus Bitwarden | One source for every password. Ansible hashes it with a salt stored next to it, so the hash is the same on every run |
 | Break-glass copy of the Proxmox token | Bitwarden | Enough to reach Proxmox if OpenBao is gone |
 
 ### When OpenBao is down
@@ -112,6 +113,8 @@ bao kv get -mount=kv config
 | `kv/opentofu` | The Proxmox API token, the two Cloudflare tokens, the Tailscale OAuth client |
 | `kv/services/caddy`, `tailscale`, `garage`, `pocket-id` | The stack's secrets |
 | `kv/services/opentofu` | The passphrase of the OpenTofu state (also in Bitwarden) |
+| `kv/openbao` | The unseal key and my `jotavare` password, copies of the Bitwarden ones |
+| `kv/hosts/pve`, `kv/hosts/pve-desktop` | `root_password` and `root_salt`, applied by the `proxmox_base` role |
 | `kv/nas` | The Samba user and password, read by Ansible ([08. NAS](08-nas.md#shares)) |
 
 ## Commit guard
@@ -233,8 +236,8 @@ shared outside Bitwarden and is replaced first.
 
 | Credential | Lives in | Every | Next | How |
 |------------|----------|-------|------|-----|
-| OpenBao unseal key | Bitwarden, printed copy | Year | 2027-09 | Logged in: `bao operator rotate-keys -init -key-shares=1 -key-threshold=1`, then `bao operator rotate-keys -nonce=<nonce>` with the old key; the new one goes to Bitwarden and paper. The old `bao operator rekey` is disabled in OpenBao 2.7 (`405 unsupported operation`) |
-| OpenBao `jotavare` password | Bitwarden | 6 months | 2027-03 | `bao write auth/userpass/users/jotavare/password password=...` |
+| OpenBao unseal key | Bitwarden, printed copy, OpenBao `kv/openbao` | Year | 2027-09 | Logged in: `bao operator rotate-keys -init -key-shares=1 -key-threshold=1`, then `bao operator rotate-keys -nonce=<nonce>` with the old key; the new one goes to Bitwarden and paper. The old `bao operator rekey` is disabled in OpenBao 2.7 (`405 unsupported operation`) |
+| OpenBao `jotavare` password | Bitwarden, OpenBao `kv/openbao` | 6 months | 2027-03 | `bao write auth/userpass/users/jotavare/password password=...`, then `bao kv patch` the copy |
 | Cloudflare `caddy-dns` token | OpenBao `kv/services/caddy` | Year | 2027-09 | Roll in the dashboard, `bao kv put`, run the `services` playbook: it restarts Caddy when the secret changed |
 | Cloudflare `opentofu-dns` token | OpenBao `kv/opentofu` | Year | 2027-09 | Roll in the dashboard, store the new value |
 | Cloudflare `pve-acme` token | OpenBao `kv/opentofu`, then Proxmox | Year | 2027-09 | Roll, store, raise `data_wo_version`, apply |
@@ -243,7 +246,8 @@ shared outside Bitwarden and is replaced first.
 | age key | Laptop, Bitwarden, printed copy | Only if leaked | | Only the example uses it now |
 | Tailscale OAuth client `opentofu` (policy file only) | OpenBao `kv/opentofu` | Year | 2027-09 | Create a new client in Trust credentials, `bao kv patch`, revoke the old one |
 | Tailscale auth keys | Used once | Each use | | Generate per device, single use, 7 days; nothing to rotate afterwards |
-| Proxmox `root@pam` password and 2FA recovery keys | Bitwarden | Year | 2027-09 | Web UI, then new recovery keys |
+| Proxmox `root@pam` password, both hosts | OpenBao `kv/hosts/<host>`, Bitwarden | Year | 2027-09 | `bao kv patch` a new `root_password`, run `proxmox.yml`, copy to Bitwarden |
+| Proxmox 2FA recovery keys | Bitwarden | Year | 2027-09 | Web UI, new recovery keys |
 | Gmail app password (SMTP) | Bitwarden, the host | Year | 2027-09 | New app password, update the notification target |
 | Garage access keys | OpenBao | Year | | `garage key create`, update the client, delete the old key |
 | Samba password, user `nas` | OpenBao `kv/nas`, the host | Year | 2027-10 | `bao kv patch`, then `smbpasswd nas` on `pve-desktop` with the new value |
