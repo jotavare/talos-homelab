@@ -1,8 +1,11 @@
 # Ansible
 
-The Proxmox host configuration as code: one playbook that brings a
-freshly installed host to the state described in
-[01. Proxmox](01-proxmox.md) and [02. Tailscale](02-tailscale.md).
+The configuration of the two Proxmox hosts as code: `proxmox.yml` brings
+a freshly installed host to the state described in
+[01. Proxmox](01-proxmox.md) and [02. Tailscale](02-tailscale.md), and
+`nas.yml` turns `pve-desktop` into the NAS ([08. NAS](08-nas.md)).
+Ansible only does what lives on a host and needs `root`; what an API can
+create is in OpenTofu.
 
 ## Why Ansible
 
@@ -33,32 +36,36 @@ ansible-galaxy collection install -r requirements.yml
 | Path | What it is |
 |------|------------|
 | [ansible/ansible.cfg](../ansible/ansible.cfg) | Settings: inventory, roles path, YAML output |
-| [ansible/inventory.yml](../ansible/inventory.yml) | The hosts `pve` and `pve-desktop`. The address of `pve` comes from OpenBao, so its tailnet address stays out of the repo |
+| [ansible/inventory.yml](../ansible/inventory.yml) | The hosts `pve` and `pve-desktop`, reached at their tailnet addresses (`proxmox_host` and `nas_host` in OpenBao `kv/config`, so they stay out of the repo). `pve-desktop` picks its own firewall file |
 | [ansible/group_vars/all.yml](../ansible/group_vars/all.yml) | Reads `kv/config` from OpenBao with the `community.hashi_vault` lookup |
 | [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook for the hosts: `proxmox_base` on both, `proxmox_host` on `pve` only |
 | [ansible/nas.yml](../ansible/nas.yml) | The NAS on `pve-desktop` ([08. NAS](08-nas.md)) |
 | [ansible/requirements.yml](../ansible/requirements.yml) | The `community.proxmox` and `community.hashi_vault` collections |
-| [ansible/roles/proxmox_base/](../ansible/roles/proxmox_base/) | What every Proxmox host gets: repositories, unattended upgrades, SSH hardening, IPv6 autoconf off, Tailscale |
-| [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | What only `pve` gets, and the compliance checks (`tasks/verify.yml`) |
-| [proxmox/](../proxmox/) | The config files the role copies. Each file lives in one place and is explained in 01. Proxmox |
+| [ansible/roles/proxmox_base/](../ansible/roles/proxmox_base/) | What every Proxmox host gets: repositories, unattended upgrades, SSH hardening, IPv6 autoconf off, Tailscale, the root password from OpenBao, the firewall behind the dead-man switch |
+| [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | What only `pve` gets: smartd for the NVMe, the NIC offload fix, the OpenTofu user and roles, the ACME account, the SSO admin, and the compliance checks (`tasks/verify.yml`) |
+| [ansible/roles/nas/](../ansible/roles/nas/) | The NAS: ZFS pool, Samba, NFS, WiFi power saving, and its own checks |
+| [proxmox/](../proxmox/), [nas/](../nas/) | The config files the roles copy. Each file lives in one place and is explained in 01. Proxmox or 08. NAS |
 
 ## What it covers
 
 | Covered by the playbook | Still manual |
 |-------------------------|--------------|
-| Enterprise repos off, no-subscription and Tailscale repos on | Installing Proxmox, the network settings |
-| Tailscale signing key, checked by SHA256 | Root password, web UI 2FA and recovery keys |
+| Enterprise repos off, no-subscription and Tailscale repos on | Installing Proxmox, the network settings (and the WiFi on `pve-desktop`) |
+| Tailscale signing key, checked by SHA256 | Web UI 2FA and recovery keys |
+| Root password, from OpenBao `kv/hosts/<host>` with its stored salt, so the hash is the same on every run | |
+| TSO and GSO off on `nic0` of `pve`, now and at boot ([01. Proxmox, NIC hang](01-proxmox.md#nic-hang)) | |
 | `unattended-upgrades` and its drop-in | Copying the SSH key (`ssh-copy-id`) |
 | SSH hardening drop-in, validated with `sshd -t` before it is written | Full upgrade and reboot after the install |
-| IPv6 sysctl, smartd config | `tailscale up` login, tag, key expiry, Tailnet Lock |
-| `rpcbind` off | SMTP notification target (holds a password) |
+| IPv6 sysctl, smartd config | `tailscale up` login, tag, key expiry, Tailnet Lock signature |
+| `rpcbind` off (NFSv4 needs none) | SMTP notification target (its password is in OpenBao `kv/hosts/pve`) |
 | Tailscale `--accept-dns=false --auto-update` | The OpenTofu API token (a secret) |
 | OpenTofu user `tofu@pve` and role `TofuProvisioner` | |
 | Role `TofuBackupStorage` on `/storage/local` only | |
 | Role `TofuRealms` on `/access/realm` only | |
 | User `jotavare@pocket-id` with `Administrator` on `/`, once OpenTofu made the realm | |
 | Let's Encrypt ACME account `default` (only `root@pam` can register one) | The Cloudflare tokens (secrets) |
-| Firewall files on both hosts, behind a dead-man switch | |
+| Firewall files on both hosts, behind a dead-man switch. Written with `unsafe_writes`: `/etc/pve` refuses Ansible's write-then-rename | |
+| NAS on `pve-desktop`: pool, shares, exports (`nas.yml`) | |
 
 The manual column is either a one-time install step or something that
 creates or holds a secret. Those stay by hand on purpose.
@@ -80,7 +87,7 @@ task and a pointer to the doc section.
 | Tailscale | Tailnet Lock enabled, `tag:server`, MagicDNS off, auto-update on, resolver `1.1.1.1` |
 | IPv6, email | `accept_ra` and `autoconf` 0 on `vmbr0`, default matcher sends to the SMTP target |
 | ACME | Account `default` exists, on the Let's Encrypt production directory, status `valid` |
-| OpenTofu | Both roles' privileges exact, exactly two permission entries for `tofu@pve` (`/` and `/storage/local`), token `opentofu` exists |
+| OpenTofu | All three roles' privileges exact, exactly three permission entries for `tofu@pve` (`/`, `/storage/local`, `/access/realm`), token `opentofu` exists |
 | Pending | Reports packages to upgrade and a needed reboot (a note, not a failure) |
 
 Only the checks, without touching anything:
@@ -115,10 +122,14 @@ the `bao` CLI (`VAULT_ADDR` and `~/.vault-token`), so run `bao login` first:
 
 ```bash
 cd ansible
-ansible-lint proxmox.yml                # production profile passes
+ansible-lint proxmox.yml nas.yml              # production profile passes
 ansible-playbook proxmox.yml --check --diff   # what would change
-ansible-playbook proxmox.yml                  # apply
+ansible-playbook proxmox.yml                  # both hosts
+ansible-playbook proxmox.yml --limit pve      # one host
+ansible-playbook nas.yml                      # the NAS
 ```
+
+The checks in the `nas` role are in [08. NAS](08-nas.md#setup).
 
 Ansible in this terminal needs its output sent to a file or pipe that
 blocks (`> out.txt 2>&1`), otherwise it refuses to start with
