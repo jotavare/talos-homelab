@@ -194,12 +194,6 @@ written down and the homelab knowingly does something simpler.
 | Tailnet devices in the cluster | The Tailscale operator signs its own proxies, or Tailnet Lock is off | The operator cannot sign under Tailnet Lock yet, so each proxy it creates is signed once by hand with `tailscale lock sign` on `pve` ([details](docs/tailscale.md#tailnet-lock)) |
 | Backups | Proxmox Backup Server on a separate machine, plus a copy off site | A daily backup job for the services VM to `local` now, Proxmox Backup Server as a VM on the same host later. Both protect against mistakes, not against losing the host ([details](docs/proxmox.md#container-backups)) |
 
-## Planned work
-
-Planned work, follow-ups and gaps are tracked as
-[issues](https://github.com/jotavare/talos-homelab/issues), labelled by
-area and type.
-
 ## Open questions
 
 - Can Talos run **fully in-memory** (diskless boot)? Understand how that actually works before committing to it as a design constraint.
