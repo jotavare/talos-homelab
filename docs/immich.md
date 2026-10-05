@@ -61,6 +61,12 @@ learning runs the `-openvino` image: OpenVINO runs smart search, face
 detection and OCR on the GPU. The server transcodes video with Quick
 Sync (`ffmpeg.accel: qsv`) and decodes on the GPU too (`accelDecode`).
 
+OpenVINO compiles each model for the GPU the first time it loads it,
+which blocks the machine learning server for a while. With the chart's
+probes, 1 second and 3 failures, Kubernetes killed it in the middle of
+the first compile. Its liveness and readiness probes wait 10 seconds per
+check, and liveness allows 6 failures, a minute, before a restart.
+
 ## Deploy
 
 Immich runs in two Flux steps: `immich-database` first, then `immich`.

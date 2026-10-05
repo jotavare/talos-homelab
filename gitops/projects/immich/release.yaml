@@ -41,6 +41,27 @@ spec:
             main:
               image:
                 tag: v3.2.4-openvino
+              probes:
+                liveness:
+                  enabled: true
+                  custom: true
+                  spec:
+                    httpGet:
+                      path: /ping
+                      port: http
+                    periodSeconds: 10
+                    timeoutSeconds: 10
+                    failureThreshold: 6
+                readiness:
+                  enabled: true
+                  custom: true
+                  spec:
+                    httpGet:
+                      path: /ping
+                      port: http
+                    periodSeconds: 10
+                    timeoutSeconds: 10
+                    failureThreshold: 3
               resources:
                 requests:
                   cpu: 250m
