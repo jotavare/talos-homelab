@@ -242,8 +242,6 @@ phase page.
       passphrase ([04. Secrets](docs/04-secrets.md#when-openbao-is-down)).
 - [ ] Restore test: VM `130` from its backup under a new ID with its
       network off, OpenBao unsealed, then deleted.
-- [ ] Remove the protected final backup of the OpenBao container once the
-      services VM has run for a while.
 - [ ] Rotate what is due in the rotation table
       ([04. Secrets, Rotation](docs/04-secrets.md#rotation)).
 - [ ] Tailnet-only access for app admin UIs on the LoadBalancer pool

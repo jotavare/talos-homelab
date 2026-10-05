@@ -128,8 +128,9 @@ Same version on both sides, so the Raft data moved as it was:
 1. The stack's secrets were stored in the old OpenBao, under `kv/`.
 2. OpenBao stopped in the container, its `/opt/openbao/data` saved as a
    117 KB tar on `pve`, and a final backup of the container taken and
-   marked protected, so retention never deletes it. That backup is the
-   rollback: `pct restore 130 <archive>`.
+   marked protected, so retention never deletes it. That backup was the
+   rollback (`pct restore 130 <archive>`), deleted after the VM had run
+   for a week.
 3. OpenTofu removed the container (`3 to destroy`) and created VM `130`.
 4. The data went into `/srv/openbao`, owned by the image's `openbao`
    user.
