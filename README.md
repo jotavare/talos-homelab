@@ -1,8 +1,9 @@
 # Homelab
 
-A single-server homelab running Kubernetes on
+A homelab running Kubernetes on
 [Talos Linux](https://www.talos.dev/), an immutable, API-managed OS, as
-VMs on Proxmox. Built step by step and written down as it happens.
+VMs on Proxmox, with an old desktop as the NAS. Built step by step and
+written down as it happens.
 
 **Why.** I already run Kubernetes at work on RKE2, GKE and AKS, and this
 is not my first homelab. This one is for what I do not touch at work:
@@ -68,8 +69,18 @@ The host and the home network it sits on.
 | CPU | Intel Core i5-12500T, 6 cores / 12 threads, 35 W |
 | RAM | 32 GB DDR4-3200 (2 x 16 GB, both slots used, max 64 GB) |
 | Storage | Intel 670p 512 GB NVMe (QLC) |
-| Network | Intel I219-LM gigabit, single port, no Wi-Fi |
+| Network | Intel I219-LM gigabit, single port, no Wi-Fi. TSO and GSO off, it hangs under load otherwise ([details](docs/01-proxmox.md#nic-hang)) |
 | GPU | Intel UHD Graphics 770 (integrated) |
+
+### NAS host
+
+| Component | Detail |
+|-----------|--------|
+| Model | Old desktop, `pve-desktop` |
+| CPU | Intel Core i5-4460, 4 cores |
+| RAM | 12 GB |
+| Storage | Samsung 850 EVO 250 GB SSD (Proxmox), WD Blue 1 TB HDD (ZFS pool `tank`) |
+| Network | USB WiFi only ([why it is a host, not a VM](docs/08-nas.md#why-on-the-host-not-a-vm)) |
 
 ### Network
 
@@ -90,7 +101,7 @@ LAN `192.168.1.0/24`:
 | `192.168.1.20` | Static | Kubernetes API VIP |
 | `192.168.1.21` to `.29` | Static | Talos workers |
 | `192.168.1.30` to `.49` | Static | Services outside the cluster (services VM `.30`) and other lab machines |
-| `192.168.1.50` to `.99` | Static | Cilium LoadBalancer pool |
+| `192.168.1.50` to `.99` | Static | Cilium LoadBalancer pool, announced by the workers (Gateway `.51`) |
 | `192.168.1.100` to `.254` | Dynamic (DHCP) | Phones, laptops and other clients |
 
 ## Core stack
@@ -126,9 +137,9 @@ together.
 |------|--------------|-----------|
 | CNI | Canal (Calico + Flannel) | **Cilium** |
 | Service mesh | Istio | **Cilium** |
-| Load balancer | kube-vip, GKE and AKS cloud load balancers | **Cilium** / **MetalLB** |
+| Load balancer | kube-vip, GKE and AKS cloud load balancers | **Cilium** (L2 announcements) |
 | Ingress | Traefik, Istio | **Cilium Gateway API** + **Tailscale operator** |
-| Certificates | cert-manager, step-ca, Traefik ACME, Istio CA (mTLS) | **cert-manager** + **step-ca** |
+| Certificates | cert-manager, step-ca, Traefik ACME, Istio CA (mTLS) | **cert-manager** (Let's Encrypt, DNS-01) + **step-ca** later |
 | Autoscaling | KEDA | **KEDA** |
 
 ### Security
@@ -148,6 +159,7 @@ together.
 | Area | Already used | Candidate |
 |------|--------------|-----------|
 | Block storage | local-path-provisioner, GKE and AKS managed disks | **Longhorn** |
+| File storage | NFS shares, cloud file stores | **ZFS NAS** + **csi-driver-nfs** |
 | Object storage | MinIO, Google Cloud Storage, Azure Blob Storage | **Garage** (outside the cluster) |
 | Databases | Postgres, managed cloud and on-prem | **CloudNativePG** |
 | Backup | Cloud-managed Postgres backups | **Velero** + **Talos etcd snapshots** + **Proxmox Backup Server** |
@@ -171,7 +183,7 @@ written down and the homelab knowingly does something simpler.
 |------|----------------|---------------|
 | Control plane | Three control planes, so etcd keeps quorum when one fails | One, to leave RAM for apps. All VMs share one host anyway ([details](docs/01-proxmox.md#planned-vms)) |
 | Control plane size | Enough RAM for headroom, 8 GB or more | 4 GB, tight for etcd, the API server and the Cilium agent. Watch memory and take RAM from a worker if needed |
-| Block storage | Longhorn with three replicas on separate nodes and disks | Longhorn anyway, but every replica lands on the same QLC NVMe: no real redundancy, and more writes on a drive that wears fast. Use one replica per volume |
+| Block storage | Longhorn with three replicas on separate nodes and disks | Longhorn on a second virtual disk per worker, one replica per volume. Every disk is on the same QLC NVMe: no real redundancy, and more writes on a drive that wears fast |
 | Secrets store | Vault or OpenBao as a cluster of three on dedicated machines, auto-unsealed by a cloud key service | One OpenBao in the services VM on the same host, unsealed by hand after a reboot. Survives a cluster rebuild, not the loss of the host |
 | OpenTofu state | Remote backend with locking and versioning (S3, GCS, Azure Blob) on separate infrastructure | One local state file on my laptop, encrypted with a passphrase. No locking, no history, no copy elsewhere; fine for one person on one laptop, and it can be rebuilt with imports ([details](docs/05-opentofu.md#how-the-state-got-here)) |
 | Object storage | Several nodes with replication, versioning and object lock, plus a copy off site | One Garage in the services VM on the same host, one copy of each object, no versioning. Survives a cluster rebuild, not the loss of the host or the drive ([details](docs/06-object-storage.md#limits)) |
@@ -190,11 +202,11 @@ with the tools, the options chosen and why.
 | [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, hardening |
 | [03. Ansible](docs/03-ansible.md) | Proxmox host configuration as a playbook |
 | [04. Secrets](docs/04-secrets.md) | Where secrets live, OpenBao set up and unsealed, rotation, a SOPS example |
-| [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, project, state encryption, OpenBao container |
+| [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, the modules, state encryption, secrets from OpenBao |
 | [06. Object storage](docs/06-object-storage.md) | Garage for backups |
-| [07. Services VM](docs/07-services.md) | OpenBao, Garage, Caddy and Tailscale as containers, managed by a separate OpenTofu project |
+| [07. Services VM](docs/07-services.md) | OpenBao, Garage, Pocket ID, Caddy and Tailscale as containers, managed by OpenTofu |
 | [08. NAS](docs/08-nas.md) | ZFS on the second host, SMB for my devices, NFS for the cluster |
-| [09. Talos](docs/09-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
+| [09. Talos](docs/09-talos.md) | Image, VMs, config and bootstrap, Cilium, Flux, storage, secrets, certificates, Gateway, Immich |
 
 ## Backlog
 
@@ -217,9 +229,6 @@ phase page.
       laptop or CI with a Tailscale runner), so drift shows up without a
       manual run.
 
-### Tailscale
-
-
 ### Repository
 
 - [ ] Security audit pipeline in CI: secret scanning of every push and
@@ -237,9 +246,6 @@ phase page.
 
 A pass over every page after the cluster build, checked against what runs.
 
-- [ ] README: phases table (08 NAS, 09 Talos), core stack (Cilium Gateway,
-      Longhorn, CloudNativePG, NFS CSI marked as in use), IP table (`.50`
-      to `.99` pool, Gateway `.51`), remove backlog items that landed.
 - [ ] 02 Tailscale: the all-scope OAuth client, the `tag:talos` key made by
       OpenTofu and signed on `pve`, the `tag:k8s` grants and tests.
 - [ ] 03 Ansible: `proxmox_base` and `proxmox_host` split, `pve-desktop` and
@@ -268,14 +274,13 @@ A pass over every page after the cluster build, checked against what runs.
 
 ### Cluster follow-ups
 
-- [ ] `retryInterval: 1m` on the Flux steps, so a step waiting for a
-      dependency retries every minute instead of every interval.
 - [ ] The `tag:talos` auth key expires after 90 days. Nodes already joined
       keep working; a rebuild needs a new key, signed again on `pve`.
-- [ ] Backups: CloudNativePG to Garage, Longhorn snapshots, the photo
-      library off the NAS.
+- [ ] Backups: CloudNativePG to Garage, Longhorn snapshots. The photo
+      library already has a copy on a separate disk of mine; Immich also
+      dumps its own database to the NAS every night.
 
-### Before Talos
+### Platform
 
 
 - [ ] Cloud-init for VM 130 (Docker, the guest agent, unattended upgrades,
@@ -287,9 +292,6 @@ A pass over every page after the cluster build, checked against what runs.
       network off, OpenBao unsealed, then deleted.
 - [ ] Rotate what is due in the rotation table
       ([04. Secrets, Rotation](docs/04-secrets.md#rotation)).
-- [ ] Tailnet-only access for app admin UIs on the LoadBalancer pool
-      (subnet router, `tailscale serve` or per-VM firewall), before any UI
-      goes live.
 - [ ] Lockout and upgrade runbook: etcd snapshot before every upgrade,
       copied off the host.
 - [ ] Optional: daily OpenBao Raft snapshot to Garage, on top of the
@@ -301,8 +303,8 @@ A pass over every page after the cluster build, checked against what runs.
 - [ ] Copy the Garage buckets off the host, encrypted, most likely to
       Cloudflare R2 (10 GB free), or to a second machine once there is one.
 - [ ] PBS VM sizing: RAM, vCPU and a datastore disk.
-- [ ] Rollout order: core platform first (Cilium, Flux, cert-manager,
-      storage, metrics), then one app at a time while watching RAM.
+- [ ] Monitoring next, before more apps: metrics and logs, then one app at
+      a time while watching RAM.
 - [ ] Brute-force protection (CrowdSec) for anything exposed to the
       internet through an ingress.
 
