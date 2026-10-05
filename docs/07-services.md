@@ -71,6 +71,10 @@ commit and a `tofu apply`.
 | `https://openbao.home.<domain>` | `openbao:8200`, OpenBao |
 | `https://pve.home.<domain>` | `192.168.1.10:8006`, the Proxmox web UI |
 
+Caddy only serves what runs outside the cluster: OpenBao, Pocket ID,
+Garage and Proxmox. Apps in the cluster have their own entry point, the
+Cilium Gateway ([09. Talos, Gateway](09-talos.md#9-secrets-certificates-and-the-gateway)).
+
 Both DNS records point to the stack's tailnet IP. No port, no browser
 warning. The Proxmox UI keeps working on `:8006` too, with its own
 certificate.

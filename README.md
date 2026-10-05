@@ -127,7 +127,7 @@ together.
 | CNI | Canal (Calico + Flannel) | **Cilium** |
 | Service mesh | Istio | **Cilium** |
 | Load balancer | kube-vip, GKE and AKS cloud load balancers | **Cilium** / **MetalLB** |
-| Ingress | Traefik, Istio | **Envoy Gateway** / **Cilium** |
+| Ingress | Traefik, Istio | **Cilium Gateway API** + **Tailscale operator** |
 | Certificates | cert-manager, step-ca, Traefik ACME, Istio CA (mTLS) | **cert-manager** + **step-ca** |
 | Autoscaling | KEDA | **KEDA** |
 
@@ -176,6 +176,7 @@ written down and the homelab knowingly does something simpler.
 | OpenTofu state | Remote backend with locking and versioning (S3, GCS, Azure Blob) on separate infrastructure | One local state file on my laptop, encrypted with a passphrase. No locking, no history, no copy elsewhere; fine for one person on one laptop, and it can be rebuilt with imports ([details](docs/05-opentofu.md#how-the-state-got-here)) |
 | Object storage | Several nodes with replication, versioning and object lock, plus a copy off site | One Garage in the services VM on the same host, one copy of each object, no versioning. Survives a cluster rebuild, not the loss of the host or the drive ([details](docs/06-object-storage.md#limits)) |
 | File storage | A NAS on wired network with mirrored or RAID-Z disks, snapshots sent off site | ZFS on one HDD in an old desktop on WiFi. Checksums catch damage but cannot repair it, and nothing is copied off it yet ([details](docs/08-nas.md#limits)) |
+| Tailnet devices in the cluster | The Tailscale operator signs its own proxies, or Tailnet Lock is off | The operator cannot sign under Tailnet Lock yet, so each proxy it creates is signed once by hand with `tailscale lock sign` on `pve` ([details](docs/02-tailscale.md#tailnet-lock)) |
 | Backups | Proxmox Backup Server on a separate machine, plus a copy off site | A daily backup job for the services VM to `local` now, Proxmox Backup Server as a VM on the same host later. Both protect against mistakes, not against losing the host ([details](docs/01-proxmox.md#container-backups)) |
 
 ## Work in progress
@@ -257,9 +258,6 @@ phase page.
       and the config file can be supplied without a bind mount.
 - [ ] Copy the Garage buckets off the host, encrypted, most likely to
       Cloudflare R2 (10 GB free), or to a second machine once there is one.
-- [ ] OpenBao Kubernetes auth for External Secrets Operator, in OpenTofu.
-- [ ] External Secrets Operator in the cluster, reading from OpenBao.
-- [ ] Flux bootstrap: which git remote and which credential.
 - [ ] PBS VM sizing: RAM, vCPU and a datastore disk.
 - [ ] Rollout order: core platform first (Cilium, Flux, cert-manager,
       storage, metrics), then one app at a time while watching RAM.

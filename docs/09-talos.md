@@ -357,6 +357,7 @@ extension. Its chart recommends exactly this setup, and
 | `database.yaml` | A one-instance `Cluster` on Longhorn (5 Gi), Postgres 18, with the VectorChord extension mounted as an image (`vchord-scratch`) and loaded at start. A `Database` resource creates the extensions Immich uses |
 | `library.yaml` | The photo library, a claim on the `nas` storage class: the files live on `pve-desktop` in `/tank/k8s/immich/immich-library` |
 | `repository.yaml`, `release.yaml` | The Immich chart from its OCI registry, with Valkey on, the library claim, and the database credentials from the secret CloudNativePG creates (`immich-database-app`) |
+| `route.yaml` | The `HTTPRoute` for `immich.home.<domain>` on the Gateway |
 
 | Data | Where | Why |
 |------|-------|-----|
@@ -366,6 +367,57 @@ extension. Its chart recommends exactly this setup, and
 
 The Flux step `immich` waits for `cnpg`, `longhorn` and `nfs-config`
 ([gitops/flux/projects.yaml](../gitops/flux/projects.yaml)).
+
+Immich runs in two Flux steps: `immich-database` first, then `immich`.
+With one step, the server started before the `Database` resource had
+created the extensions and crashed on `permission denied to create
+extension "vector"`. The namespace, the database `Cluster` and the library
+claim carry `kustomize.toolkit.fluxcd.io/prune: disabled`, so moving or
+deleting files in git never deletes the photos or the database.
+
+The admin account was created through the Immich API with a generated
+password, kept in OpenBao `kv/immich`.
+
+### 9. Secrets, certificates and the Gateway
+
+Apps are reached the way they would be in a company cluster: one Gateway,
+one `HTTPRoute` per app, certificates from cert-manager, secrets from the
+secret store. Nothing outside the cluster changes for a new app except
+its DNS name.
+
+```text
+laptop (tailnet) -> gateway.<tailnet>.ts.net (Tailscale proxy pod)
+                 -> Cilium Gateway "home" (TLS, *.home.<domain>)
+                 -> HTTPRoute -> immich-server
+```
+
+| Part | Where | Does |
+|------|-------|------|
+| External Secrets Operator | [infrastructure/external-secrets](../gitops/infrastructure/external-secrets/) | Copies OpenBao secrets into Kubernetes Secrets. The `openbao` `ClusterSecretStore` logs in with the operator's service-account token |
+| OpenBao login for the cluster | [iac/modules/openbao/kubernetes.tf](../iac/modules/openbao/kubernetes.tf) | A JWT login (`auth/kubernetes`) that checks tokens against the cluster's service-account public key, taken from the Talos secrets. OpenBao never calls the cluster. The role accepts only `external-secrets/external-secrets`, audience `openbao`, policy read-only on `kv/k8s/*` and `kv/config` |
+| `cluster-settings` | Made by OpenTofu in `flux-system` | `DOMAIN` and `TAILNET` for Flux' `postBuild` substitution, so manifests say `${DOMAIN}` and the public repo never holds the domain |
+| cert-manager | [infrastructure/cert-manager](../gitops/infrastructure/cert-manager/) | The `letsencrypt` `ClusterIssuer`, DNS-01 through Cloudflare with the token from `kv/k8s/cert-manager` |
+| Gateway API CRDs | [infrastructure/gateway-api](../gitops/infrastructure/gateway-api/) | Upstream `standard-install.yaml` v1.6.1, vendored: Flux does not fetch remote files |
+| Cilium Gateway | [infrastructure/gateway](../gitops/infrastructure/gateway/) | `GatewayClass` `cilium`, the wildcard certificate `*.home.<domain>`, and the `Gateway` `home` with one HTTPS listener. Its Service gets `192.168.1.51` on the LAN and is exposed on the tailnet |
+| Tailscale operator | [infrastructure/tailscale](../gitops/infrastructure/tailscale/) | Watches Services with `tailscale.com/expose`: the Gateway becomes the tailnet device `gateway` |
+| DNS | [iac/modules/dns](../iac/modules/dns/) | `cluster_apps` in [iac/main.tf](../iac/main.tf) point at the Gateway's tailnet IP, read from the Tailscale API |
+
+Things found on the way:
+
+- Pods already reach OpenBao: the nodes route `100.x` through their own
+  Tailscale and masquerade pod traffic, and `tag:talos` may reach
+  `tag:services:443`.
+- The Cilium chart did not create the `GatewayClass`, so it is in git.
+- Turning on Gateway support also needs the Cilium operator restarted:
+  `rollOutCiliumPods` only restarts the agents, and they wait for CRDs the
+  operator registers.
+- Cilium's values ConfigMap carries `reconcile.fluxcd.io/watch: Enabled`,
+  so a change upgrades the release at once instead of within 30 minutes.
+- The Gateway proxy needed a Tailnet Lock signature
+  ([02. Tailscale](02-tailscale.md#devices-made-by-the-kubernetes-operator)).
+
+Adding an app: its folder in `projects/`, an `HTTPRoute` with
+`<name>.home.${DOMAIN}`, and its name in `cluster_apps`.
 
 ## GitOps layout
 
@@ -377,13 +429,22 @@ order:
 gitops/
   flux/                 Flux itself, plus one Kustomization per folder below
   infrastructure/
+    gateway-api/        Gateway API CRDs
     cilium/             network: the Helm release
-      config/           its settings: LoadBalancer IP pool
+      config/           LoadBalancer IP pool, L2 announcements
+    external-secrets/   the operator
+      config/           the OpenBao store
+    cert-manager/
+      config/           the Let's Encrypt issuer and its token
+    tailscale/          the operator and its OAuth secret
+    gateway/            GatewayClass, wildcard certificate, Gateway
     longhorn/
+    cnpg/
     nfs/                NFS CSI driver
       config/           the storage class for the NAS
   projects/
     immich/
+      database/         namespace and Postgres, applied first
 ```
 
 | Folder | Holds |

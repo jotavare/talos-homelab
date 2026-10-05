@@ -222,6 +222,27 @@ tailscale lock sign nodekey:… tlpub:…   # on pve or the laptop
 
 The Windows app can also sign from a link shown in the admin console.
 
+### Devices made by the Kubernetes operator
+
+The Tailscale operator in the cluster creates a device for each proxy,
+for now one: `gateway`, the Cilium Gateway on the tailnet. The operator
+cannot sign under Tailnet Lock yet (open feature requests upstream), so a
+new proxy starts locked out. Its pod shows the command; it is run once on
+`pve`:
+
+```bash
+kubectl -n tailscale exec <proxy pod> -- tailscale --socket=/tmp/tailscaled.sock lock status
+ssh root@pve tailscale lock sign nodekey:... tlpub:...
+```
+
+The proxy keeps its key in a Kubernetes Secret, so restarts do not need a
+new signature; recreating the proxy does.
+
+| Tag | Owner | Who can reach it |
+|-----|-------|------------------|
+| `tag:k8s-operator` | admins | The operator itself, through its OAuth client (`kv/k8s/tailscale-operator`, made by OpenTofu) |
+| `tag:k8s` | `tag:k8s-operator` | My devices, `443` only |
+
 ## Access rules
 
 The default policy lets every device reach every other device on every
