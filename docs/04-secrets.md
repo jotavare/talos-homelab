@@ -109,7 +109,7 @@ bao kv get -mount=kv config
 
 | Path | Holds |
 |------|-------|
-| `kv/config` | `proxmox_host`, `domain`, `cloudflare_zone_id`, `acme_email`, `services_tailnet_ip` |
+| `kv/config` | `proxmox_host`, `nas_host`, `domain`, `cloudflare_zone_id`, `acme_email`, `services_tailnet_ip` |
 | `kv/opentofu` | The Proxmox API token, the two Cloudflare tokens, the Tailscale OAuth client |
 | `kv/services/caddy`, `tailscale`, `garage`, `pocket-id` | The stack's secrets |
 | `kv/services/opentofu` | The passphrase of the OpenTofu state (also in Bitwarden) |

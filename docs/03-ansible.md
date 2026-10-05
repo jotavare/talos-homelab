@@ -58,7 +58,7 @@ ansible-galaxy collection install -r requirements.yml
 | Role `TofuRealms` on `/access/realm` only | |
 | User `jotavare@pocket-id` with `Administrator` on `/`, once OpenTofu made the realm | |
 | Let's Encrypt ACME account `default` (only `root@pam` can register one) | The Cloudflare tokens (secrets) |
-| Firewall files, behind a dead-man switch | |
+| Firewall files on both hosts, behind a dead-man switch | |
 
 The manual column is either a one-time install step or something that
 creates or holds a secret. Those stay by hand on purpose.

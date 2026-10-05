@@ -235,7 +235,7 @@ applied by OpenTofu ([Policy in OpenTofu](#policy-in-opentofu)):
 
   | Tag | Devices |
   |-----|---------|
-  | `tag:server` | `pve` |
+  | `tag:server` | `pve`, `pve-desktop` |
   | `tag:services` | The services stack on the services VM (OpenBao, Caddy) |
   | `tag:talos` | The Talos nodes |
 
@@ -243,7 +243,7 @@ applied by OpenTofu ([Policy in OpenTofu](#policy-in-opentofu)):
 
   | From | To | Ports |
   |------|----|-------|
-  | My devices (user `jotavare@github`: laptop, phone) | `tag:server` | `22`, `8006` |
+  | My devices (user `jotavare@github`: laptop, phone) | `tag:server` | `22`, `8006`, `445` (SMB on the NAS, [08. NAS](08-nas.md)) |
   | My devices | `tag:talos` | `6443`, `50000` |
   | My devices, `tag:talos` and `tag:server` | `tag:services` | `443` |
 

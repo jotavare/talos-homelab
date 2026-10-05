@@ -108,14 +108,27 @@ corrupt.
 | WiFi | 100 to 400 Mbps depending on signal, and the link can drop. Fine for files and photos, not for databases |
 | Off when `pve` is off | Apps that mount it must wait for it at boot |
 
-## Still to do
+## Tailnet and firewall
 
-- `tailscale up` on `pve-desktop` with `tag:server`, then reach it from
-  outside the LAN.
-- The Proxmox firewall on `pve-desktop`, like on `pve`: management over
-  the tailnet only, SMB from my devices, NFS from the Talos nodes. Until
-  then SMB and NFS listen on the LAN, behind the password and the export
-  list.
+`pve-desktop` joined the tailnet as `tag:server`, signed for Tailnet Lock
+from `pve` with `tailscale lock sign`. Its Proxmox firewall is the same
+`cluster.fw` as on `pve` (management only from the tailnet), with its own
+host rules in [nas/host.fw](../nas/host.fw):
+
+| Port | From |
+|------|------|
+| `445` SMB | The LAN and the tailnet. The tailnet grant lets only my devices reach `tag:server:445` |
+| `2049` NFS | The Talos node addresses only |
+| `41641/udp` | Anyone, Tailscale direct connections |
+| `22`, `8006` | The tailnet only, so Ansible now reaches it at its tailnet address, `nas_host` in `kv/config` |
+
+The firewall tasks moved into the shared `proxmox_base` role with the
+dead-man switch, and each host picks its own `host.fw`. Files in
+`/etc/pve` live on Proxmox's cluster filesystem, which refuses Ansible's
+usual write-then-rename, so the copy uses `unsafe_writes`.
+
+Checked from the laptop: SMB open on the LAN and the tailnet, SSH blocked
+on the LAN, NFS blocked from anything but the Talos addresses.
 
 ## References
 

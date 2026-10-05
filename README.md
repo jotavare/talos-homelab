@@ -229,10 +229,6 @@ phase page.
 
 ### NAS
 
-- [ ] Tailscale on `pve-desktop` with `tag:server`, and grants for SMB from
-      my devices.
-- [ ] Proxmox firewall on `pve-desktop`: management over the tailnet,
-      SMB and NFS only from where they are used.
 - [ ] A second disk for a mirror, or a copy of `tank/files` off the host.
 - [ ] Scrub `tank` monthly and alert on errors.
 
