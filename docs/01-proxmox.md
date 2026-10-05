@@ -586,6 +586,26 @@ the ACME account, plugin and certificate) is in
 The steps above that can run unattended are also an Ansible playbook:
 see [03. Ansible](03-ansible.md).
 
+## NIC hang
+
+The onboard Intel I219-LM (`e1000e` driver) hung while the cluster pulled
+large images and Longhorn installed:
+
+```text
+e1000e 0000:00:1f.6 nic0: Detected Hardware Unit Hang
+```
+
+262 times in nine minutes. The host kept running but lost the network, so
+from outside it looked frozen: no ping, and `pve-desktop` on the same LAN
+showed its ARP entry as `INCOMPLETE`. A short press of the power button
+shut it down cleanly, which is how `journalctl -b -1` still had the
+messages.
+
+It is a known `e1000e` problem with TCP segmentation offload under load.
+The fix is to let the CPU segment instead of the card: `tso off gso off`,
+applied by Ansible now and on every boot with a `post-up` line on `nic0`
+in `/etc/network/interfaces`. The extra CPU work is negligible at 1 Gbit.
+
 ## Planned VMs
 
 The plan for the Talos VMs and the services VM, drawn
