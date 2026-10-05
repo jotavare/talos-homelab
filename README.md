@@ -39,20 +39,24 @@ please tell me through a [private security report](.github/SECURITY.md).
 
 ## Docs
 
-The build, step by step, in the order it was done. One page per phase,
-with the tools, the options chosen and why.
+The build, one page per part, in the order it was done: the tools, the
+options chosen and why. The whole picture is in the
+[overview diagram](diagrams/overview.png).
 
-| Phase | Covers | Diagrams |
-|-------|--------|----------|
-| [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install, NIC fix, planned VMs | [Overview](diagrams/overview.png), [Proxmox](diagrams/proxmox.png) |
-| [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, Tailnet Lock, access rules, keys made by OpenTofu | [Tailscale](diagrams/tailscale.png) |
-| [03. Ansible](docs/03-ansible.md) | Both Proxmox hosts and the NAS as playbooks, compliance checks | |
-| [04. Secrets](docs/04-secrets.md) | Where secrets live, OpenBao set up and unsealed, the cluster's login, rotation, a SOPS example | [Secrets](diagrams/secrets.png) |
-| [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, the modules, state encryption, secrets from OpenBao | |
-| [06. Object storage](docs/06-object-storage.md) | Garage for backups | |
-| [07. Services VM](docs/07-services.md) | OpenBao, Garage, Pocket ID, Caddy and Tailscale as containers, managed by OpenTofu | [Request path](diagrams/request-path.png) |
-| [08. NAS](docs/08-nas.md) | ZFS on the second host, SMB for my devices, NFS for the cluster | [Overview](diagrams/overview.png) |
-| [09. Talos](docs/09-talos.md) | Image, VMs, config and bootstrap, Cilium, Flux, storage, secrets, certificates, Gateway, Immich | [Request path](diagrams/request-path.png), [GitOps](diagrams/gitops.png) |
+| Page | Covers | Diagram |
+|------|--------|---------|
+| [Proxmox](docs/proxmox.md) | Install USB, install, post-install, NIC fix, planned VMs, backups | [Proxmox](diagrams/proxmox.png) |
+| [Tailscale](docs/tailscale.md) | Account, devices, Tailnet Lock, access rules, keys made by OpenTofu | [Tailscale](diagrams/tailscale.png) |
+| [Ansible](docs/ansible.md) | Both Proxmox hosts and the NAS as playbooks, compliance checks | [Ansible](diagrams/ansible.png) |
+| [Secrets](docs/secrets.md) | Where secrets live, OpenBao, the cluster's login, rotation, a SOPS example | [Secrets](diagrams/secrets.png) |
+| [OpenTofu](docs/opentofu.md) | Proxmox user and token, the modules and providers, state encryption, saved plans | [OpenTofu](diagrams/opentofu.png) |
+| [Services](docs/services.md) | The services VM: OpenBao, Garage, Pocket ID, Caddy and Tailscale as containers | [Services](diagrams/services.png) |
+| [SSO](docs/sso.md) | Pocket ID with passkeys, OIDC for OpenBao, Proxmox and Immich | [SSO](diagrams/sso.png) |
+| [NAS](docs/nas.md) | ZFS on the second host, SMB for my devices, NFS for the cluster | [NAS](diagrams/nas.png) |
+| [Talos](docs/talos.md) | Image, VMs, machine config, bootstrap, Tailscale on the nodes | [Talos](diagrams/talos.png) |
+| [Platform](docs/platform.md) | Cilium and its Gateway, Longhorn, NFS, CloudNativePG, External Secrets, cert-manager, the Tailscale operator | [Platform](diagrams/platform.png) |
+| [GitOps](docs/gitops.md) | Flux and Kustomize, the `gitops/` layout, the order and timing of the steps | [GitOps](diagrams/gitops.png) |
+| [Immich](docs/immich.md) | Database, photo library, settings as code, Pocket ID | [Immich](diagrams/immich.png) |
 
 ## Hardware
 
@@ -66,7 +70,7 @@ The host and the home network it sits on.
 | CPU | Intel Core i5-12500T, 6 cores / 12 threads, 35 W |
 | RAM | 32 GB DDR4-3200 (2 x 16 GB, both slots used, max 64 GB) |
 | Storage | Intel 670p 512 GB NVMe (QLC) |
-| Network | Intel I219-LM gigabit, single port, no Wi-Fi. TSO and GSO off, it hangs under load otherwise ([details](docs/01-proxmox.md#nic-hang)) |
+| Network | Intel I219-LM gigabit, single port, no Wi-Fi. TSO and GSO off, it hangs under load otherwise ([details](docs/proxmox.md#nic-hang)) |
 | GPU | Intel UHD Graphics 770 (integrated) |
 
 ### NAS host
@@ -77,7 +81,7 @@ The host and the home network it sits on.
 | CPU | Intel Core i5-4460, 4 cores |
 | RAM | 12 GB |
 | Storage | Samsung 850 EVO 250 GB SSD (Proxmox), WD Blue 1 TB HDD (ZFS pool `tank`) |
-| Network | USB WiFi only ([why it is a host, not a VM](docs/08-nas.md#why-on-the-host-not-a-vm)) |
+| Network | USB WiFi only ([why it is a host, not a VM](docs/nas.md#why-on-the-host-not-a-vm)) |
 
 ### Network
 
@@ -178,15 +182,15 @@ written down and the homelab knowingly does something simpler.
 
 | Area | Production way | Here, and why |
 |------|----------------|---------------|
-| Control plane | Three control planes, so etcd keeps quorum when one fails | One, to leave RAM for apps. All VMs share one host anyway ([details](docs/01-proxmox.md#planned-vms)) |
+| Control plane | Three control planes, so etcd keeps quorum when one fails | One, to leave RAM for apps. All VMs share one host anyway ([details](docs/proxmox.md#planned-vms)) |
 | Control plane size | Enough RAM for headroom, 8 GB or more | 4 GB, tight for etcd, the API server and the Cilium agent. Watch memory and take RAM from a worker if needed |
 | Block storage | Longhorn with three replicas on separate nodes and disks | Longhorn on a second virtual disk per worker, one replica per volume. Every disk is on the same QLC NVMe: no real redundancy, and more writes on a drive that wears fast |
 | Secrets store | Vault or OpenBao as a cluster of three on dedicated machines, auto-unsealed by a cloud key service | One OpenBao in the services VM on the same host, unsealed by hand after a reboot. Survives a cluster rebuild, not the loss of the host |
-| OpenTofu state | Remote backend with locking and versioning (S3, GCS, Azure Blob) on separate infrastructure | One local state file on my laptop, encrypted with a passphrase. No locking, no history, no copy elsewhere; fine for one person on one laptop, and it can be rebuilt with imports ([details](docs/05-opentofu.md#how-the-state-got-here)) |
-| Object storage | Several nodes with replication, versioning and object lock, plus a copy off site | One Garage in the services VM on the same host, one copy of each object, no versioning. Survives a cluster rebuild, not the loss of the host or the drive ([details](docs/06-object-storage.md#limits)) |
-| File storage | A NAS on wired network with mirrored or RAID-Z disks, snapshots sent off site | ZFS on one HDD in an old desktop on WiFi. Checksums catch damage but cannot repair it, and nothing is copied off it yet ([details](docs/08-nas.md#limits)) |
-| Tailnet devices in the cluster | The Tailscale operator signs its own proxies, or Tailnet Lock is off | The operator cannot sign under Tailnet Lock yet, so each proxy it creates is signed once by hand with `tailscale lock sign` on `pve` ([details](docs/02-tailscale.md#tailnet-lock)) |
-| Backups | Proxmox Backup Server on a separate machine, plus a copy off site | A daily backup job for the services VM to `local` now, Proxmox Backup Server as a VM on the same host later. Both protect against mistakes, not against losing the host ([details](docs/01-proxmox.md#container-backups)) |
+| OpenTofu state | Remote backend with locking and versioning (S3, GCS, Azure Blob) on separate infrastructure | One local state file on my laptop, encrypted with a passphrase. No locking, no history, no copy elsewhere; fine for one person on one laptop, and it can be rebuilt with imports ([details](docs/opentofu.md#how-the-state-got-here)) |
+| Object storage | Several nodes with replication, versioning and object lock, plus a copy off site | One Garage in the services VM on the same host, one copy of each object, no versioning. Survives a cluster rebuild, not the loss of the host or the drive ([details](docs/services.md#limits)) |
+| File storage | A NAS on wired network with mirrored or RAID-Z disks, snapshots sent off site | ZFS on one HDD in an old desktop on WiFi. Checksums catch damage but cannot repair it, and nothing is copied off it yet ([details](docs/nas.md#limits)) |
+| Tailnet devices in the cluster | The Tailscale operator signs its own proxies, or Tailnet Lock is off | The operator cannot sign under Tailnet Lock yet, so each proxy it creates is signed once by hand with `tailscale lock sign` on `pve` ([details](docs/tailscale.md#tailnet-lock)) |
+| Backups | Proxmox Backup Server on a separate machine, plus a copy off site | A daily backup job for the services VM to `local` now, Proxmox Backup Server as a VM on the same host later. Both protect against mistakes, not against losing the host ([details](docs/proxmox.md#container-backups)) |
 
 ## Backlog
 
@@ -237,11 +241,11 @@ phase page.
       the `docker` group), so a rebuilt VM needs no manual step.
 - [ ] An encrypted copy of the OpenTofu state off the laptop.
 - [ ] Break-glass copies in Bitwarden: the Proxmox API token and the state
-      passphrase ([04. Secrets](docs/04-secrets.md#when-openbao-is-down)).
+      passphrase ([Secrets](docs/secrets.md#when-openbao-is-down)).
 - [ ] Restore test: VM `130` from its backup under a new ID with its
       network off, OpenBao unsealed, then deleted.
 - [ ] Rotate what is due in the rotation table
-      ([04. Secrets, Rotation](docs/04-secrets.md#rotation)).
+      ([Secrets, Rotation](docs/secrets.md#rotation)).
 - [ ] Lockout and upgrade runbook: etcd snapshot before every upgrade,
       copied off the host.
 - [ ] Optional: daily OpenBao Raft snapshot to Garage, on top of the

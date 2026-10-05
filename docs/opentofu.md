@@ -16,7 +16,7 @@ a public repo: the state holds the Talos machine secrets.
 
 OpenTofu does not use `root`. It gets its own user with a role that holds
 only what the provider needs. Both are created by the Ansible playbook
-([03. Ansible](03-ansible.md)) and checked on every run.
+([Ansible](ansible.md)) and checked on every run.
 
 | Item | Value |
 |------|-------|
@@ -50,7 +50,7 @@ it, backups included, so it is not in the main role. A second role,
 |------|------|------------|
 | `TofuProvisioner` | `/` | The table above |
 | `TofuBackupStorage` | `/storage/local` | `Datastore.Allocate`, `Datastore.AllocateSpace`, `Datastore.AllocateTemplate`, `Datastore.Audit` |
-| `TofuRealms` | `/access/realm` | `Realm.Allocate`, for the Pocket ID realm ([07. Services VM](07-services.md#logging-in-to-openbao-and-proxmox)) |
+| `TofuRealms` | `/access/realm` | `Realm.Allocate`, for the Pocket ID realm ([Services](sso.md#logging-in-to-openbao-and-proxmox)) |
 
 The second role repeats the storage privileges of the first on purpose.
 In Proxmox a permission entry on a more specific path replaces the
@@ -122,11 +122,11 @@ OpenBao, configures the providers and calls one module per area:
 |--------|-----------------|
 | [proxmox](../iac/modules/proxmox/) | The Debian cloud image, the services VM and its firewall, the daily backup job, the ACME plugin and certificate, the Pocket ID realm |
 | [dns](../iac/modules/dns/) | The `*.home.<domain>` records: services on Caddy, cluster apps on the Gateway |
-| [services](../iac/modules/services/) | The containers on the services VM, each config file next to its `.tf` ([07. Services VM](07-services.md)) |
+| [services](../iac/modules/services/) | The containers on the services VM, each config file next to its `.tf` ([Services](services.md)) |
 | [pocketid](../iac/modules/pocketid/) | The OIDC clients for OpenBao, Proxmox and Immich |
 | [openbao](../iac/modules/openbao/) | OpenBao's own configuration: `kv`, `userpass`, the `admin` policy, my user's token settings, OIDC login, the JWT login for the cluster |
-| [tailscale](../iac/modules/tailscale/) | The tailnet policy, the nodes' auth key, the Gateway's tailnet IP ([02. Tailscale](02-tailscale.md#keys-and-clients-made-by-opentofu)) |
-| [talos](../iac/modules/talos/) | The image, the VMs and their firewall, the machine configs from [talos/](../talos/), bootstrap, and the cluster secrets in OpenBao ([09. Talos](09-talos.md)) |
+| [tailscale](../iac/modules/tailscale/) | The tailnet policy, the nodes' auth key, the Gateway's tailnet IP ([Tailscale](tailscale.md#keys-and-clients-made-by-opentofu)) |
+| [talos](../iac/modules/talos/) | The image, the VMs and their firewall, the machine configs from [talos/](../talos/), bootstrap, and the cluster secrets in OpenBao ([Talos](talos.md)) |
 | [cilium](../iac/modules/cilium/) | Cilium, once, so a new cluster has a network before Flux runs. `ignore_changes = all`: Flux owns it afterwards |
 | [flux](../iac/modules/flux/) | The Flux Operator and the `FluxInstance` |
 | [k8s](../iac/modules/k8s/) | What the cluster needs from outside: `cluster-settings`, the operator's OAuth client, the copies in `kv/k8s/*` |
@@ -233,7 +233,7 @@ tofu plan
 
 In [modules/proxmox/vm.tf](../iac/modules/proxmox/vm.tf). It replaced the first
 OpenBao container, which had the same ID and IP. What runs on it is in
-[07. Services VM](07-services.md).
+[Services](services.md).
 
 | Resource | What it does |
 |----------|--------------|
@@ -257,7 +257,7 @@ it is not written in the repo.
 
 In [modules/proxmox/backups.tf](../iac/modules/proxmox/backups.tf): the daily backup of
 both containers, described in
-[01. Proxmox, Container backups](01-proxmox.md#container-backups). The
+[Proxmox, Container backups](proxmox.md#container-backups). The
 guests come from the container resources, so a new container is one line
 in `vmid`.
 
@@ -330,7 +330,7 @@ Changing it means raising `data_wo_version`.
 
 | Part | Where | Why |
 |------|-------|-----|
-| ACME account `default`, Let's Encrypt | Ansible ([03. Ansible](03-ansible.md)) | The API only lets `root@pam` register an account |
+| ACME account `default`, Let's Encrypt | Ansible ([Ansible](ansible.md)) | The API only lets `root@pam` register an account |
 | DNS plugin `cloudflare` (`proxmox_acme_dns_plugin`) | OpenTofu | Needs `Sys.Modify` on `/`, already in the role |
 | Certificate for `pve.home.<domain>` and `proxmox.home.<domain>` (`proxmox_acme_certificate`) | OpenTofu, with `force = true` so a change of names can replace the current certificate | Needs `Sys.Modify` on `/nodes/pve`, already in the role |
 | Renewal | Proxmox's daily `pve-daily-update` timer | Renews by itself 30 days before expiry, no OpenTofu run needed |

@@ -1,4 +1,4 @@
-# Services VM
+# Services
 
 The services that run outside the cluster, as Docker containers in a VM
 managed by OpenTofu: OpenBao, Garage, Pocket ID, a Caddy reverse proxy
@@ -19,7 +19,7 @@ resources ([Why OpenTofu](#why-opentofu)).
 |--------|--------|-----|
 | Where Docker runs | A VM | Proxmox recommends a VM for Docker. Docker inside an LXC container shares the host kernel, and updates to Docker, `runc`, LXC or the kernel have broken it before |
 | Reverse proxy | Caddy | The whole config is a short `Caddyfile` in git, and it gets Let's Encrypt certificates by itself |
-| Secrets for the stack | OpenBao | App secrets live in OpenBao ([04. Secrets](04-secrets.md#where-secrets-live)) |
+| Secrets for the stack | OpenBao | App secrets live in OpenBao ([Secrets](secrets.md#where-secrets-live)) |
 
 Reverse proxies considered:
 
@@ -58,8 +58,8 @@ are also on `services`, a normal bridge, for the way out to the internet:
 | `tailscale` | `tailscale/tailscale:v1.102.5`, pinned by digest | Joins the tailnet as one device, `services`, `tag:services`, and forwards tailnet port 443 to `caddy:443` with `tailscale serve` (`TS_SERVE_CONFIG`). Nothing else on the VM listens on the tailnet. Only on `services` |
 | `caddy` | Built from [caddy/Dockerfile](../iac/modules/services/caddy/Dockerfile): `caddy:2.11.4` plus `caddy-dns/cloudflare` v0.2.4 | Listens on 443 inside Docker, reached only through the Tailscale forward. Also on `backend` for the apps. Certificates for each name from Let's Encrypt through Cloudflare DNS-01 |
 | `openbao` | `openbao/openbao:2.7.0`, pinned by digest | The same OpenBao, on `backend` only, port `8200`. Only Caddy reaches it |
-| `pocket-id` | `pocketid/pocket-id:v2.16.0`, pinned by digest | Single sign-on with passkeys, reached as `auth.home.<domain>` ([SSO with Pocket ID](#sso-with-pocket-id)) |
-| `garage` | `dxflrs/garage:v2.4.1`, pinned by digest | S3 API on `backend`, reached through Caddy as `s3.home.<domain>` ([06. Object storage](06-object-storage.md)) |
+| `pocket-id` | `pocketid/pocket-id:v2.16.0`, pinned by digest | Single sign-on with passkeys, reached as `auth.home.<domain>` ([SSO with Pocket ID](sso.md)) |
+| `garage` | `dxflrs/garage:v2.4.1`, pinned by digest | S3 API on `backend`, reached through Caddy as `s3.home.<domain>` ([Object storage](services.md#garage)) |
 
 Every image is pinned to a version and a digest, so an update is a
 commit and a `tofu apply`.
@@ -74,8 +74,8 @@ Every `*.home.<domain>` name, and who serves it:
 | `https://auth.home.<domain>` | Caddy | `pocket-id:1411`, Pocket ID |
 | `https://s3.home.<domain>` | Caddy | `garage:3900`, Garage's S3 API |
 | `https://pve.home.<domain>` | Caddy | `192.168.1.10:8006`, the Proxmox web UI |
-| `https://proxmox.home.<domain>:8006` | Proxmox itself | `pve`'s tailnet IP, for OpenTofu ([05. OpenTofu](05-opentofu.md#reaching-proxmox)) |
-| `https://immich.home.<domain>` | Cilium Gateway in the cluster | Immich ([09. Talos, Gateway](09-talos.md#9-secrets-certificates-and-the-gateway)) |
+| `https://proxmox.home.<domain>:8006` | Proxmox itself | `pve`'s tailnet IP, for OpenTofu ([OpenTofu](opentofu.md#reaching-proxmox)) |
+| `https://immich.home.<domain>` | Cilium Gateway in the cluster | Immich ([Talos, Gateway](platform.md#secrets-certificates-and-the-gateway)) |
 
 Caddy only serves what runs outside the cluster. Apps in the cluster have
 their own entry point, the Cilium Gateway, with its own wildcard
@@ -171,7 +171,7 @@ The VM uses about 0.5 GB of its 1.5 GB with the stack running.
 ## Why OpenTofu
 
 The containers are `docker_container` resources in the same OpenTofu
-project as everything else ([05. OpenTofu](05-opentofu.md#project)). Two
+project as everything else ([OpenTofu](opentofu.md#project)). Two
 things keep that safe even though OpenTofu depends on what runs here:
 
 - The state is a local file encrypted with a passphrase, so an apply that
@@ -200,13 +200,13 @@ All in [iac/modules/services/](../iac/modules/services/):
 | [network.tf](../iac/modules/services/network.tf) | `backend`, `services` and the three volumes |
 | [openbao.tf](../iac/modules/services/openbao.tf), [garage.tf](../iac/modules/services/garage.tf), [caddy.tf](../iac/modules/services/caddy.tf), [pocketid.tf](../iac/modules/services/pocketid.tf) | Images and containers |
 | [openbao/openbao.hcl](../iac/modules/services/openbao/openbao.hcl) | Raft storage, listener on `8200` without TLS (Caddy does TLS) |
-| [garage/garage.toml](../iac/modules/services/garage/garage.toml) | Garage, see [06. Object storage](06-object-storage.md#setup) |
+| [garage/garage.toml](../iac/modules/services/garage/garage.toml) | Garage, see [Object storage](services.md#garage-setup) |
 | [caddy/Caddyfile](../iac/modules/services/caddy/Caddyfile) | The four names, DNS-01 through Cloudflare |
 | [caddy/Dockerfile](../iac/modules/services/caddy/Dockerfile) | Caddy with the Cloudflare module, built on the VM's Docker (`use_legacy_builder`, since the laptop has no Docker) |
 
 The config files are copied in with `upload` blocks, so a changed file
 replaces only its own container. Run it like the rest of the project
-([05. OpenTofu](05-opentofu.md#project)).
+([OpenTofu](opentofu.md#project)).
 
 Every stateful container has `destroy_grace_seconds = 30`: OpenTofu's
 default is to kill a container it replaces, which left Pocket ID with a
@@ -219,73 +219,7 @@ An apply that replaces `openbao` leaves it sealed. Unseal it afterwards:
 ssh -t -J root@<PROXMOX_HOST> debian@192.168.1.30 docker exec -it openbao bao operator unseal
 ```
 
-## SSO with Pocket ID
-
-[Pocket ID](https://pocket-id.org/) is an OIDC provider that only knows
-passkeys: no passwords at all. Apps log in through it with OIDC.
-
-| Choice | Why |
-|--------|-----|
-| Pocket ID over Authentik, Keycloak, Authelia, Kanidm, Zitadel | New to me, tiny (tens of MB), and passkeys cannot be phished. Authentik and Keycloak are already known from work and need over 1 GB |
-| Passkeys over GitHub login | Nothing outside the lab can let anyone in. Passkeys live in Bitwarden and sync to every device |
-| On the services VM | Available before and without the cluster, and small enough for the VM's RAM |
-
-| Item | Value |
-|------|-------|
-| URL | `https://auth.home.<domain>`, tailnet only |
-| Storage | SQLite in `/srv/pocket-id`, covered by the VM backup |
-| Encryption key, API key | `kv/services/pocket-id`, as files in `/run/secrets/`. The API key is `STATIC_API_KEY_FILE`, so OpenTofu can manage Pocket ID without a key made in the UI |
-| Outbound | None: `ANALYTICS_DISABLED` and `VERSION_CHECK_DISABLED`, since `backend` has no route out |
-
-First setup: open `https://auth.home.<domain>/setup`, create the admin
-account and register a passkey in Bitwarden, then a second one on
-another authenticator as a fallback.
-
-### Logging in to OpenBao and Proxmox
-
-Both apps are OIDC clients of Pocket ID, all in OpenTofu: the clients in
-[modules/pocketid](../iac/modules/pocketid/), the OpenBao side in
-[modules/openbao/oidc.tf](../iac/modules/openbao/oidc.tf), the
-Proxmox realm in
-[modules/proxmox/realm.tf](../iac/modules/proxmox/realm.tf).
-
-Immich is a third client, `immich`, with callbacks for the web and the
-mobile app (`app.immich:///oauth-callback`); its secret goes to OpenBao
-`kv/k8s/immich-oauth` for the cluster
-([09. Talos, CloudNativePG and Immich](09-talos.md#8-cloudnativepg-and-immich)).
-The Immich admin has the same email as my Pocket ID user, so the first
-Pocket ID login links them; password login stays on as a fallback.
-
-| | OpenBao | Proxmox |
-|-|---------|---------|
-| Client ID | `openbao` | `proxmox` |
-| Callback | `https://openbao.home.<domain>/ui/vault/auth/oidc/oidc/callback`, and `http://localhost:8250/oidc/callback` for `bao login -method=oidc` | `https://pve.home.<domain>` and `https://proxmox.home.<domain>:8006` |
-| Who gets in | Role `admin` bound to my Pocket ID user ID (`bound_subject`), policy `admin`, 8 h tokens | Realm `pocket-id` (the default on the login page), no auto-create. Only `jotavare@pocket-id` exists, with `Administrator` on `/` |
-| Client secret | Generated by Pocket ID, kept in the encrypted state, sent to OpenBao write-only | Same, sent to Proxmox write-only (`client_key_wo`) |
-| How it reaches Pocket ID | `auth.home.<domain>` is a Docker network alias of the `caddy` container on `backend`, so OpenBao lands on Caddy without leaving the VM | Over the tailnet: a grant from `tag:server` to `tag:services:443` ([02. Tailscale](02-tailscale.md#access-rules)) |
-
-My user ID comes from a `pocketid_user` data source, so it is not
-written in the repo. Granting `Administrator` needs `Permissions.Modify`,
-which would let the OpenTofu token give itself anything, so the user and
-its ACL are made by Ansible as `root` once the realm exists
-([03. Ansible](03-ansible.md)).
-
-`userpass` in OpenBao and `root@pam` in Proxmox stay as the way in when
-Pocket ID is down.
-
-From the laptop:
-
-```bash
-bao login -method=oidc
-# opens the browser, passkey, then:
-# Success! You are now authenticated.
-```
-
-The provider for Pocket ID, `trozz/pocketid`, is a community provider and
-the registry has no signing key for it, so OpenTofu skips the signature
-check. The checksums are pinned in `.terraform.lock.hcl`.
-
-### The switch from Compose
+## The switch from Compose
 
 1. The existing network and volumes were imported (`import` blocks), so
    the Tailscale identity and Caddy's certificates stayed.
@@ -303,14 +237,136 @@ Afterwards the Compose files, the Ansible `services` role and the old
 secret files in `/srv/secrets` were removed. Both projects plan with
 `No changes`, and all three names answer with a valid certificate.
 
+## Garage
+
+An S3-compatible bucket store for backups, as a container on the services
+VM, next to OpenBao and outside the cluster.
+
+### Why outside the cluster
+
+Backups of the cluster cannot live in the cluster. A broken or rebuilt
+cluster would take its own backups down with it, and OpenBao, which runs
+outside the cluster, needs somewhere to send its snapshots before the
+cluster even exists. Same reasoning as for OpenBao in
+[Secrets, OpenBao](secrets.md#openbao).
+
+### Why Garage
+
+State of the S3 options when this was written:
+
+| Option | Status | Fit here |
+|--------|--------|----------|
+| **Garage** | v2.3.0, active, single binary, built for small self-hosted setups | Low RAM, single-node mode, lifecycle rules. No versioning or object lock |
+| SeaweedFS | Active, more moving parts (master, volume, filer) | The fallback if versioning or object lock become a requirement |
+| MinIO | Community edition archived, no more releases | Out |
+| RustFS | Still alpha | Out for now, worth another look later |
+| Ceph (RGW) | Mature, but several daemons and a lot of RAM | Built for many disks and machines, not one box |
+| VersityGW | Active, an S3 gateway in front of a file system | Adds an S3 API to a file system or NAS I do not have |
+| Directory on the Proxmox host | Nothing to install | No S3 API, which Velero and Longhorn need, and backups mixed with the host |
+| Cloudflare R2 | Managed, 10 GB free, no egress fees | Off the host, but a cloud service for the primary copy, against the self-hosted goal. The best candidate for the copy off the host |
+| AWS S3, Google Cloud Storage, Azure Blob | Managed, versioning and object lock | Same as R2, with paid egress on top |
+
+MinIO is the one I know from before. With its community edition gone,
+Garage is the new tool, which also fits the goal of learning what I do not
+use at work. The cloud services are not out for good: one of them is where
+the copy off the host goes.
+
+### Garage design
+
+| Item | Design | Why |
+|------|--------|-----|
+| Runs in | A container on the services VM, managed by OpenTofu, image `dxflrs/garage:v2.4.1` pinned by digest ([Services](services.md)) | One place for the services outside the cluster |
+| Mode | `--single-node`, replication factor 1, LMDB metadata with automatic snapshots every 6 hours | Garage sets up its own one-node layout. Metadata snapshots let it recover from a corrupted database |
+| Storage | `/srv/garage/meta` and `/srv/garage/data` on the VM's disk | Covered by the daily VM backup |
+| Listens on | S3 API `3900` on the internal `backend` network only. RPC `3901` inside the container | Nothing on the LAN reaches it directly |
+| Reached through | Caddy, `https://s3.home.<domain>`, over the tailnet | One name, a real certificate, tailnet only |
+| RPC secret | Generated into OpenBao (`kv/services/garage`), written to the VM by Ansible | Not in git; with one node, nothing else needs it |
+| Buckets and keys | One bucket and one access key per client. A key can only read and write its own bucket | One leaked key exposes one set of data, not all of it |
+| Key storage | In OpenBao, never in git | Every secret lives in OpenBao |
+| Retention | Lifecycle rule per backup bucket, objects expire after 14 days | Old backups clean themselves up |
+
+Garage first ran in its own LXC container (`140`), installed as a binary
+by Ansible, with its own firewall. It moved into the services stack before
+it held any data, and the container was removed.
+
+#### Buckets
+
+| Bucket | Client | When |
+|--------|--------|------|
+| `openbao-snapshots` | OpenBao, daily timer | Optional |
+| `etcd-snapshots` | Talos etcd backup job in the cluster | With the cluster |
+| `velero` | Velero | With the cluster |
+| `longhorn` | Longhorn backup target | With the cluster |
+
+The Talos nodes reach Garage through `s3.home.<domain>` over the tailnet:
+the policy lets `tag:talos` reach `tag:services` on `443`.
+
+Velero and Longhorn need two settings to work with Garage: path-style
+URLs (`s3ForcePathStyle: true`) and no request checksums
+(`checksumAlgorithm: ""`), which newer AWS SDKs send by default and Garage
+does not accept.
+
+#### OpenBao snapshots
+
+Optional. The daily VM backup
+([Proxmox, Container backups](proxmox.md#container-backups))
+already covers OpenBao. A Raft snapshot adds a small file that restores
+into any OpenBao, and restores the data without rolling back the VM.
+
+1. A `bao` policy that can only read `sys/storage/raft/snapshot`, and a
+   periodic token with only that policy, created by hand and kept in a
+   file only root can read on the VM.
+2. A daily `systemd` timer runs `bao operator raft snapshot save`, keeps
+   the last three snapshots on the VM, and copies the new one to
+   `openbao-snapshots` with `rclone`.
+3. A Raft snapshot holds the data still encrypted by OpenBao. Restoring it
+   needs the unseal key, which is not on the VM.
+
+#### Limits
+
+It shares the host and the NVMe with everything it backs up. It protects
+against a deleted bucket, a bad upgrade or a rebuilt cluster, not
+against losing the host or the drive (see the POC trade-offs in the
+[readme](../README.md#poc-trade-offs)). No versioning or object lock
+either: a client whose key leaks can delete its own bucket. A copy off the
+host, most likely to Cloudflare R2, is in the Backlog.
+
+#### The OpenTofu state
+
+The OpenTofu state lived here for a while and moved to a local file: an
+apply that restarted Garage could not save its own state
+([OpenTofu](opentofu.md#how-the-state-got-here)).
+
+### Garage setup
+
+The container is in [modules/services/garage.tf](../iac/modules/services/garage.tf)
+([Services](services.md#setup)):
+
+| File | What it is |
+|------|------------|
+| [garage.tf](../iac/modules/services/garage.tf) | Garage on `backend`, the RPC secret in `/run/secrets/`, data under `/srv/garage` |
+| [garage.toml](../iac/modules/services/garage/garage.toml) | Replication factor 1, LMDB, S3 API on `3900`, region `garage` |
+
+Buckets and keys, made with the CLI inside the container:
+
+```bash
+ssh -J root@<PROXMOX_HOST> debian@192.168.1.30
+sudo docker exec garage /garage bucket create opentofu-state
+sudo docker exec garage /garage key create opentofu
+sudo docker exec garage /garage bucket allow --read --write opentofu-state --key opentofu
+```
+
+The key went straight into OpenBao (`kv/opentofu`), never printed.
+
 ## References
 
 - [Docker Compose](https://docs.docker.com/compose/)
 - [Caddy](https://caddyserver.com/docs/) and [caddy-dns/cloudflare](https://github.com/caddy-dns/cloudflare)
 - [Tailscale in Docker](https://tailscale.com/kb/1282/docker)
-- [Pocket ID OIDC clients](https://pocket-id.org/docs/) and the [trozz/pocketid provider](https://github.com/Trozz/terraform-provider-pocketid)
-- [OpenBao OIDC auth](https://openbao.org/docs/auth/jwt/) and [Proxmox OpenID realms](https://pve.proxmox.com/wiki/User_Management#pveum_openid)
 - [OpenBao Docker image](https://hub.docker.com/r/openbao/openbao)
 - [Proxmox: containers or VMs for Docker](https://pve.proxmox.com/wiki/Linux_Container)
+- [Garage documentation](https://garagehq.deuxfleurs.fr/documentation/)
+- [Garage configuration file](https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/)
+- [OpenBao Raft snapshots](https://openbao.org/docs/commands/operator/raft/)
 
 [Back to the build log](../README.md#docs)

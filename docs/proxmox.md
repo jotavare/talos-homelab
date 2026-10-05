@@ -161,7 +161,7 @@ Web UI, user `root`, realm **Linux PAM**. The certificate warning and the
 | SSH | `ssh root@192.168.1.10` | `ssh root@pve.<tailnet>.ts.net` |
 
 Since the [firewall](#firewall), management only answers over the tailnet
-([02. Tailscale](02-tailscale.md)). At home the tailnet path still goes
+([Tailscale](tailscale.md)). At home the tailnet path still goes
 straight over the LAN.
 
 - **Root password:** replaced the one set in the installer with a long
@@ -204,7 +204,7 @@ ssh -o PubkeyAuthentication=no root@pve.<tailnet>.ts.net     # Permission denied
 ```
 
 What the tools need, such as the host's tailnet address, lives in
-OpenBao ([04. Secrets](04-secrets.md)).
+OpenBao ([Secrets](secrets.md)).
 Passwords that no script uses stay only in Bitwarden.
 
 ### Repositories and upgrade
@@ -257,7 +257,7 @@ Debian security fixes install on their own every day through
   upgrade.
 - **Reboots**: never automatic. A new kernel waits for a planned reboot.
 - **Tailscale**: not covered here. It updates itself, see
-  [02. Tailscale](02-tailscale.md#proxmox-host).
+  [Tailscale](tailscale.md#proxmox-host).
 
 ```bash
 apt install unattended-upgrades
@@ -558,7 +558,7 @@ under 600 MB. Failures go to the default
 notification matcher, so they arrive by email.
 
 The job is managed by OpenTofu
-([05. OpenTofu, Backup job](05-opentofu.md#backup-job)), with the one
+([OpenTofu, Backup job](opentofu.md#backup-job)), with the one
 extra privilege it needs limited to `local`.
 
 Restore, into a new ID so the original keeps running:
@@ -579,12 +579,12 @@ certificate, so browsers trust it with no warning. The name points at the
 host's tailnet IP, so it only opens over the tailnet. Proxmox renews it
 itself, from its daily update timer. How it is set up (Cloudflare DNS,
 the ACME account, plugin and certificate) is in
-[05. OpenTofu, DNS and certificates](05-opentofu.md#dns-and-certificates).
+[OpenTofu, DNS and certificates](opentofu.md#dns-and-certificates).
 
 ## Ansible
 
 The steps above that can run unattended are also an Ansible playbook:
-see [03. Ansible](03-ansible.md).
+see [Ansible](ansible.md).
 
 ## NIC hang
 
@@ -635,7 +635,7 @@ changed once: two workers instead of three, so the RAM fits.
   plane can join later without new certificates or kubeconfigs.
 - **OpenBao and Garage outside the cluster:** the cluster depends on its
   secrets, and its backups cannot live in it, so both run on the services
-  VM and survive a cluster rebuild. See [07. Services VM](07-services.md).
+  VM and survive a cluster rebuild. See [Services](services.md).
 
 **Why one control plane and not three.** Production clusters run three
 control planes, so etcd keeps quorum when one fails, and that is the
@@ -655,7 +655,7 @@ adding two VMs behind the same VIP.
 
 ## Next
 
-1. [05. OpenTofu](05-opentofu.md): the VMs as code.
+1. [OpenTofu](opentofu.md): the VMs as code.
 
 ## References
 

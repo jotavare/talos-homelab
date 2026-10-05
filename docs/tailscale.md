@@ -114,7 +114,7 @@ tailscale set --auto-update
 ```
 
 The host's unattended upgrades only cover Debian security fixes (see
-[01. Proxmox](01-proxmox.md#automatic-security-updates)), so without this
+[Proxmox](proxmox.md#automatic-security-updates)), so without this
 the Tailscale package from its own apt repository would only update with
 a manual `apt full-upgrade`. An update needs no reboot, only a restart of
 `tailscaled`, which drops tailnet sessions (SSH included) for a few
@@ -266,7 +266,7 @@ applied by OpenTofu ([Policy in OpenTofu](#policy-in-opentofu)):
 
   | From | To | Ports |
   |------|----|-------|
-  | My devices (user `jotavare@github`: laptop, phone) | `tag:server` | `22`, `8006`, `445` (SMB on the NAS, [08. NAS](08-nas.md)) |
+  | My devices (user `jotavare@github`: laptop, phone) | `tag:server` | `22`, `8006`, `445` (SMB on the NAS, [NAS](nas.md)) |
   | My devices | `tag:talos` | `6443`, `50000` |
   | My devices, `tag:talos` and `tag:server` | `tag:services` | `443` |
   | My devices | `tag:k8s` | `443`, the apps behind the Gateway |
@@ -275,7 +275,7 @@ applied by OpenTofu ([Policy in OpenTofu](#policy-in-opentofu)):
   node cannot start a connection to the laptop, and none of them can reach
   each other except Talos and `pve` to the services stack. `pve` needs
   it for OIDC: Proxmox fetches Pocket ID's keys and tokens itself
-  ([07. Services VM](07-services.md#logging-in-to-openbao-and-proxmox)).
+  ([Services](sso.md#logging-in-to-openbao-and-proxmox)).
   The Talos nodes need it for OpenBao and Pocket ID: pods reach the
   tailnet through their node's Tailscale.
 - **`tests`** run on every save, so a broken rule is rejected before it
@@ -321,7 +321,7 @@ With the editor locked, the admin console cannot drift from git.
 
 | Resource | What | Where it goes |
 |----------|------|---------------|
-| `tailscale_tailnet_key.talos` | Reusable, pre-authorized, `tag:talos`, 90 days | Signed once on `pve` with `tailscale lock sign`, stored signed in OpenBao `kv/talos`, then into each node's Tailscale extension ([09. Talos](09-talos.md#3-config-and-bootstrap)) |
+| `tailscale_tailnet_key.talos` | Reusable, pre-authorized, `tag:talos`, 90 days | Signed once on `pve` with `tailscale lock sign`, stored signed in OpenBao `kv/talos`, then into each node's Tailscale extension ([Talos](talos.md#config-and-bootstrap)) |
 | `tailscale_oauth_client.operator` | Scopes `devices:core`, `auth_keys`, `services`, tag `tag:k8s-operator` | OpenBao `kv/k8s/tailscale-operator`, then External Secrets |
 | `data.tailscale_device.gateway` | The Gateway proxy's tailnet IP | The DNS records of the cluster apps |
 
@@ -337,7 +337,7 @@ makes OpenTofu create one) and a new signature.
 ## Hardening
 
 The tailnet rules only cover traffic over Tailscale. The LAN side is
-closed by the Proxmox firewall: see [01. Proxmox, Firewall](01-proxmox.md#firewall).
+closed by the Proxmox firewall: see [Proxmox, Firewall](proxmox.md#firewall).
 It still accepts Tailscale's own UDP port (`41641`) from any source, on
 purpose: direct connections at home and hole punching from away both
 arrive there. WireGuard drops every packet that is not signed by a known

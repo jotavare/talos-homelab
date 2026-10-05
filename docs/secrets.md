@@ -122,7 +122,7 @@ bao kv get -mount=kv config
 | `kv/talos/cluster` | Talos machine secrets, `talosconfig` and admin `kubeconfig`, written by OpenTofu |
 | `kv/talos/machine-configs` | The full machine config of each node, with Talos' field documentation, written by OpenTofu |
 | `kv/k8s/*` | Secrets for the cluster, read by External Secrets: `cert-manager` (Cloudflare DNS token), `tailscale-operator` (its OAuth client), `immich-database` (the Postgres user Immich logs in with), `immich-oauth` (its Pocket ID client). The cluster can read only these and `kv/config` |
-| `kv/nas` | The Samba user and password, read by Ansible ([08. NAS](08-nas.md#shares)) |
+| `kv/nas` | The Samba user and password, read by Ansible ([NAS](nas.md#shares)) |
 | `kv/immich` | The Immich admin login |
 
 ### Secrets in the cluster
@@ -133,7 +133,7 @@ against the cluster's public key, set by OpenTofu from the Talos
 secrets. OpenBao never calls the cluster. The `external-secrets` role
 accepts only that one service account with audience `openbao`, and its
 policy reads only `kv/k8s/*` and `kv/config`
-([09. Talos](09-talos.md#9-secrets-certificates-and-the-gateway)).
+([Talos](platform.md#secrets-certificates-and-the-gateway)).
 
 ## Commit guard
 
@@ -179,13 +179,13 @@ down with it, and the Talos secrets could not be stored there at all.
 
 | Item | Design | Why |
 |------|--------|-----|
-| Runs in | A container on the services VM (`130`, `192.168.1.30`), managed by OpenTofu, image `openbao/openbao:2.7.0` pinned by digest | One readable Compose file for the services outside the cluster ([07. Services VM](07-services.md)) |
+| Runs in | A container on the services VM (`130`, `192.168.1.30`), managed by OpenTofu, image `openbao/openbao:2.7.0` pinned by digest | One readable Compose file for the services outside the cluster ([Services](services.md)) |
 | Created by | OpenTofu for the VM, Ansible for the stack | Same as every other machine |
 | Listens on | `8200` on the internal Docker network `backend` only, plain HTTP | Nothing on the LAN or the tailnet reaches it directly |
 | Reached through | Caddy in the same stack, on `https://openbao.home.<domain>`, only over the tailnet | One name, no port, a real certificate |
-| Name and certificate | A public record pointing at the stack's tailnet IP, Let's Encrypt certificate from Caddy | Trusted everywhere, no root to install ([05. OpenTofu, DNS and certificates](05-opentofu.md#dns-and-certificates)) |
+| Name and certificate | A public record pointing at the stack's tailnet IP, Let's Encrypt certificate from Caddy | Trusted everywhere, no root to install ([OpenTofu, DNS and certificates](opentofu.md#dns-and-certificates)) |
 | Certificate renewal | Caddy, DNS-01 through Cloudflare, with a token that lives in OpenBao | Nothing exposed to the internet |
-| Storage | Integrated Raft, single node, in `/srv/openbao` on the VM. The VM is backed up daily by Proxmox | [Container backups](01-proxmox.md#container-backups); a Raft snapshot to Garage is optional ([06. Object storage](06-object-storage.md#openbao-snapshots)) |
+| Storage | Integrated Raft, single node, in `/srv/openbao` on the VM. The VM is backed up daily by Proxmox | [Container backups](proxmox.md#container-backups); a Raft snapshot to Garage is optional ([Object storage](services.md#openbao-snapshots)) |
 | Unseal | One key share, threshold one, in Bitwarden plus the printed copy | Splitting a key only helps with several people |
 | Access | Root token only for the first setup, then revoked. I log in with `userpass`; the cluster later uses Kubernetes auth for External Secrets Operator | No standing root token |
 | Tailnet rules | Tag `tag:services` on the stack. My user and `tag:talos` reach it on `443`, nothing else | The Talos nodes can reach OpenBao and nothing more |
@@ -193,7 +193,7 @@ down with it, and the Talos secrets could not be stored there at all.
 OpenBao started in its own LXC container, installed from the `.deb` with
 Tailscale inside. It moved into the stack with the same Raft data, so the
 unseal key, the login and every secret stayed the same
-([07. Services VM, Moving OpenBao](07-services.md#moving-openbao)).
+([Services, Moving OpenBao](services.md#moving-openbao)).
 
 It still shares the host with everything else, so it survives a cluster
 rebuild but not the loss of the host (see the POC trade-offs in the

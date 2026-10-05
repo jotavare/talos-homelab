@@ -2,8 +2,8 @@
 
 The configuration of the two Proxmox hosts as code: `proxmox.yml` brings
 a freshly installed host to the state described in
-[01. Proxmox](01-proxmox.md) and [02. Tailscale](02-tailscale.md), and
-`nas.yml` turns `pve-desktop` into the NAS ([08. NAS](08-nas.md)).
+[Proxmox](proxmox.md) and [Tailscale](tailscale.md), and
+`nas.yml` turns `pve-desktop` into the NAS ([NAS](nas.md)).
 Ansible only does what lives on a host and needs `root`; what an API can
 create is in OpenTofu.
 
@@ -39,12 +39,12 @@ ansible-galaxy collection install -r requirements.yml
 | [ansible/inventory.yml](../ansible/inventory.yml) | The hosts `pve` and `pve-desktop`, reached at their tailnet addresses (`proxmox_host` and `nas_host` in OpenBao `kv/config`, so they stay out of the repo). `pve-desktop` picks its own firewall file |
 | [ansible/group_vars/all.yml](../ansible/group_vars/all.yml) | Reads `kv/config` from OpenBao with the `community.hashi_vault` lookup |
 | [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook for the hosts: `proxmox_base` on both, `proxmox_host` on `pve` only |
-| [ansible/nas.yml](../ansible/nas.yml) | The NAS on `pve-desktop` ([08. NAS](08-nas.md)) |
+| [ansible/nas.yml](../ansible/nas.yml) | The NAS on `pve-desktop` ([NAS](nas.md)) |
 | [ansible/requirements.yml](../ansible/requirements.yml) | The `community.proxmox` and `community.hashi_vault` collections |
 | [ansible/roles/proxmox_base/](../ansible/roles/proxmox_base/) | What every Proxmox host gets: repositories, unattended upgrades, SSH hardening, IPv6 autoconf off, Tailscale, the root password from OpenBao, the firewall behind the dead-man switch |
 | [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | What only `pve` gets: smartd for the NVMe, the NIC offload fix, the OpenTofu user and roles, the ACME account, the SSO admin, and the compliance checks (`tasks/verify.yml`) |
 | [ansible/roles/nas/](../ansible/roles/nas/) | The NAS: ZFS pool, Samba, NFS, WiFi power saving, and its own checks |
-| [proxmox/](../proxmox/), [nas/](../nas/) | The config files the roles copy. Each file lives in one place and is explained in 01. Proxmox or 08. NAS |
+| [proxmox/](../proxmox/), [nas/](../nas/) | The config files the roles copy. Each file lives in one place and is explained in [Proxmox](proxmox.md) or [NAS](nas.md) |
 
 ## What it covers
 
@@ -53,7 +53,7 @@ ansible-galaxy collection install -r requirements.yml
 | Enterprise repos off, no-subscription and Tailscale repos on | Installing Proxmox, the network settings (and the WiFi on `pve-desktop`) |
 | Tailscale signing key, checked by SHA256 | Web UI 2FA and recovery keys |
 | Root password, from OpenBao `kv/hosts/<host>` with its stored salt, so the hash is the same on every run | |
-| TSO and GSO off on `nic0` of `pve`, now and at boot ([01. Proxmox, NIC hang](01-proxmox.md#nic-hang)) | |
+| TSO and GSO off on `nic0` of `pve`, now and at boot ([Proxmox, NIC hang](proxmox.md#nic-hang)) | |
 | `unattended-upgrades` and its drop-in | Copying the SSH key (`ssh-copy-id`) |
 | SSH hardening drop-in, validated with `sshd -t` before it is written | Full upgrade and reboot after the install |
 | IPv6 sysctl, smartd config | `tailscale up` login, tag, key expiry, Tailnet Lock signature |
@@ -100,7 +100,7 @@ ansible-playbook proxmox.yml --check --tags verify
 
 A firewall change is the one task that can lock the host out. The
 playbook applies it the same way as the manual procedure in
-[01. Proxmox, Firewall](01-proxmox.md#firewall):
+[Proxmox, Firewall](proxmox.md#firewall):
 
 1. Compare the repo files with the host. If nothing changed, skip the
    rest.
@@ -129,7 +129,7 @@ ansible-playbook proxmox.yml --limit pve      # one host
 ansible-playbook nas.yml                      # the NAS
 ```
 
-The checks in the `nas` role are in [08. NAS](08-nas.md#setup).
+The checks in the `nas` role are in [NAS](nas.md#setup).
 
 Ansible in this terminal needs its output sent to a file or pipe that
 blocks (`> out.txt 2>&1`), otherwise it refuses to start with
