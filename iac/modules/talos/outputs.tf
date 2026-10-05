@@ -16,11 +16,11 @@ output "talosconfig" {
 }
 
 output "kubeconfig" {
-  value     = talos_cluster_kubeconfig.this.kubeconfig_raw
+  value     = replace(talos_cluster_kubeconfig.this.kubeconfig_raw, local.endpoint, "https://${local.api}:6443")
   sensitive = true
 }
 
 output "kubernetes" {
-  value     = talos_cluster_kubeconfig.this.kubernetes_client_configuration
+  value     = merge(talos_cluster_kubeconfig.this.kubernetes_client_configuration, { host = "https://${local.api}:6443" })
   sensitive = true
 }

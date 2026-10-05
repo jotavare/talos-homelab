@@ -101,22 +101,6 @@ resource "proxmox_virtual_environment_firewall_rules" "node" {
   rule {
     type   = "in"
     action = "ACCEPT"
-    proto  = "tcp"
-    dport  = "50000"
-    source = "192.168.1.0/24"
-  }
-
-  rule {
-    type   = "in"
-    action = "ACCEPT"
-    proto  = "tcp"
-    dport  = "6443"
-    source = "192.168.1.0/24"
-  }
-
-  rule {
-    type   = "in"
-    action = "ACCEPT"
     proto  = "udp"
     dport  = "41641"
   }
