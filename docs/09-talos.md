@@ -188,6 +188,64 @@ kubectl get nodes                      # three nodes, NotReady until there is a 
 The guest agent was turned on afterwards, which made Proxmox reboot each
 VM once. All three answer `qm agent <id> ping`.
 
+### The machine config
+
+Each node does run on one big YAML file, its machine config: 29 documents
+and about 320 lines for the control plane. It is not in the repo because
+it holds the cluster's private keys and tokens. It is built at plan time
+from two parts:
+
+| Part | Where |
+|------|-------|
+| The secrets | `talos_machine_secrets`, in the encrypted state and in OpenBao `kv/talos/cluster` |
+| Everything else | The Talos defaults plus the patches in [config.tf](../iac/modules/talos/config.tf), in git |
+
+So the repo holds only what differs from the defaults. The full file is on
+each node:
+
+```bash
+talosctl -n 192.168.1.15 get machineconfig -o yaml   # contains secrets, do not paste it anywhere
+```
+
+### Secrets and configs in OpenBao
+
+`kv/talos/cluster` holds the machine secrets, the `talosconfig` and the
+admin `kubeconfig`, written by OpenTofu
+([openbao.tf](../iac/modules/talos/openbao.tf)). The state on the laptop
+already has them; the copy in OpenBao means losing the laptop does not
+lose the cluster. Restore on a new laptop:
+
+```bash
+bao kv get -mount=kv -field=talosconfig talos/cluster > ~/.talos/config
+bao kv get -mount=kv -field=kubeconfig  talos/cluster > ~/.kube/config
+```
+
+### 4. Cilium
+
+Flux runs as pods, and pods need a network first, so Flux cannot install
+the network. OpenTofu installs Cilium once with the Helm provider
+([iac/modules/cilium](../iac/modules/cilium/)); Flux takes the same
+release over later.
+
+The values live in
+[gitops/infrastructure/cilium/values.yaml](../gitops/infrastructure/cilium/values.yaml),
+read by OpenTofu now and by Flux later, so they exist once:
+
+| Value | Why |
+|-------|-----|
+| `kubeProxyReplacement: true` | Cilium handles Services with eBPF, kube-proxy is off |
+| `k8sServiceHost: localhost`, `k8sServicePort: 7445` | KubePrism, Talos' local API proxy on every node. Cilium needs the API before Services exist |
+| `devices: eth0` | Never `tailscale0` |
+| `cgroup.autoMount.enabled: false`, `hostRoot: /sys/fs/cgroup` | Talos mounts cgroups itself |
+| `securityContext.capabilities` | The list Talos documents, without `SYS_MODULE`: Talos does not let pods load kernel modules |
+| `ipam.mode: kubernetes` | Pod IPs from each node's Kubernetes pod range |
+| `operator.replicas: 1` | One is enough for three nodes |
+
+```bash
+kubectl get nodes   # all Ready
+kubectl -n kube-system exec ds/cilium -c cilium-agent -- cilium-dbg status --brief   # OK
+```
+
 ## GitOps layout
 
 The Kubernetes manifests go in `gitops/`, read by Flux. One folder per

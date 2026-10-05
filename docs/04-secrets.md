@@ -115,6 +115,8 @@ bao kv get -mount=kv config
 | `kv/services/opentofu` | The passphrase of the OpenTofu state (also in Bitwarden) |
 | `kv/openbao` | The unseal key and my `jotavare` password, copies of the Bitwarden ones |
 | `kv/hosts/pve`, `kv/hosts/pve-desktop` | `root_password` and `root_salt`, applied by the `proxmox_base` role |
+| `kv/talos` | The nodes' Tailscale key, pre-signed for Tailnet Lock |
+| `kv/talos/cluster` | Talos machine secrets, `talosconfig` and admin `kubeconfig`, written by OpenTofu |
 | `kv/nas` | The Samba user and password, read by Ansible ([08. NAS](08-nas.md#shares)) |
 
 ## Commit guard
