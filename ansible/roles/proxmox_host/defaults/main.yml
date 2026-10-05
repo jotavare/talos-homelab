@@ -43,3 +43,5 @@ proxmox_host_tofu_realm_privs:
 
 proxmox_host_sso_realm: pocket-id
 proxmox_host_sso_admin: "jotavare@{{ proxmox_host_sso_realm }}"
+
+proxmox_host_nic: nic0

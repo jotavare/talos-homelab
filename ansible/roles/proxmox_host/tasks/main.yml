@@ -1,3 +1,21 @@
+- name: Keep TSO and GSO off on the e1000e NIC at boot (it hangs under load)
+  ansible.builtin.lineinfile:
+    path: /etc/network/interfaces
+    insertafter: "^iface {{ proxmox_host_nic }} inet manual$"
+    line: "\tpost-up /usr/sbin/ethtool -K {{ proxmox_host_nic }} tso off gso off"
+
+- name: Read the NIC offload settings
+  ansible.builtin.command: ethtool -k {{ proxmox_host_nic }}
+  register: proxmox_host_offload
+  changed_when: false
+  check_mode: false
+
+- name: Turn TSO and GSO off now
+  ansible.builtin.command: ethtool -K {{ proxmox_host_nic }} tso off gso off
+  when: >-
+    proxmox_host_offload.stdout is search('(?m)^(tcp|generic)-segmentation-offload: on')
+  changed_when: true
+
 - name: Configure smartd for the NVMe
   ansible.builtin.copy:
     src: "{{ proxmox_host_files }}/smartd/smartd.conf"
