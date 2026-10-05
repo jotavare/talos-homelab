@@ -11,4 +11,4 @@ spec:
   storageClassName: nas
   resources:
     requests:
-      storage: 500Gi
+      storage: 400Gi
