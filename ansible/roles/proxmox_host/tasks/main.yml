@@ -153,49 +153,6 @@
   when: proxmox_host_acme_tos is not skipped
   changed_when: true
 
-- name: Check whether the firewall files would change
-  ansible.builtin.copy:
-    src: "{{ proxmox_host_files }}/firewall/{{ item.src }}"
-    dest: "{{ item.dest }}"
-    mode: "0640"
-  loop: &proxmox_host_fw
-    - { src: cluster.fw, dest: /etc/pve/firewall/cluster.fw }
-    - { src: host.fw, dest: "/etc/pve/nodes/{{ inventory_hostname }}/host.fw" }
-  check_mode: true
-  register: proxmox_host_fw_check
-
-- name: Apply firewall changes behind a dead-man switch
-  when: proxmox_host_fw_check is changed and not ansible_check_mode
-  block:
-    - name: Arm the dead-man switch
-      ansible.builtin.command: >-
-        systemd-run --unit=fw-deadman --on-active={{ proxmox_host_deadman_minutes }}min
-        /usr/sbin/pve-firewall stop
-      changed_when: true
-
-    - name: Copy the firewall files
-      ansible.builtin.copy:
-        src: "{{ proxmox_host_files }}/firewall/{{ item.src }}"
-        dest: "{{ item.dest }}"
-        mode: "0640"
-      loop: *proxmox_host_fw
-
-    - name: Wait for pve-firewall to load the rules
-      ansible.builtin.pause:
-        seconds: 15
-
-    - name: Check a fresh SSH connection still works
-      ansible.builtin.command: >-
-        ssh -o BatchMode=yes -o ControlMaster=no -o ControlPath=none
-        {{ ansible_user }}@{{ ansible_host }} pve-firewall status
-      delegate_to: localhost
-      changed_when: false
-
-    - name: Disarm the dead-man switch
-      ansible.builtin.systemd_service:
-        name: fw-deadman.timer
-        state: stopped
-
 - name: Verify the host
   ansible.builtin.import_tasks: verify.yml
   tags: [verify]

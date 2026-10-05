@@ -1,1 +1,3 @@
 proxmox_base_files: "{{ playbook_dir }}/../proxmox"
+proxmox_base_host_fw: "{{ proxmox_base_files }}/firewall/host.fw"
+proxmox_base_deadman_minutes: 5

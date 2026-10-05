@@ -9,7 +9,7 @@
     {
       "src": ["jotavare@github"],
       "dst": ["tag:server"],
-      "ip":  ["tcp:22", "tcp:8006"],
+      "ip":  ["tcp:22", "tcp:8006", "tcp:445"],
     },
     {
       "src": ["jotavare@github"],
@@ -26,7 +26,7 @@
   "tests": [
     {
       "src":    "jotavare@github",
-      "accept": ["tag:server:22", "tag:server:8006", "tag:talos:6443", "tag:talos:50000", "tag:services:443"],
+      "accept": ["tag:server:22", "tag:server:8006", "tag:server:445", "tag:talos:6443", "tag:talos:50000", "tag:services:443"],
       "deny":   ["tag:server:443", "tag:server:6443", "tag:server:3389", "tag:talos:22", "tag:services:22", "tag:services:8200"],
     },
     {

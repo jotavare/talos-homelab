@@ -6,8 +6,9 @@ all:
           ansible_host: "{{ homelab_config.proxmox_host }}"
           ansible_user: root
         pve-desktop:
-          ansible_host: 192.168.1.11
+          ansible_host: "{{ homelab_config.nas_host }}"
           ansible_user: root
+          proxmox_base_host_fw: "{{ playbook_dir }}/../nas/host.fw"
     nas:
       hosts:
         pve-desktop:
