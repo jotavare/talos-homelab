@@ -56,3 +56,8 @@ module "talos" {
 output "proxmox_version" {
   value = module.proxmox.version
 }
+
+output "talos_auth_key" {
+  value     = module.tailscale.talos_auth_key
+  sensitive = true
+}
