@@ -7,6 +7,8 @@ a freshly installed host to the state described in
 Ansible only does what lives on a host and needs `root`; what an API can
 create is in OpenTofu.
 
+![Ansible: proxmox.yml applies proxmox_base to both hosts and proxmox_host to pve, nas.yml applies the nas role to pve-desktop, with values from OpenBao](../diagrams/ansible.png)
+
 ## Why Ansible
 
 The host steps were done by hand first, to learn them. Doing them by hand

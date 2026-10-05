@@ -5,6 +5,8 @@ The VMs and containers on Proxmox as code, with
 [bpg/proxmox](https://registry.terraform.io/providers/bpg/proxmox/latest)
 provider.
 
+![OpenTofu: one root with an encrypted local state reads its tokens from OpenBao and drives Proxmox, Cloudflare, the services VM, OpenBao, Tailscale, Pocket ID and the cluster through its modules](../diagrams/opentofu.png)
+
 ## Why OpenTofu
 
 Terraform is what I use at work. OpenTofu is its open source fork, under

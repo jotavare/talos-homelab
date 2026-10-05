@@ -3,6 +3,8 @@
 How the cluster's manifests get from git to the cluster: Flux, installed
 by OpenTofu, reads this public repo and applies `gitops/` in order.
 
+![GitOps order: Flux applies the Gateway API CRDs, then Cilium, then storage, CloudNativePG and External Secrets, then cert-manager, the Tailscale operator and the Gateway, and Immich last](../diagrams/gitops.png)
+
 ## Flux install
 
 Flux is installed by OpenTofu as the
@@ -71,8 +73,6 @@ applies any of it, so a pool next to the release would block the release
 too. `config/` is its own Flux step that waits for the release.
 
 ## How Kustomize and Flux work here
-
-![GitOps order: Flux applies the Gateway API CRDs, then Cilium, then storage, CloudNativePG and External Secrets, then cert-manager, the Tailscale operator and the Gateway, and Immich last](../diagrams/gitops.png)
 
 For someone used to Argo CD and Helm:
 

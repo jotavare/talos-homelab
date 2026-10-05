@@ -4,6 +4,8 @@ The photo library, the first app on the cluster: Immich v3 with its
 database on Longhorn and the photos on the NAS, reached at
 `https://immich.home.<domain>` and logged in through Pocket ID.
 
+![Immich: the Gateway routes to the server, which uses machine learning, Valkey, Postgres on Longhorn and the photo library on the NAS, with settings from OpenBao and login through Pocket ID](../diagrams/immich.png)
+
 ## Database
 
 [Immich](https://immich.app/) v3 needs Postgres with the VectorChord

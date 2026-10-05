@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Services</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Geist', system-ui, sans-serif; background: #2d3142; color: #f5f5f5;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <svg viewBox="0 0 1200 496" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="services-title services-desc">
+      <title id="services-title">Services</title>
+      <desc id="services-desc">The services VM 130 runs five containers managed by OpenTofu: Tailscale joins the tailnet and forwards port 443 to Caddy, and Caddy serves OpenBao, Pocket ID and Garage on an internal Docker network with no route out, plus the Proxmox web UI over the LAN.</desc>
+      <defs><marker id="services-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker><marker id="services-a-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#7ea6e6"/></marker><marker id="services-a-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#6fd3c1"/></marker><marker id="services-a-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#ef8354"/></marker></defs>
+      <rect width="100%" height="100%" fill="#2d3142"/>
+      <rect x="232" y="32" width="944" height="336" rx="8" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <rect x="248" y="25" width="280.6" height="14" rx="2" fill="#2d3142"/>
+      <text x="388.3" y="35.5" fill="#a3abbd" font-size="9.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">VM 130 · DEBIAN 13 · DOCKER · 192.168.1.30</text>
+      <rect x="728" y="72" width="432" height="280" rx="8" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <rect x="744" y="65" width="217.6" height="14" rx="2" fill="#2d3142"/>
+      <text x="852.8" y="75.5" fill="#a3abbd" font-size="9.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">BACKEND · INTERNAL, NO ROUTE OUT</text>
+      <path d="M 184,200 L 264,200" fill="none" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#services-a-tail)"/>
+      <path d="M 456,200 L 504,200" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#services-a)"/>
+      <path d="M 680,176 L 696,176 Q 704,176 704,168 L 704,128 Q 704,120 712,120 L 760,120" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#services-a)"/>
+      <path d="M 680,200 L 760,200" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#services-a)"/>
+      <path d="M 680,224 L 696,224 Q 704,224 704,232 L 704,288 Q 704,296 712,296 L 760,296" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#services-a)"/>
+      <path d="M 592,248 L 592,392 Q 592,400 600,400 L 1000,400" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#services-a)"/>
+      <rect x="205.0" y="179" width="38.0" height="14" rx="2" fill="#2d3142"/>
+      <text x="224" y="189.5" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">:443</text>
+      <rect x="457.8" y="173" width="44.5" height="14" rx="2" fill="#2d3142"/>
+      <text x="480" y="183.5" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">SERVE</text>
+      <rect x="706.0" y="379" width="70.5" height="14" rx="2" fill="#2d3142"/>
+      <text x="712" y="389.5" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">LAN :8006</text>
+      <text x="248" y="296" fill="#a3abbd" font-size="13" font-style="italic" font-family="'Instrument Serif', serif" text-anchor="start">secrets reach each container as files</text>
+      <text x="248" y="316" fill="#a3abbd" font-size="13" font-style="italic" font-family="'Instrument Serif', serif" text-anchor="start">in /run/secrets, mode 0600</text>
+      <rect x="24" y="164" width="160" height="72" rx="6" fill="#2d3142"/>
+      <rect x="24" y="164" width="160" height="72" rx="6" fill="#2d3142" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4"/>
+      <g transform="translate(38,188.0)"><g fill="none" stroke="#6fd3c1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 9a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-10z" /> <path d="M18 8v-3a1 1 0 0 0 -1 -1h-13a1 1 0 0 0 -1 1v12a1 1 0 0 0 1 1h9" /> <path d="M16 9h2" /></g></g>
+      <text x="72" y="195.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Laptop / Phone</text>
+      <text x="72" y="214.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">on the tailnet</text>
+      <rect x="264" y="156" width="192" height="88" rx="6" fill="#2d3142"/>
+      <rect x="264" y="156" width="192" height="88" rx="6" fill="#2d3142" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4"/>
+      <g transform="translate(278,188.0)"><g aria-hidden="true"><path d="M24 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm-9 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm0-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm6-6a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM3 24a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm18 .5a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM6 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm9-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm-3 2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM6 3a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM3 5.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" fill="#f5f5f5"/></g></g>
+      <text x="312" y="186.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">tailscale</text>
+      <text x="312" y="205.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">tag:services</text>
+      <text x="312" y="222.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">userspace mode</text>
+      <rect x="504" y="152" width="176" height="96" rx="6" fill="#2d3142"/>
+      <rect x="504" y="152" width="176" height="96" rx="6" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
+      <text x="520" y="186.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Caddy</text>
+      <text x="520" y="205.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">TLS per name</text>
+      <text x="520" y="222.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">DNS-01, Cloudflare</text>
+      <rect x="760" y="88" width="384" height="64" rx="6" fill="#2d3142"/>
+      <rect x="760" y="88" width="384" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="776" y="115.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">OpenBao</text>
+      <text x="776" y="134.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">openbao.home · Raft in /srv/openbao</text>
+      <rect x="760" y="168" width="384" height="64" rx="6" fill="#2d3142"/>
+      <rect x="760" y="168" width="384" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="776" y="195.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Pocket ID</text>
+      <text x="776" y="214.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">auth.home · SQLite in /srv/pocket-id</text>
+      <rect x="760" y="264" width="384" height="64" rx="6" fill="#2d3142"/>
+      <rect x="760" y="264" width="384" height="64" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="776" y="291.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Garage</text>
+      <text x="776" y="310.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">s3.home · /srv/garage</text>
+      <rect x="1000" y="372" width="176" height="56" rx="6" fill="#2d3142"/>
+      <rect x="1000" y="372" width="176" height="56" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="1016" y="395.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Proxmox UI</text>
+      <text x="1016" y="414.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">pve.home → .10</text>
+      <line x1="24" y1="456" x2="1176" y2="456" stroke="rgba(245,245,245,0.14)" stroke-width="0.8"/>
+      <rect x="24" y="472" width="18" height="13" rx="2" fill="#2d3142" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="3,2"/>
+      <text x="50" y="482" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">On the tailnet</text>
+      <rect x="169.60000000000002" y="472" width="18" height="13" rx="2" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
+      <text x="195.60000000000002" y="482" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Entry point</text>
+      <rect x="296.0" y="472" width="18" height="13" rx="2" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="322.0" y="482" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Container</text>
+      <rect x="409.6" y="472" width="18" height="13" rx="2" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="435.6" y="482" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Object storage</text>
+      <rect x="555.2" y="472" width="18" height="13" rx="2" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="581.2" y="482" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Outside the VM</text>
+      <line x1="700.8000000000001" y1="478" x2="728.8000000000001" y2="478" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#services-a-tail)"/>
+      <text x="736.8000000000001" y="482" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Tailnet</text>
+    </svg>
+  </div>
+</body>
+</html>

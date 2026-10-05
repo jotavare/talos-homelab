@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Geist', system-ui, sans-serif; background: #2d3142; color: #f5f5f5;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <svg viewBox="0 0 1200 656" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="platform-title platform-desc">
+      <title id="platform-title">Platform</title>
+      <desc id="platform-desc">The cluster platform in layers: the entry point from the tailnet, certificates from Let&#x27;s Encrypt, secrets from OpenBao, databases with CloudNativePG, storage on Longhorn and the NAS, and Cilium as the network, each layer with the outside system it depends on.</desc>
+      <defs><marker id="platform-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker><marker id="platform-a-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#7ea6e6"/></marker><marker id="platform-a-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#6fd3c1"/></marker><marker id="platform-a-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#ef8354"/></marker></defs>
+      <rect width="100%" height="100%" fill="#2d3142"/>
+      <path d="M 896,136 L 952,136" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#platform-a-link)"/>
+      <path d="M 896,216 L 952,216" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#platform-a-link)"/>
+      <path d="M 896,296 L 952,296" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#platform-a-link)"/>
+      <path d="M 896,456 L 952,456" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#platform-a-link)"/>
+      <path d="M 896,536 L 952,536" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#platform-a-link)"/>
+      <rect x="24" y="24" width="1152" height="56" rx="6" fill="#2d3142"/>
+      <rect x="24" y="24" width="1152" height="56" rx="6" fill="rgba(191,192,192,0.30)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="40" y="47.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Apps</text>
+      <text x="40" y="66.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">Immich, and every app after it: a folder in projects/, an HTTPRoute, a DNS name</text>
+      <rect x="24" y="104" width="160" height="64" rx="6" fill="#2d3142"/>
+      <rect x="24" y="104" width="160" height="64" rx="6" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
+      <text x="40" y="141.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Entry</text>
+      <rect x="200" y="104" width="696" height="64" rx="6" fill="#2d3142"/>
+      <rect x="200" y="104" width="696" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="216" y="141.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Tailscale operator · Cilium Gateway home · an HTTPRoute per app</text>
+      <rect x="952" y="104" width="224" height="64" rx="6" fill="#2d3142"/>
+      <rect x="952" y="104" width="224" height="64" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="968" y="131.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Tailnet</text>
+      <text x="968" y="150.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">device gateway, tag:k8s</text>
+      <rect x="24" y="184" width="160" height="64" rx="6" fill="#2d3142"/>
+      <rect x="24" y="184" width="160" height="64" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="40" y="221.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Certificates</text>
+      <rect x="200" y="184" width="696" height="64" rx="6" fill="#2d3142"/>
+      <rect x="200" y="184" width="696" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="216" y="221.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">cert-manager · ClusterIssuer letsencrypt · *.home.&lt;domain&gt;</text>
+      <rect x="952" y="184" width="224" height="64" rx="6" fill="#2d3142"/>
+      <rect x="952" y="184" width="224" height="64" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="968" y="211.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Let&#x27;s Encrypt</text>
+      <text x="968" y="230.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">DNS-01 via Cloudflare</text>
+      <rect x="24" y="264" width="160" height="64" rx="6" fill="#2d3142"/>
+      <rect x="24" y="264" width="160" height="64" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="40" y="301.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Secrets</text>
+      <rect x="200" y="264" width="696" height="64" rx="6" fill="#2d3142"/>
+      <rect x="200" y="264" width="696" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="216" y="301.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">External Secrets · ClusterSecretStore openbao</text>
+      <rect x="952" y="264" width="224" height="64" rx="6" fill="#2d3142"/>
+      <rect x="952" y="264" width="224" height="64" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="968" y="291.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">OpenBao</text>
+      <text x="968" y="310.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">kv/k8s/*, JWT login</text>
+      <rect x="24" y="344" width="160" height="64" rx="6" fill="#2d3142"/>
+      <rect x="24" y="344" width="160" height="64" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="40" y="381.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Databases</text>
+      <rect x="200" y="344" width="696" height="64" rx="6" fill="#2d3142"/>
+      <rect x="200" y="344" width="696" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="216" y="381.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">CloudNativePG operator · one Cluster per app</text>
+      <rect x="24" y="424" width="160" height="64" rx="6" fill="#2d3142"/>
+      <rect x="24" y="424" width="160" height="64" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="40" y="461.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Storage</text>
+      <rect x="200" y="424" width="696" height="64" rx="6" fill="#2d3142"/>
+      <rect x="200" y="424" width="696" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="216" y="461.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Longhorn, default, 1 replica · csi-driver-nfs, class nas</text>
+      <rect x="952" y="424" width="224" height="64" rx="6" fill="#2d3142"/>
+      <rect x="952" y="424" width="224" height="64" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="968" y="451.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Disks and NAS</text>
+      <text x="968" y="470.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">worker sdb · tank/k8s</text>
+      <rect x="24" y="504" width="160" height="64" rx="6" fill="#2d3142"/>
+      <rect x="24" y="504" width="160" height="64" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="40" y="541.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Network</text>
+      <rect x="200" y="504" width="696" height="64" rx="6" fill="#2d3142"/>
+      <rect x="200" y="504" width="696" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="216" y="541.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Cilium · no kube-proxy · L2 pool .50 to .99 · eth0 only</text>
+      <rect x="952" y="504" width="224" height="64" rx="6" fill="#2d3142"/>
+      <rect x="952" y="504" width="224" height="64" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="968" y="531.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">LAN</text>
+      <text x="968" y="550.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">192.168.1.0/24</text>
+      <line x1="24" y1="610" x2="1176" y2="610" stroke="rgba(245,245,245,0.14)" stroke-width="0.8"/>
+      <rect x="24" y="626" width="18" height="13" rx="2" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
+      <text x="50" y="636" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Where requests come in</text>
+      <rect x="220.8" y="626" width="18" height="13" rx="2" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="246.8" y="636" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Layer</text>
+      <rect x="308.8" y="626" width="18" height="13" rx="2" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="334.8" y="636" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">What runs in it</text>
+      <rect x="460.8" y="626" width="18" height="13" rx="2" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="486.8" y="636" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Outside the cluster</text>
+      <line x1="638.4000000000001" y1="632" x2="666.4000000000001" y2="632" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#platform-a-link)"/>
+      <text x="674.4000000000001" y="636" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Depends on</text>
+    </svg>
+  </div>
+</body>
+</html>

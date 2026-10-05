@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Immich</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Geist', system-ui, sans-serif; background: #2d3142; color: #f5f5f5;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <svg viewBox="0 0 1200 552" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="immich-title immich-desc">
+      <title id="immich-title">Immich</title>
+      <desc id="immich-desc">The Gateway routes immich.home to the Immich server, which uses machine learning, Valkey, a CloudNativePG Postgres with VectorChord on Longhorn and a photo library on the NAS; its settings file comes from OpenBao through External Secrets and users log in through Pocket ID.</desc>
+      <defs><marker id="immich-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker><marker id="immich-a-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#7ea6e6"/></marker><marker id="immich-a-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#6fd3c1"/></marker><marker id="immich-a-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#ef8354"/></marker></defs>
+      <rect width="100%" height="100%" fill="#2d3142"/>
+      <path d="M 184,236 L 400,236" fill="none" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#immich-a-tail)"/>
+      <path d="M 608,196 L 672,196 Q 680,196 680,188 L 680,84 Q 680,76 688,76 L 760,76" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#immich-a)"/>
+      <path d="M 608,220 L 696,220 Q 704,220 704,212 L 704,180 Q 704,172 712,172 L 760,172" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#immich-a)"/>
+      <path d="M 608,252 L 696,252 Q 704,252 704,260 L 704,292 Q 704,300 712,300 L 760,300" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#immich-a)"/>
+      <path d="M 608,276 L 672,276 Q 680,276 680,284 L 680,396 Q 680,404 688,404 L 760,404" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#immich-a)"/>
+      <path d="M 504,416 L 504,304" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#immich-a-link)"/>
+      <path d="M 312,112 L 352,112 Q 360,112 360,120 L 360,192 Q 360,200 368,200 L 400,200" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#immich-a)" marker-start="url(#immich-a)"/>
+      <rect x="256.8" y="215" width="70.5" height="14" rx="2" fill="#2d3142"/>
+      <text x="292" y="225.5" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">HTTPROUTE</text>
+      <rect x="506.0" y="357" width="57.5" height="14" rx="2" fill="#2d3142"/>
+      <text x="512" y="367.5" fill="#7ea6e6" font-size="10" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">SECRETS</text>
+      <rect x="366.0" y="145" width="38.0" height="14" rx="2" fill="#2d3142"/>
+      <text x="372" y="155.5" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">OIDC</text>
+      <rect x="24" y="200" width="160" height="72" rx="6" fill="#2d3142"/>
+      <rect x="24" y="200" width="160" height="72" rx="6" fill="#2d3142" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4"/>
+      <g transform="translate(38,224.0)"><g aria-hidden="true"><path d="M24 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm-9 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm0-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm6-6a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM3 24a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm18 .5a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM6 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm9-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm-3 2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM6 3a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM3 5.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" fill="#f5f5f5"/></g></g>
+      <text x="72" y="231.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Gateway</text>
+      <text x="72" y="250.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">immich.home</text>
+      <rect x="400" y="168" width="208" height="136" rx="6" fill="#2d3142"/>
+      <rect x="400" y="168" width="208" height="136" rx="6" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
+      <text x="416" y="222.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">immich-server</text>
+      <text x="416" y="241.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">v3.2.4 · :2283</text>
+      <text x="416" y="258.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">config file, read-only UI</text>
+      <rect x="760" y="40" width="416" height="72" rx="6" fill="#2d3142"/>
+      <rect x="760" y="40" width="416" height="72" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="776" y="71.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Machine learning</text>
+      <text x="776" y="90.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">CLIP, faces, OCR · cache emptyDir</text>
+      <rect x="760" y="136" width="416" height="72" rx="6" fill="#2d3142"/>
+      <rect x="760" y="136" width="416" height="72" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="776" y="167.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Valkey</text>
+      <text x="776" y="186.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">jobs queue · emptyDir</text>
+      <rect x="760" y="264" width="416" height="72" rx="6" fill="#2d3142"/>
+      <rect x="760" y="264" width="416" height="72" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="776" y="295.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Postgres</text>
+      <text x="776" y="314.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">CloudNativePG + VectorChord · Longhorn 5 Gi</text>
+      <rect x="760" y="368" width="416" height="72" rx="6" fill="#2d3142"/>
+      <rect x="760" y="368" width="416" height="72" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="776" y="390.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Photo library</text>
+      <text x="776" y="409.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">NAS /tank/k8s/immich/immich-library · Retain</text>
+      <text x="776" y="426.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">nightly database dump in backups/</text>
+      <rect x="400" y="416" width="208" height="72" rx="6" fill="#2d3142"/>
+      <rect x="400" y="416" width="208" height="72" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="416" y="438.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">ExternalSecrets</text>
+      <text x="416" y="457.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">kv/k8s/immich-*</text>
+      <text x="416" y="474.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">OIDC client, DB password</text>
+      <rect x="152" y="40" width="160" height="72" rx="6" fill="#2d3142"/>
+      <rect x="152" y="40" width="160" height="72" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="168" y="71.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Pocket ID</text>
+      <text x="168" y="90.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">auth.home</text>
+      <line x1="24" y1="512" x2="1176" y2="512" stroke="rgba(245,245,245,0.14)" stroke-width="0.8"/>
+      <rect x="24" y="528" width="18" height="13" rx="2" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
+      <text x="50" y="538" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">The app</text>
+      <rect x="124.80000000000001" y="528" width="18" height="13" rx="2" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="150.8" y="538" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Rebuilt on restart</text>
+      <rect x="296.0" y="528" width="18" height="13" rx="2" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="322.0" y="538" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Keeps data</text>
+      <rect x="416.0" y="528" width="18" height="13" rx="2" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="442.0" y="538" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">From outside the app</text>
+      <line x1="600.0" y1="534" x2="628.0" y2="534" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#immich-a-tail)"/>
+      <text x="636.0" y="538" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">From the tailnet</text>
+    </svg>
+  </div>
+</body>
+</html>

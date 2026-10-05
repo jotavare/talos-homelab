@@ -5,6 +5,8 @@ point, certificates, secrets from OpenBao, and storage. All of it is
 applied by Flux ([GitOps](gitops.md)) except Cilium's first install,
 which OpenTofu does so a new cluster has a network.
 
+![Platform layers: entry, certificates, secrets, databases, storage and network, each with the outside system it depends on](../diagrams/platform.png)
+
 ## Cilium
 
 Flux runs as pods, and pods need a network first, so Flux cannot install
@@ -93,7 +95,6 @@ backups from the operator in
 the first database ([Immich, Database](immich.md#database)).
 
 ## Secrets, certificates and the Gateway
-
 
 Apps are reached the way they would be in a company cluster: one Gateway,
 one `HTTPRoute` per app, certificates from cert-manager, secrets from the

@@ -6,6 +6,8 @@ Proxmox, built with OpenTofu. Sizes and IPs are in
 [Proxmox, Planned VMs](proxmox.md#planned-vms). What runs on top is in
 [Platform](platform.md), [GitOps](gitops.md) and [Immich](immich.md).
 
+![Talos: the machine config is built from the machine secrets, the Talos defaults and the patches, applied to the nodes booted from the Image Factory image, and the admin configs go to OpenBao](../diagrams/talos.png)
+
 ## Design
 
 Written before building, so each choice has its reason next to it, and
@@ -98,18 +100,17 @@ OpenBao. The files for local use are written outside the repo, to
 
 ### Build order
 
-As it was done, each step a section below:
+As it was done:
 
-1. Image from the Image Factory.
-2. The three VMs, waiting in maintenance mode.
-3. Machine configs and bootstrap, Tailscale on every node.
-4. Cilium, installed by OpenTofu.
-5. Flux, taking Cilium over.
-6. NFS storage on the NAS.
-7. Longhorn on a data disk per worker.
-8. CloudNativePG and Immich.
-9. External Secrets, cert-manager, the Tailscale operator and the Cilium
-   Gateway.
+1. Image from the Image Factory, the three VMs, machine configs and
+   bootstrap, Tailscale on every node: this page.
+2. Cilium, installed by OpenTofu, then Flux taking it over:
+   [Platform](platform.md#cilium) and [GitOps](gitops.md#flux-install).
+3. NFS storage on the NAS and Longhorn on a data disk per worker:
+   [Platform](platform.md#nfs-storage).
+4. CloudNativePG and Immich: [Immich](immich.md).
+5. External Secrets, cert-manager, the Tailscale operator and the Cilium
+   Gateway: [Platform](platform.md#secrets-certificates-and-the-gateway).
 
 The services VM with OpenBao came before all of it: the secrets and the
 nodes' auth key live there.

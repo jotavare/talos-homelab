@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ansible</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Geist', system-ui, sans-serif; background: #2d3142; color: #f5f5f5;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1200px; width: 100%; }
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <svg viewBox="0 0 1200 480" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ansible-title ansible-desc">
+      <title id="ansible-title">Ansible</title>
+      <desc id="ansible-desc">Two playbooks run from the laptop with values from OpenBao: proxmox.yml applies the proxmox_base role to both hosts and proxmox_host to pve only, and nas.yml applies the nas role to pve-desktop.</desc>
+      <defs><marker id="ansible-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker><marker id="ansible-a-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#7ea6e6"/></marker><marker id="ansible-a-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#6fd3c1"/></marker><marker id="ansible-a-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#ef8354"/></marker></defs>
+      <rect width="100%" height="100%" fill="#2d3142"/>
+      <path d="M 104,144 L 104,184" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#ansible-a-link)"/>
+      <path d="M 184,236 L 208,236 Q 216,236 216,228 L 216,160 Q 216,152 224,152 L 264,152" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ansible-a)"/>
+      <path d="M 184,260 L 208,260 Q 216,260 216,268 L 216,348 Q 216,356 224,356 L 264,356" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ansible-a)"/>
+      <path d="M 424,140 L 448,140 Q 456,140 456,132 L 456,100 Q 456,92 464,92 L 520,92" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ansible-a)"/>
+      <path d="M 424,164 L 448,164 Q 456,164 456,172 L 456,212 Q 456,220 464,220 L 520,220" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ansible-a)"/>
+      <path d="M 424,356 L 520,356" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ansible-a)"/>
+      <path d="M 704,92 L 880,92" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ansible-a)"/>
+      <path d="M 704,356 L 880,356" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ansible-a)"/>
+      <path d="M 704,208 L 792,208 Q 800,208 800,200 L 800,116 Q 800,108 808,108 L 880,108" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ansible-a)"/>
+      <path d="M 704,232 L 792,232 Q 800,232 800,240 L 800,332 Q 800,340 808,340 L 880,340" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ansible-a)"/>
+      <rect x="106.0" y="157" width="38.0" height="14" rx="2" fill="#2d3142"/>
+      <text x="112" y="167.5" fill="#7ea6e6" font-size="10" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">KV/*</text>
+      <rect x="747.0" y="65" width="90.0" height="14" rx="2" fill="#2d3142"/>
+      <text x="792" y="75.5" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">SSH, TAILNET</text>
+      <text x="880" y="216" fill="#a3abbd" font-size="13" font-style="italic" font-family="'Instrument Serif', serif" text-anchor="start">every run ends with read-only checks;</text>
+      <text x="880" y="236" fill="#a3abbd" font-size="13" font-style="italic" font-family="'Instrument Serif', serif" text-anchor="start">the firewall goes through a dead-man switch</text>
+      <rect x="24" y="72" width="160" height="72" rx="6" fill="#2d3142"/>
+      <rect x="24" y="72" width="160" height="72" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="40" y="103.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">OpenBao</text>
+      <text x="40" y="122.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">lookup at run time</text>
+      <rect x="24" y="212" width="160" height="72" rx="6" fill="#2d3142"/>
+      <rect x="24" y="212" width="160" height="72" rx="6" fill="#2d3142" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4"/>
+      <g transform="translate(38,236.0)"><g fill="none" stroke="#6fd3c1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 9a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-10z" /> <path d="M18 8v-3a1 1 0 0 0 -1 -1h-13a1 1 0 0 0 -1 1v12a1 1 0 0 0 1 1h9" /> <path d="M16 9h2" /></g></g>
+      <text x="72" y="243.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Laptop</text>
+      <text x="72" y="262.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">ansible-playbook</text>
+      <rect x="264" y="112" width="160" height="80" rx="6" fill="#2d3142"/>
+      <rect x="264" y="112" width="160" height="80" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="280" y="147.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">proxmox.yml</text>
+      <text x="280" y="166.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">both hosts</text>
+      <rect x="264" y="316" width="160" height="80" rx="6" fill="#2d3142"/>
+      <rect x="264" y="316" width="160" height="80" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="280" y="351.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">nas.yml</text>
+      <text x="280" y="370.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">pve-desktop</text>
+      <rect x="520" y="56" width="184" height="72" rx="6" fill="#2d3142"/>
+      <rect x="520" y="56" width="184" height="72" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="536" y="78.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">proxmox_host</text>
+      <text x="536" y="97.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">pve only</text>
+      <text x="536" y="114.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">NIC fix, OpenTofu user</text>
+      <rect x="520" y="184" width="184" height="72" rx="6" fill="#2d3142"/>
+      <rect x="520" y="184" width="184" height="72" rx="6" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
+      <text x="536" y="206.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">proxmox_base</text>
+      <text x="536" y="225.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">both hosts</text>
+      <text x="536" y="242.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">repos, SSH, firewall</text>
+      <rect x="520" y="320" width="184" height="72" rx="6" fill="#2d3142"/>
+      <rect x="520" y="320" width="184" height="72" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="536" y="342.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">nas</text>
+      <text x="536" y="361.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">ZFS, Samba, NFS</text>
+      <text x="536" y="378.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">own checks</text>
+      <rect x="880" y="56" width="280" height="72" rx="6" fill="#2d3142"/>
+      <rect x="880" y="56" width="280" height="72" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <g transform="translate(894,80.0)"><g aria-hidden="true"><path d="M4.928 1.825c-1.09.553-1.09.64-.07 1.78 5.655 6.295 7.004 7.782 7.107 7.782.139.017 7.971-8.542 8.058-8.801.034-.07-.208-.312-.519-.536-.415-.312-.864-.433-1.712-.467-1.59-.104-2.144.242-4.115 2.455-.899 1.003-1.66 1.833-1.66 1.833-.017 0-.76-.813-1.642-1.798S8.473 2.1 8.127 1.91c-.796-.45-2.421-.484-3.2-.086zM1.297 4.367C.45 4.695 0 5.007 0 5.248c0 .121 1.331 1.678 2.94 3.459 1.625 1.78 2.939 3.268 2.939 3.302 0 .035-1.331 1.522-2.94 3.303C1.314 17.11.017 18.683.035 18.822c.086.467 1.504 1.055 2.541 1.055 1.678-.018 2.058-.312 5.603-4.202 1.78-1.954 3.233-3.614 3.233-3.666 0-.069-1.435-1.694-3.199-3.63-2.3-2.508-3.423-3.632-3.96-3.874-.812-.398-2.126-.467-2.956-.138zm18.467.12c-.502.26-1.764 1.505-3.943 3.891-1.763 1.937-3.199 3.562-3.199 3.631 0 .07 1.453 1.712 3.234 3.666 3.544 3.89 3.925 4.184 5.602 4.202 1.038 0 2.455-.588 2.542-1.055.017-.156-1.28-1.712-2.905-3.493-1.608-1.78-2.94-3.285-2.94-3.32 0-.034 1.332-1.539 2.94-3.32C22.72 6.91 24.017 5.352 24 5.214c-.087-.45-1.366-.968-2.473-1.038-.795-.034-1.21.035-1.763.312zM7.954 16.973c-2.144 2.369-3.908 4.374-3.943 4.46-.034.07.208.312.52.537.414.311.864.432 1.711.467 1.574.103 2.161-.26 4.15-2.508.864-.968 1.608-1.78 1.625-1.78s.761.812 1.643 1.798c2.023 2.248 2.559 2.576 4.132 2.49.848-.035 1.297-.156 1.712-.467.311-.225.553-.467.519-.536-.087-.26-7.92-8.819-8.058-8.801-.069 0-1.867 1.954-4.011 4.34z" fill="#E57000"/></g></g>
+      <text x="928" y="78.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">pve</text>
+      <text x="928" y="97.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">verify.yml: SSH, firewall, 2FA,</text>
+      <text x="928" y="114.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">Tailscale, ACME, OpenTofu roles</text>
+      <rect x="880" y="320" width="280" height="72" rx="6" fill="#2d3142"/>
+      <rect x="880" y="320" width="280" height="72" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <g transform="translate(894,344.0)"><g aria-hidden="true"><path d="M4.928 1.825c-1.09.553-1.09.64-.07 1.78 5.655 6.295 7.004 7.782 7.107 7.782.139.017 7.971-8.542 8.058-8.801.034-.07-.208-.312-.519-.536-.415-.312-.864-.433-1.712-.467-1.59-.104-2.144.242-4.115 2.455-.899 1.003-1.66 1.833-1.66 1.833-.017 0-.76-.813-1.642-1.798S8.473 2.1 8.127 1.91c-.796-.45-2.421-.484-3.2-.086zM1.297 4.367C.45 4.695 0 5.007 0 5.248c0 .121 1.331 1.678 2.94 3.459 1.625 1.78 2.939 3.268 2.939 3.302 0 .035-1.331 1.522-2.94 3.303C1.314 17.11.017 18.683.035 18.822c.086.467 1.504 1.055 2.541 1.055 1.678-.018 2.058-.312 5.603-4.202 1.78-1.954 3.233-3.614 3.233-3.666 0-.069-1.435-1.694-3.199-3.63-2.3-2.508-3.423-3.632-3.96-3.874-.812-.398-2.126-.467-2.956-.138zm18.467.12c-.502.26-1.764 1.505-3.943 3.891-1.763 1.937-3.199 3.562-3.199 3.631 0 .07 1.453 1.712 3.234 3.666 3.544 3.89 3.925 4.184 5.602 4.202 1.038 0 2.455-.588 2.542-1.055.017-.156-1.28-1.712-2.905-3.493-1.608-1.78-2.94-3.285-2.94-3.32 0-.034 1.332-1.539 2.94-3.32C22.72 6.91 24.017 5.352 24 5.214c-.087-.45-1.366-.968-2.473-1.038-.795-.034-1.21.035-1.763.312zM7.954 16.973c-2.144 2.369-3.908 4.374-3.943 4.46-.034.07.208.312.52.537.414.311.864.432 1.711.467 1.574.103 2.161-.26 4.15-2.508.864-.968 1.608-1.78 1.625-1.78s.761.812 1.643 1.798c2.023 2.248 2.559 2.576 4.132 2.49.848-.035 1.297-.156 1.712-.467.311-.225.553-.467.519-.536-.087-.26-7.92-8.819-8.058-8.801-.069 0-1.867 1.954-4.011 4.34z" fill="#E57000"/></g></g>
+      <text x="928" y="342.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">pve-desktop</text>
+      <text x="928" y="361.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">NAS on Wi-Fi</text>
+      <text x="928" y="378.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">firewall from nas/host.fw</text>
+      <line x1="24" y1="432" x2="1176" y2="432" stroke="rgba(245,245,245,0.14)" stroke-width="0.8"/>
+      <rect x="24" y="448" width="18" height="13" rx="2" fill="#2d3142" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="3,2"/>
+      <text x="50" y="458" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Where it runs</text>
+      <rect x="163.2" y="448" width="18" height="13" rx="2" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="189.2" y="458" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Playbook or host</text>
+      <rect x="321.6" y="448" width="18" height="13" rx="2" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
+      <text x="347.6" y="458" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Shared by both hosts</text>
+      <rect x="505.6" y="448" width="18" height="13" rx="2" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="531.6" y="458" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">One host only</text>
+      <line x1="644.8000000000001" y1="454" x2="672.8000000000001" y2="454" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#ansible-a-link)"/>
+      <text x="680.8000000000001" y="458" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Read from OpenBao</text>
+    </svg>
+  </div>
+</body>
+</html>
