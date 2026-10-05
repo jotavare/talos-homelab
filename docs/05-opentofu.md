@@ -105,27 +105,27 @@ tar xzf tofu_1.12.6_linux_amd64.tar.gz tofu && install -m 755 tofu ~/.local/bin/
 
 ## Project
 
-One root in [opentofu/](../opentofu/), one state. The root reads
+One root in [iac/](../iac/), one state. The root reads
 OpenBao, configures the providers and calls one module per area:
 
 | File | What it is |
 |------|------------|
-| [versions.tf](../opentofu/versions.tf) | Provider versions, state encryption |
-| [variables.tf](../opentofu/variables.tf) | The passphrase, the `pve` address, the domain, the email |
-| [secrets.tf](../opentofu/secrets.tf) | Reads `kv/opentofu`, `kv/config` and `kv/services/*` from OpenBao |
-| [providers.tf](../opentofu/providers.tf) | Proxmox, Cloudflare, Docker, Tailscale, OpenBao and Pocket ID, configured with those secrets |
-| [main.tf](../opentofu/main.tf) | The module calls, and the Proxmox version as an output |
+| [versions.tf](../iac/versions.tf) | Provider versions, state encryption |
+| [variables.tf](../iac/variables.tf) | The passphrase, the `pve` address, the domain, the email |
+| [secrets.tf](../iac/secrets.tf) | Reads `kv/opentofu`, `kv/config` and `kv/services/*` from OpenBao |
+| [providers.tf](../iac/providers.tf) | Proxmox, Cloudflare, Docker, Tailscale, OpenBao and Pocket ID, configured with those secrets |
+| [main.tf](../iac/main.tf) | The module calls, and the Proxmox version as an output |
 | `terraform.tfstate`, `terraform.tfvars` | Local only, git-ignored |
 | `.terraform.lock.hcl` | Pinned provider checksums, kept in git |
 
 | Module | What it manages |
 |--------|-----------------|
-| [proxmox](../opentofu/modules/proxmox/) | The Debian cloud image, the services VM and its firewall, the daily backup job, the ACME plugin and certificate, the Pocket ID realm |
-| [dns](../opentofu/modules/dns/) | The `*.home.<domain>` records |
-| [services](../opentofu/modules/services/) | The containers on the services VM, each config file next to its `.tf` ([07. Services VM](07-services.md)) |
-| [pocketid](../opentofu/modules/pocketid/) | The OIDC clients for OpenBao and Proxmox |
-| [openbao](../opentofu/modules/openbao/) | OpenBao's own configuration: `kv`, `userpass`, the `admin` policy, my user's token settings, OIDC login |
-| [tailscale](../opentofu/modules/tailscale/) | The tailnet policy ([02. Tailscale](02-tailscale.md#policy-in-opentofu)) |
+| [proxmox](../iac/modules/proxmox/) | The Debian cloud image, the services VM and its firewall, the daily backup job, the ACME plugin and certificate, the Pocket ID realm |
+| [dns](../iac/modules/dns/) | The `*.home.<domain>` records |
+| [services](../iac/modules/services/) | The containers on the services VM, each config file next to its `.tf` ([07. Services VM](07-services.md)) |
+| [pocketid](../iac/modules/pocketid/) | The OIDC clients for OpenBao and Proxmox |
+| [openbao](../iac/modules/openbao/) | OpenBao's own configuration: `kv`, `userpass`, the `admin` policy, my user's token settings, OIDC login |
+| [tailscale](../iac/modules/tailscale/) | The tailnet policy ([02. Tailscale](02-tailscale.md#policy-in-opentofu)) |
 
 Providers are configured only in the root and passed down by default.
 Secrets reach a module as inputs: the ACME token is an `ephemeral`
@@ -140,7 +140,7 @@ after the apply.
 Running it, after one `bao login`:
 
 ```bash
-cd opentofu
+cd iac
 export TF_VAR_state_passphrase="$(bao kv get -mount=kv -field=state_passphrase services/opentofu)"
 tofu plan
 tofu apply
@@ -209,7 +209,7 @@ tofu plan
 
 ## Services VM
 
-In [modules/proxmox/vm.tf](../opentofu/modules/proxmox/vm.tf). It replaced the first
+In [modules/proxmox/vm.tf](../iac/modules/proxmox/vm.tf). It replaced the first
 OpenBao container, which had the same ID and IP. What runs on it is in
 [07. Services VM](07-services.md).
 
@@ -233,7 +233,7 @@ it is not written in the repo.
 
 ## Backup job
 
-In [modules/proxmox/backups.tf](../opentofu/modules/proxmox/backups.tf): the daily backup of
+In [modules/proxmox/backups.tf](../iac/modules/proxmox/backups.tf): the daily backup of
 both containers, described in
 [01. Proxmox, Container backups](01-proxmox.md#container-backups). The
 guests come from the container resources, so a new container is one line

@@ -102,13 +102,13 @@ apply that restarted Garage could not save its own state
 
 ## Setup
 
-The container is in [modules/services/garage.tf](../opentofu/modules/services/garage.tf)
+The container is in [modules/services/garage.tf](../iac/modules/services/garage.tf)
 ([07. Services VM](07-services.md#setup)):
 
 | File | What it is |
 |------|------------|
-| [garage.tf](../opentofu/modules/services/garage.tf) | Garage on `backend`, the RPC secret in `/run/secrets/`, data under `/srv/garage` |
-| [garage.toml](../opentofu/modules/services/garage/garage.toml) | Replication factor 1, LMDB, S3 API on `3900`, region `garage` |
+| [garage.tf](../iac/modules/services/garage.tf) | Garage on `backend`, the RPC secret in `/run/secrets/`, data under `/srv/garage` |
+| [garage.toml](../iac/modules/services/garage/garage.toml) | Replication factor 1, LMDB, S3 API on `3900`, region `garage` |
 
 Buckets and keys, made with the CLI inside the container:
 

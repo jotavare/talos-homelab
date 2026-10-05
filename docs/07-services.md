@@ -49,14 +49,14 @@ Written before building and corrected where the build changed it.
 ### Stack
 
 Five containers, each a `docker_container` resource in
-[opentofu/modules/services/](../opentofu/modules/services/). The apps share one internal
+[iac/modules/services/](../iac/modules/services/). The apps share one internal
 Docker network, `backend`, which has no route out. Caddy and Tailscale
 are also on `services`, a normal bridge, for the way out to the internet:
 
 | Service | Image | Does |
 |---------|-------|------|
 | `tailscale` | `tailscale/tailscale:v1.102.5`, pinned by digest | Joins the tailnet as one device, `services`, `tag:services`, and forwards tailnet port 443 to `caddy:443` with `tailscale serve` (`TS_SERVE_CONFIG`). Nothing else on the VM listens on the tailnet. Only on `services` |
-| `caddy` | Built from [caddy/Dockerfile](../opentofu/modules/services/caddy/Dockerfile): `caddy:2.11.4` plus `caddy-dns/cloudflare` v0.2.4 | Listens on 443 inside Docker, reached only through the Tailscale forward. Also on `backend` for the apps. Certificates for each name from Let's Encrypt through Cloudflare DNS-01 |
+| `caddy` | Built from [caddy/Dockerfile](../iac/modules/services/caddy/Dockerfile): `caddy:2.11.4` plus `caddy-dns/cloudflare` v0.2.4 | Listens on 443 inside Docker, reached only through the Tailscale forward. Also on `backend` for the apps. Certificates for each name from Let's Encrypt through Cloudflare DNS-01 |
 | `openbao` | `openbao/openbao:2.7.0`, pinned by digest | The same OpenBao, on `backend` only, port `8200`. Only Caddy reaches it |
 | `pocket-id` | `pocketid/pocket-id:v2.16.0`, pinned by digest | Single sign-on with passkeys, reached as `auth.home.<domain>` ([SSO with Pocket ID](#sso-with-pocket-id)) |
 | `garage` | `dxflrs/garage:v2.4.1`, pinned by digest | S3 API on `backend`, reached through Caddy as `s3.home.<domain>` ([06. Object storage](06-object-storage.md)) |
@@ -183,16 +183,16 @@ service (more machines, same dependency).
 
 ## Setup
 
-All in [opentofu/modules/services/](../opentofu/modules/services/):
+All in [iac/modules/services/](../iac/modules/services/):
 
 | File | What it is |
 |------|------------|
-| [network.tf](../opentofu/modules/services/network.tf) | `backend`, `services` and the three volumes |
-| [openbao.tf](../opentofu/modules/services/openbao.tf), [garage.tf](../opentofu/modules/services/garage.tf), [caddy.tf](../opentofu/modules/services/caddy.tf), [pocketid.tf](../opentofu/modules/services/pocketid.tf) | Images and containers |
-| [openbao/openbao.hcl](../opentofu/modules/services/openbao/openbao.hcl) | Raft storage, listener on `8200` without TLS (Caddy does TLS) |
-| [garage/garage.toml](../opentofu/modules/services/garage/garage.toml) | Garage, see [06. Object storage](06-object-storage.md#setup) |
-| [caddy/Caddyfile](../opentofu/modules/services/caddy/Caddyfile) | The four names, DNS-01 through Cloudflare |
-| [caddy/Dockerfile](../opentofu/modules/services/caddy/Dockerfile) | Caddy with the Cloudflare module, built on the VM's Docker (`use_legacy_builder`, since the laptop has no Docker) |
+| [network.tf](../iac/modules/services/network.tf) | `backend`, `services` and the three volumes |
+| [openbao.tf](../iac/modules/services/openbao.tf), [garage.tf](../iac/modules/services/garage.tf), [caddy.tf](../iac/modules/services/caddy.tf), [pocketid.tf](../iac/modules/services/pocketid.tf) | Images and containers |
+| [openbao/openbao.hcl](../iac/modules/services/openbao/openbao.hcl) | Raft storage, listener on `8200` without TLS (Caddy does TLS) |
+| [garage/garage.toml](../iac/modules/services/garage/garage.toml) | Garage, see [06. Object storage](06-object-storage.md#setup) |
+| [caddy/Caddyfile](../iac/modules/services/caddy/Caddyfile) | The four names, DNS-01 through Cloudflare |
+| [caddy/Dockerfile](../iac/modules/services/caddy/Dockerfile) | Caddy with the Cloudflare module, built on the VM's Docker (`use_legacy_builder`, since the laptop has no Docker) |
 
 The config files are copied in with `upload` blocks, so a changed file
 replaces only its own container. Run it like the rest of the project
@@ -234,10 +234,10 @@ another authenticator as a fallback.
 ### Logging in to OpenBao and Proxmox
 
 Both apps are OIDC clients of Pocket ID, all in OpenTofu: the clients in
-[modules/pocketid](../opentofu/modules/pocketid/), the OpenBao side in
-[modules/openbao/oidc.tf](../opentofu/modules/openbao/oidc.tf), the
+[modules/pocketid](../iac/modules/pocketid/), the OpenBao side in
+[modules/openbao/oidc.tf](../iac/modules/openbao/oidc.tf), the
 Proxmox realm in
-[modules/proxmox/realm.tf](../opentofu/modules/proxmox/realm.tf).
+[modules/proxmox/realm.tf](../iac/modules/proxmox/realm.tf).
 
 | | OpenBao | Proxmox |
 |-|---------|---------|
