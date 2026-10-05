@@ -13,7 +13,8 @@ only an example in the repo.
 | Settings (domain, zone ID, addresses, email) | **OpenBao** `kv/config` | Private rather than secret, but kept out of the public repo |
 | Secrets of the services stack | **OpenBao** `kv/services/*`, read by OpenTofu | Copied into the containers, never onto the VM's disk. They are also in the state, encrypted |
 | OpenTofu state encryption | A passphrase in **Bitwarden**, with a copy in OpenBao `kv/services/opentofu` for everyday runs | The state must stay readable when OpenBao is down |
-| App secrets (database passwords, API keys) | **OpenBao**, read by **External Secrets Operator** | Git holds only references, no values at all |
+| Cluster secrets (database passwords, OIDC clients, tokens) | **OpenBao** `kv/k8s/*`, read by **External Secrets Operator** with the cluster's own login | Git holds only references (`ExternalSecret`), no values at all |
+| Talos machine secrets, `talosconfig`, `kubeconfig` | OpenTofu state and **OpenBao** `kv/talos/cluster` | Losing the laptop does not lose the cluster |
 | OpenBao unseal key, my OpenBao password, the age key | Bitwarden, plus a printed offline copy. The unseal key and password also in OpenBao `kv/openbao` | They open everything else, so the copy that counts is outside. The one inside keeps every password in one place, and is useless while OpenBao is sealed |
 | Root passwords of `pve` and `pve-desktop` | **OpenBao** `kv/hosts/<host>`, set on the host by Ansible, plus Bitwarden | One source for every password. Ansible hashes it with a salt stored next to it, so the hash is the same on every run |
 | Break-glass copy of the Proxmox token | Bitwarden | Enough to reach Proxmox if OpenBao is gone |
@@ -109,7 +110,7 @@ bao kv get -mount=kv config
 
 | Path | Holds |
 |------|-------|
-| `kv/config` | `proxmox_host`, `nas_host`, `domain`, `cloudflare_zone_id`, `acme_email`, `services_tailnet_ip` |
+| `kv/config` | `proxmox_host`, `nas_host`, `domain`, `tailnet`, `cloudflare_zone_id`, `acme_email`, `services_tailnet_ip` |
 | `kv/opentofu` | The Proxmox API token, the two Cloudflare tokens, the Tailscale OAuth client |
 | `kv/services/caddy`, `tailscale`, `garage`, `pocket-id` | The stack's secrets |
 | `kv/services/opentofu` | The passphrase of the OpenTofu state (also in Bitwarden) |
@@ -120,13 +121,24 @@ bao kv get -mount=kv config
 | `kv/talos/machine-configs` | The full machine config of each node, with Talos' field documentation, written by OpenTofu |
 | `kv/k8s/*` | Secrets for the cluster, read by External Secrets: `cert-manager` (Cloudflare DNS token), `tailscale-operator` (its OAuth client), `immich-database` (the Postgres user Immich logs in with), `immich-oauth` (its Pocket ID client). The cluster can read only these and `kv/config` |
 | `kv/nas` | The Samba user and password, read by Ansible ([08. NAS](08-nas.md#shares)) |
+| `kv/immich` | The Immich admin login |
+
+### Secrets in the cluster
+
+The cluster logs in to OpenBao with a JWT login (`auth/kubernetes`):
+External Secrets sends its service-account token, and OpenBao checks it
+against the cluster's public key, set by OpenTofu from the Talos
+secrets. OpenBao never calls the cluster. The `external-secrets` role
+accepts only that one service account with audience `openbao`, and its
+policy reads only `kv/k8s/*` and `kv/config`
+([09. Talos](09-talos.md#9-secrets-certificates-and-the-gateway)).
 
 ## Commit guard
 
 A versioned git hook, [.githooks/pre-commit](../.githooks/pre-commit),
 refuses a `*.sops.yaml` file that is not encrypted, and an OpenTofu state
-without `encrypted_data` (the state now lives in Garage, and `*.tfstate`
-is ignored). It is enabled once
+without `encrypted_data` (the state is local and `*.tfstate` is ignored,
+so this is a second line of defence). It is enabled once
 per clone:
 
 ```bash
@@ -226,12 +238,16 @@ with the unseal key if it is ever needed (`bao operator generate-root`).
 
 ### After a restart
 
-OpenBao starts sealed after the VM or the host restarts. Unseal it through
-`pve`, since the VM is only reachable from there:
+OpenBao starts sealed after the VM or the host restarts. Unseal it from
+the laptop through its address, with the key from Bitwarden:
 
 ```bash
-ssh -t -J root@<PROXMOX_HOST> debian@192.168.1.30 docker exec -it openbao bao operator unseal
+bao operator unseal
 ```
+
+Until then nothing that reads OpenBao works: OpenTofu, Ansible, and
+External Secrets in the cluster (existing Kubernetes Secrets stay, new
+ones wait).
 
 ## Rotation
 
@@ -242,14 +258,16 @@ shared outside Bitwarden and is replaced first.
 |------------|----------|-------|------|-----|
 | OpenBao unseal key | Bitwarden, printed copy, OpenBao `kv/openbao` | Year | 2027-09 | Logged in: `bao operator rotate-keys -init -key-shares=1 -key-threshold=1`, then `bao operator rotate-keys -nonce=<nonce>` with the old key; the new one goes to Bitwarden and paper. The old `bao operator rekey` is disabled in OpenBao 2.7 (`405 unsupported operation`) |
 | OpenBao `jotavare` password | Bitwarden, OpenBao `kv/openbao` | 6 months | 2027-03 | `bao write auth/userpass/users/jotavare/password password=...`, then `bao kv patch` the copy |
-| Cloudflare `caddy-dns` token | OpenBao `kv/services/caddy` | Year | 2027-09 | Roll in the dashboard, `bao kv put`, run the `services` playbook: it restarts Caddy when the secret changed |
+| Cloudflare `caddy-dns` token | OpenBao `kv/services/caddy`, copied by OpenTofu to `kv/k8s/cert-manager` | Year | 2027-09 | Roll in the dashboard, `bao kv patch`, `tofu apply`: it replaces Caddy and updates the copy cert-manager reads |
 | Cloudflare `opentofu-dns` token | OpenBao `kv/opentofu` | Year | 2027-09 | Roll in the dashboard, store the new value |
 | Cloudflare `pve-acme` token | OpenBao `kv/opentofu`, then Proxmox | Year | 2027-09 | Roll, store, raise `data_wo_version`, apply |
 | Proxmox API token `tofu@pve!opentofu` | OpenBao `kv/opentofu`, Bitwarden | Year | 2027-09 | New token in the UI, store it, delete the old one |
 | OpenTofu state passphrase | Bitwarden, OpenBao `kv/services/opentofu` | Year | 2027-09 | Add the new passphrase with the old one as `fallback`, `tofu apply -refresh-only`, then drop the old one |
 | age key | Laptop, Bitwarden, printed copy | Only if leaked | | Only the example uses it now |
 | Tailscale OAuth client `opentofu` (all scopes) | OpenBao `kv/opentofu` | Year | 2027-10 | Create a new client in Trust credentials, `bao kv patch`, revoke the old one |
-| Tailscale auth keys | Used once | Each use | | Generate per device, single use, 7 days; nothing to rotate afterwards |
+| Tailscale auth keys for hosts | Used once | Each use | | Generate per device, single use, 7 days; nothing to rotate afterwards |
+| Tailscale `tag:talos` key | OpenTofu state, OpenBao `kv/talos` (signed) | 90 days, by expiry | 2026-12 | `tofu apply` makes a new one when it expires; sign it on `pve`, store it in `kv/talos`. Only new or rebuilt nodes need it |
+| Tailscale operator OAuth client | OpenTofu state, OpenBao `kv/k8s/tailscale-operator` | Year | 2027-10 | Taint `tailscale_oauth_client.operator`, `tofu apply`, restart the operator |
 | Proxmox `root@pam` password, both hosts | OpenBao `kv/hosts/<host>`, Bitwarden | Year | 2027-09 | `bao kv patch` a new `root_password`, run `proxmox.yml`, copy to Bitwarden |
 | Proxmox 2FA recovery keys | Bitwarden | Year | 2027-09 | Web UI, new recovery keys |
 | Gmail app password (SMTP) | Bitwarden, the host | Year | 2027-09 | New app password, update the notification target |
@@ -257,7 +275,9 @@ shared outside Bitwarden and is replaced first.
 | Samba password, user `nas` | OpenBao `kv/nas`, the host | Year | 2027-10 | `bao kv patch`, then `smbpasswd nas` on `pve-desktop` with the new value |
 | Immich database password | OpenBao `kv/k8s/immich-database` | Year | 2027-10 | `bao kv patch`; External Secrets syncs it within an hour, CloudNativePG changes the role, then restart `immich-server` |
 | Pocket ID static API key | OpenBao `kv/services/pocket-id` | Year | 2027-10 | `bao kv patch` a new random value, `tofu apply` replaces Pocket ID with it |
-| Pocket ID client secrets (OpenBao, Proxmox) | OpenTofu state, OpenBao, Proxmox | Year | 2027-10 | Set `client_secret` on the client, raise both `_wo_version`s, apply |
+| Pocket ID client secrets (OpenBao, Proxmox, Immich) | OpenTofu state, OpenBao, Proxmox, `kv/k8s/immich-oauth` | Year | 2027-10 | Set `client_secret` on the client, raise the `_wo_version`s, apply; restart `immich-server` |
+| Immich admin password | OpenBao `kv/immich`, Bitwarden | Year | 2027-10 | Change it in Immich, `bao kv patch` |
+| Talos machine secrets | OpenTofu state, OpenBao `kv/talos/cluster` | Only if leaked | | A new cluster CA means a rebuild; certificates inside it rotate on their own |
 
 Rotating the Cloudflare tokens, the Proxmox token and the state
 passphrase does not need any downtime: the old value keeps working until
