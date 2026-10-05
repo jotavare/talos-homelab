@@ -1,0 +1,5 @@
+nas_files: "{{ playbook_dir }}/../nas"
+nas_disk_model: ata-WDC_WD1003FZEX
+nas_pool: tank
+nas_datasets: [files, k8s]
+nas_secrets: "{{ lookup('community.hashi_vault.vault_kv2_get', 'nas', engine_mount_point='kv').secret }}"

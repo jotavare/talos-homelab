@@ -1,0 +1,1 @@
+/tank/k8s 192.168.1.12(rw,sync,no_subtree_check,no_root_squash) 192.168.1.21(rw,sync,no_subtree_check,no_root_squash) 192.168.1.22(rw,sync,no_subtree_check,no_root_squash) 192.168.1.23(rw,sync,no_subtree_check,no_root_squash)

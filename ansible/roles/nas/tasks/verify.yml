@@ -1,0 +1,29 @@
+- name: Collect NAS state
+  ansible.builtin.command: "{{ item.cmd }}"
+  loop:
+    - { key: pool, cmd: "zpool list -H -o health {{ nas_pool }}" }
+    - { key: exports, cmd: exportfs -s }
+    - { key: nfs, cmd: cat /proc/fs/nfsd/versions }
+    - { key: power, cmd: systemctl is-active wifi-power-save-off.service }
+    - { key: smbd, cmd: systemctl is-active smbd }
+  loop_control:
+    label: "{{ item.key }}"
+  register: nas_state
+  changed_when: false
+  check_mode: false
+
+- name: Index the results
+  ansible.builtin.set_fact:
+    nas_s: "{{ dict(nas_state.results | map(attribute='item.key') | zip(nas_state.results | map(attribute='stdout'))) }}"
+
+- name: Check the pool, the shares and NFS versions
+  ansible.builtin.assert:
+    that:
+      - nas_s.pool == 'ONLINE'
+      - nas_s.exports is search('^/' ~ nas_pool ~ '/k8s\s')
+      - nas_s.nfs is search('-3')
+      - nas_s.nfs is search('\+4\.2')
+      - nas_s.power == 'active'
+      - nas_s.smbd == 'active'
+    quiet: true
+    fail_msg: NAS drifted, see docs/09-nas.md

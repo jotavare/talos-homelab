@@ -1,0 +1,12 @@
+[Unit]
+Description=Turn off WiFi power saving
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'for i in /sys/class/net/wl*; do /usr/sbin/iw dev "$${i##*/}" set power_save off; done'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

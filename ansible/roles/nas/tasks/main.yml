@@ -1,0 +1,168 @@
+- name: Install packages
+  ansible.builtin.apt:
+    name: [nfs-kernel-server, samba, iw, smartmontools]
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install the WiFi power saving unit
+  ansible.builtin.copy:
+    src: "{{ nas_files }}/wifi-power-save-off.service"
+    dest: /etc/systemd/system/wifi-power-save-off.service
+    mode: "0644"
+
+- name: Turn off WiFi power saving now and at boot
+  ansible.builtin.systemd_service:
+    name: wifi-power-save-off.service
+    enabled: true
+    state: started
+    daemon_reload: true
+
+- name: Limit the ZFS ARC at boot
+  ansible.builtin.copy:
+    src: "{{ nas_files }}/zfs.conf"
+    dest: /etc/modprobe.d/zfs.conf
+    mode: "0644"
+
+- name: Read the ZFS ARC limit
+  ansible.builtin.slurp:
+    src: /sys/module/zfs/parameters/zfs_arc_max
+  register: nas_arc_max
+
+- name: Limit the ZFS ARC now
+  ansible.builtin.shell: echo 2147483648 > /sys/module/zfs/parameters/zfs_arc_max
+  when: nas_arc_max.content | b64decode | trim != "2147483648"
+  changed_when: true
+
+- name: Read the pools
+  ansible.builtin.command: zpool list -H -o name
+  register: nas_pools
+  changed_when: false
+  check_mode: false
+
+- name: Find the data disk by model
+  ansible.builtin.find:
+    paths: /dev/disk/by-id
+    patterns: "{{ nas_disk_model }}-*"
+    excludes: "*-part*"
+    file_type: link
+  register: nas_disk
+  when: nas_pool not in nas_pools.stdout_lines
+
+- name: Create the pool on the whole disk (wipes it)
+  when: nas_pool not in nas_pools.stdout_lines
+  block:
+    - name: Check exactly one data disk matched
+      ansible.builtin.assert:
+        that: nas_disk.files | length == 1
+        quiet: true
+        fail_msg: "Expected one {{ nas_disk_model }} disk, found {{ nas_disk.files | length }}"
+
+    - name: Wipe old signatures
+      ansible.builtin.command: wipefs --all {{ nas_disk.files[0].path }}
+      changed_when: true
+
+    - name: Create the pool
+      ansible.builtin.command: >-
+        zpool create -f -o ashift=12
+        -O compression=lz4 -O atime=off -O xattr=sa -O acltype=posixacl
+        -m /{{ nas_pool }} {{ nas_pool }} {{ nas_disk.files[0].path }}
+      changed_when: true
+
+- name: Read the datasets
+  ansible.builtin.command: zfs list -H -o name -r {{ nas_pool }}
+  register: nas_zfs
+  changed_when: false
+  check_mode: false
+
+- name: Create the datasets
+  ansible.builtin.command: zfs create {{ nas_pool }}/{{ item }}
+  loop: "{{ nas_datasets }}"
+  when: nas_pool ~ '/' ~ item not in nas_zfs.stdout_lines
+  changed_when: true
+
+- name: Create the Samba user (no shell, no home)
+  ansible.builtin.user:
+    name: "{{ nas_secrets.smb_user }}"
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Give the share to the Samba user
+  ansible.builtin.file:
+    path: "/{{ nas_pool }}/files"
+    owner: "{{ nas_secrets.smb_user }}"
+    group: "{{ nas_secrets.smb_user }}"
+    mode: "2770"
+
+- name: Configure Samba
+  ansible.builtin.copy:
+    src: "{{ nas_files }}/smb.conf"
+    dest: /etc/samba/smb.conf
+    mode: "0644"
+    validate: testparm -s %s
+  notify: Restart smbd
+
+- name: Turn off NetBIOS
+  ansible.builtin.systemd_service:
+    name: nmbd
+    enabled: false
+    state: stopped
+
+- name: Read the Samba users
+  ansible.builtin.command: pdbedit -L
+  register: nas_smb_users
+  changed_when: false
+  check_mode: false
+
+- name: Set the Samba password from OpenBao
+  ansible.builtin.command: smbpasswd -s -a {{ nas_secrets.smb_user }}
+  args:
+    stdin: "{{ nas_secrets.smb_password }}\n{{ nas_secrets.smb_password }}"
+  when: nas_secrets.smb_user ~ ':' not in nas_smb_users.stdout
+  no_log: true
+  changed_when: true
+
+- name: Serve NFS 4.1 and 4.2 only
+  ansible.builtin.copy:
+    src: "{{ nas_files }}/nfs.conf"
+    dest: /etc/nfs.conf.d/10-nfsv4-only.conf
+    mode: "0644"
+  notify: Restart nfs-server
+
+- name: Mask the NFSv3 helpers
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    masked: true
+    state: stopped
+  loop: [rpcbind.service, rpcbind.socket, rpc-statd.service]
+
+- name: Create the exports drop-in directory
+  ansible.builtin.file:
+    path: /etc/exports.d
+    state: directory
+    mode: "0755"
+
+- name: Export the Kubernetes dataset to the Talos nodes
+  ansible.builtin.copy:
+    src: "{{ nas_files }}/k8s.exports"
+    dest: /etc/exports.d/k8s.exports
+    mode: "0644"
+  notify: Reload exports
+
+- name: Start the NFS server
+  ansible.builtin.systemd_service:
+    name: nfs-server
+    enabled: true
+    state: started
+
+- name: Configure smartd for all disks
+  ansible.builtin.copy:
+    src: "{{ nas_files }}/smartd.conf"
+    dest: /etc/smartd.conf
+    mode: "0644"
+  notify: Restart smartd
+
+- name: Verify the NAS
+  ansible.builtin.import_tasks: verify.yml
+  tags: [verify]
