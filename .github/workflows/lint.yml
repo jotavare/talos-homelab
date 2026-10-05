@@ -2,7 +2,6 @@ name: lint
 
 on:
   workflow_dispatch:
-  pull_request:
 
 permissions: {}
 
@@ -26,4 +25,8 @@ jobs:
         with:
           python-version: "3.14"
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
       - run: uvx pre-commit run --all-files --show-diff-on-failure

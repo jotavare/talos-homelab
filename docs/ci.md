@@ -102,20 +102,41 @@ if flux-schema, still a preview, breaks.
 
 ## Workflows
 
+The checks run on the laptop. The workflows exist to run the same checks
+on GitHub by hand, for example when the laptop is not at hand:
+
+```bash
+.github/scripts/check-all.sh
+```
+
+[check-all.sh](../.github/scripts/check-all.sh) runs pre-commit on every
+file, gitleaks and TruffleHog over the full history, and flux-schema on
+`gitops/`, and stops at the first failure. It needs pre-commit, tflint,
+gitleaks, TruffleHog and flux-schema on the `PATH`, the same versions the
+workflows pin.
+
 | Workflow | Runs on | Does |
 |----------|---------|------|
-| `lint` | Pull requests, by hand | `pre-commit run --all-files` |
-| `secrets` | Pull requests, by hand | gitleaks and TruffleHog over the full history |
-| `manifests` | Pull requests, by hand | flux-schema on `gitops/` |
+| `lint` | By hand | `pre-commit run --all-files` |
+| `secrets` | By hand | gitleaks and TruffleHog over the full history |
+| `manifests` | By hand | flux-schema on `gitops/` |
 | `scorecard` | By hand | OpenSSF Scorecard, results in the Security tab |
 | `renovate` | Mondays at 06:00 UTC, by hand | Renovate on this repo |
 
-Pushes to `main` do not start the checks: pre-commit and push protection
-already ran. Every workflow starts with no permissions and each job asks
-only for what it needs, usually `contents: read`. Actions are pinned to a
-commit hash with the version next to it, so a moved tag cannot change
-what runs; Renovate keeps both up to date. Checkout does not keep its
-token (`persist-credentials: false`).
+Pull requests do not start the checks on their own: GitHub's hosted
+runners queued them for many minutes during an Actions incident, while
+the same checks finish locally in under a minute. Running them on pull
+requests again is [#10](https://github.com/jotavare/talos-homelab/issues/10).
+A Renovate pull request is checked out and `check-all.sh` run on it
+before merging. The `lint` workflow caches the pre-commit tool builds by
+the hash of `.pre-commit-config.yaml`; the first build takes most of a
+minute.
+
+Every workflow starts with no permissions and each job asks only for
+what it needs, usually `contents: read`. Actions are pinned to a commit
+hash with the version next to it, so a moved tag cannot change what
+runs; Renovate keeps both up to date. Checkout does not keep its token
+(`persist-credentials: false`).
 
 ## Scorecard
 
