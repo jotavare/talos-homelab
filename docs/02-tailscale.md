@@ -259,6 +259,8 @@ applied by OpenTofu ([Policy in OpenTofu](#policy-in-opentofu)):
   | `tag:server` | `pve`, `pve-desktop` |
   | `tag:services` | The services stack on the services VM (OpenBao, Caddy) |
   | `tag:talos` | The Talos nodes |
+  | `tag:k8s-operator` | The Tailscale operator in the cluster |
+  | `tag:k8s` | Proxies the operator creates: `gateway`, the Cilium Gateway |
 
 - **Grants**, the only traffic allowed:
 
@@ -267,12 +269,15 @@ applied by OpenTofu ([Policy in OpenTofu](#policy-in-opentofu)):
   | My devices (user `jotavare@github`: laptop, phone) | `tag:server` | `22`, `8006`, `445` (SMB on the NAS, [08. NAS](08-nas.md)) |
   | My devices | `tag:talos` | `6443`, `50000` |
   | My devices, `tag:talos` and `tag:server` | `tag:services` | `443` |
+  | My devices | `tag:k8s` | `443`, the apps behind the Gateway |
 
 - **Nothing in the other direction:** a compromised server, container or
   node cannot start a connection to the laptop, and none of them can reach
   each other except Talos and `pve` to the services stack. `pve` needs
   it for OIDC: Proxmox fetches Pocket ID's keys and tokens itself
   ([07. Services VM](07-services.md#logging-in-to-openbao-and-proxmox)).
+  The Talos nodes need it for OpenBao and Pocket ID: pods reach the
+  tailnet through their node's Tailscale.
 - **`tests`** run on every save, so a broken rule is rejected before it
   applies. They check every row above plus the ports and directions that
   must stay closed.
@@ -305,12 +310,29 @@ the apply.
 
 | Item | Value |
 |------|-------|
-| Credential | An OAuth client with all scopes, in OpenBao `kv/opentofu`. It manages the policy, the auth keys for the nodes and device tags. Whoever holds it controls the whole tailnet, so it lives only in OpenBao |
+| Credential | An OAuth client with all scopes, in OpenBao `kv/opentofu`. It manages the policy, the nodes' auth key and the operator's OAuth client. Whoever holds it controls the whole tailnet, so it lives only in OpenBao. It replaced the first client, which could only write the policy file |
 | Created in | Admin console → Settings → **Trust credentials** |
 | First run | `tofu apply` imported the live policy with `0 changed` |
 | Console | Settings → Policy file management: **Lock editor** on, external reference to the file on GitHub |
 
 With the editor locked, the admin console cannot drift from git.
+
+### Keys and clients made by OpenTofu
+
+| Resource | What | Where it goes |
+|----------|------|---------------|
+| `tailscale_tailnet_key.talos` | Reusable, pre-authorized, `tag:talos`, 90 days | Signed once on `pve` with `tailscale lock sign`, stored signed in OpenBao `kv/talos`, then into each node's Tailscale extension ([09. Talos](09-talos.md#3-config-and-bootstrap)) |
+| `tailscale_oauth_client.operator` | Scopes `devices:core`, `auth_keys`, `services`, tag `tag:k8s-operator` | OpenBao `kv/k8s/tailscale-operator`, then External Secrets |
+| `data.tailscale_device.gateway` | The Gateway proxy's tailnet IP | The DNS records of the cluster apps |
+
+The OAuth client failed the first time with `requested tags
+[tag:k8s-operator] are invalid or not permitted`: it was created in the
+same apply as the policy that defines the tag. The `k8s` module now
+depends on the `tailscale` module.
+
+The nodes' key expires after 90 days. Joined nodes keep working; a new
+node or a rebuild after that needs a new key (`recreate_if_invalid`
+makes OpenTofu create one) and a new signature.
 
 ## Hardening
 
