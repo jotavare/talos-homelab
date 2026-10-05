@@ -341,6 +341,32 @@ Longhorn runs on the workers only: the control plane keeps its
 The install was also what exposed the `pve` NIC hang
 ([01. Proxmox, NIC hang](01-proxmox.md#nic-hang)).
 
+### 8. CloudNativePG and Immich
+
+[CloudNativePG](https://cloudnative-pg.io/) runs Postgres as a
+Kubernetes resource: a `Cluster` gets its pods, volumes, users and
+backups from the operator in
+[gitops/infrastructure/cnpg](../gitops/infrastructure/cnpg/).
+
+[Immich](https://immich.app/) v3 needs Postgres with the VectorChord
+extension. Its chart recommends exactly this setup, and
+[gitops/projects/immich](../gitops/projects/immich/) follows it:
+
+| File | What |
+|------|------|
+| `database.yaml` | A one-instance `Cluster` on Longhorn (5 Gi), Postgres 18, with the VectorChord extension mounted as an image (`vchord-scratch`) and loaded at start. A `Database` resource creates the extensions Immich uses |
+| `library.yaml` | The photo library, a claim on the `nas` storage class: the files live on `pve-desktop` in `/tank/k8s/immich/immich-library` |
+| `repository.yaml`, `release.yaml` | The Immich chart from its OCI registry, with Valkey on, the library claim, and the database credentials from the secret CloudNativePG creates (`immich-database-app`) |
+
+| Data | Where | Why |
+|------|-------|-----|
+| Photos and videos | NAS, NFS over WiFi | Large, written once, read often; fine at WiFi speed |
+| Postgres | Longhorn on the worker data disks | A database over NFS on WiFi is slow and can corrupt |
+| Machine learning cache, Valkey | `emptyDir` | Rebuilt on restart |
+
+The Flux step `immich` waits for `cnpg`, `longhorn` and `nfs-config`
+([gitops/flux/projects.yaml](../gitops/flux/projects.yaml)).
+
 ## GitOps layout
 
 The Kubernetes manifests go in `gitops/`, read by Flux. One folder per
