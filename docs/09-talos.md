@@ -380,6 +380,29 @@ deleting files in git never deletes the photos or the database.
 The admin account was created through the Immich API with a generated
 password, kept in OpenBao `kv/immich`.
 
+Every setting was read back from `/api/system-config` and compared with
+the defaults. Changed in [config.yaml](../gitops/projects/immich/config.yaml):
+
+| Setting | Value | Why |
+|---------|-------|-----|
+| `server.externalDomain` | `https://immich.home.<domain>` | Share links and the mobile app get the right address |
+| `oauth` | Pocket ID, button "Login with Pocket ID", no auto-register | Same login as OpenBao and Proxmox; only users that already exist can log in |
+| `passwordLogin` | on | Fallback while Pocket ID is new |
+| `server.publicUsers` | off | Users do not see the list of all users |
+| `newVersionCheck` | off | Versions are pinned in git; no calls to GitHub, as for Pocket ID |
+| `storageTemplate` | on, `{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}` | Files on the NAS by date with their own names, readable over SMB and easy to back up. The template braces are escaped in the `ExternalSecret`, which also uses `{{ }}` |
+
+Kept as they are:
+
+| Setting | Default | Note |
+|---------|---------|------|
+| `backup.database` | every night at 02:00, keep 14 | Immich dumps its own database to `library/backups`, which is on the NAS: a database copy outside the cluster already |
+| `machineLearning` | CLIP `ViT-B-32__openai`, faces `buffalo_l`, OCR | The small models, enough for 8 GB workers |
+| `ffmpeg.accel` | disabled | No GPU |
+| `map` | tiles from `tiles.immich.cloud` | The browser fetches map tiles from Immich's servers |
+| `trash` | 30 days | |
+
+
 ### 9. Secrets, certificates and the Gateway
 
 Apps are reached the way they would be in a company cluster: one Gateway,
