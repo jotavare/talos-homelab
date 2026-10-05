@@ -1,0 +1,20 @@
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: openbao
+spec:
+  provider:
+    vault:
+      server: https://openbao.home.${DOMAIN}
+      path: kv
+      version: v2
+      auth:
+        jwt:
+          path: kubernetes
+          role: external-secrets
+          kubernetesServiceAccountToken:
+            serviceAccountRef:
+              name: external-secrets
+              namespace: external-secrets
+            audiences:
+              - openbao
