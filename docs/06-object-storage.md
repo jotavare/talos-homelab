@@ -129,4 +129,4 @@ The key went straight into OpenBao (`kv/opentofu`), never printed.
 - [OpenBao Raft snapshots](https://openbao.org/docs/commands/operator/raft/)
 - [rclone S3 backend](https://rclone.org/s3/)
 
-[Back to the build log](../README.md#work-in-progress)
+[Back to the build log](../README.md#docs)

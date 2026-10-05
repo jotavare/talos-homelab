@@ -671,4 +671,4 @@ adding two VMs behind the same VIP.
 - [smartd.conf manual](https://manpages.debian.org/trixie/smartmontools/smartd.conf.5.en.html)
 - [fail2ban](https://github.com/fail2ban/fail2ban) and [CrowdSec](https://www.crowdsec.net/)
 
-[Back to the build log](../README.md#work-in-progress)
+[Back to the build log](../README.md#docs)

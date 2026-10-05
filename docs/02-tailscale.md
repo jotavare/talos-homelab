@@ -360,4 +360,4 @@ forwards no ports.
 - [HTTPS certificates](https://tailscale.com/kb/1153/enabling-https)
 - [Headscale](https://github.com/juanfont/headscale)
 
-[Back to the build log](../README.md#work-in-progress)
+[Back to the build log](../README.md#docs)

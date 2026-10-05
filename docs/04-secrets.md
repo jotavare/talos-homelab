@@ -301,4 +301,4 @@ it is deleted.
 - [Using SOPS with age and git like a pro](https://devops.datenkollektiv.de/using-sops-with-age-and-git-like-a-pro.html)
 - [A comprehensive guide to SOPS](https://blog.gitguardian.com/a-comprehensive-guide-to-sops/)
 
-[Back to the build log](../README.md#work-in-progress)
+[Back to the build log](../README.md#docs)

@@ -545,4 +545,4 @@ deleting its folder by mistake would take the network down.
 - [Cilium on Talos](https://www.talos.dev/v1.14/kubernetes-guides/network/deploying-cilium/)
 - [Tailnet Lock: pre-signed auth keys](https://tailscale.com/kb/1226/tailnet-lock)
 
-[Back to the build log](../README.md#work-in-progress)
+[Back to the build log](../README.md#docs)

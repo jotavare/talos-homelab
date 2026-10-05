@@ -37,37 +37,22 @@ please tell me through a [private security report](.github/SECURITY.md).
 - **Automation**: nothing done by hand twice.
 - **Diagrams**: show how host, VMs, network and secrets connect.
 
-## Diagrams
+## Docs
 
-<p align="center">
-  <img src="diagrams/overview.png" alt="Homelab overview: ISP router and Wi-Fi access point on a flat LAN, the Proxmox host pve with the services VM and three Talos VMs on its bridge, the old desktop pve-desktop as the NAS over Wi-Fi, and a laptop or phone reaching each of them only over Tailscale, by port">
-  <br>
-  <sub><b>Overview.</b> One flat LAN, two Proxmox hosts, management and apps over Tailscale only.</sub>
-</p>
+The build, step by step, in the order it was done. One page per phase,
+with the tools, the options chosen and why.
 
-<p align="center">
-  <img src="diagrams/proxmox.png" alt="The Proxmox host pve: the services VM and three Talos VMs with their IDs, addresses and sizes, 32 GB of RAM split between the host, the VMs and about 6 GB free, and the 348 GB thin pool split into the VM disks and a Longhorn disk per worker">
-  <br>
-  <sub><b>Proxmox.</b> The VMs on <code>pve</code>, and how RAM and disk are split. One control plane instead of three, to leave room for apps (<a href="docs/01-proxmox.md#planned-vms">why</a>).</sub>
-</p>
-
-<p align="center">
-  <img src="diagrams/request-path.png" alt="Request path: from the tailnet, cluster apps go through the Tailscale operator's gateway proxy, the Cilium Gateway with a wildcard certificate and an HTTPRoute; services outside the cluster go through the services VM's Tailscale container and Caddy">
-  <br>
-  <sub><b>Request path.</b> Cluster apps through the Gateway, everything else through Caddy (<a href="docs/09-talos.md#9-secrets-certificates-and-the-gateway">how</a>).</sub>
-</p>
-
-<p align="center">
-  <img src="diagrams/secrets.png" alt="Secrets flow: secrets generated into OpenBao with offline copies in Bitwarden; OpenTofu reads its tokens and writes the cluster secrets, Ansible applies host passwords, External Secrets logs in with the cluster's token and creates Kubernetes Secrets for the apps">
-  <br>
-  <sub><b>Secrets.</b> OpenBao is the source of truth; nothing secret is in git (<a href="docs/04-secrets.md">details</a>).</sub>
-</p>
-
-<p align="center">
-  <img src="diagrams/tailscale.png" alt="Tailscale traffic: direct over the LAN at home, direct over the internet when away, DERP relay as a fallback, coordination server for keys and policy only">
-  <br>
-  <sub><b>Tailscale.</b> At home, direct over the LAN. Away from home, direct over the internet, with a relay as fallback (<a href="docs/02-tailscale.md#how-traffic-flows">how</a>).</sub>
-</p>
+| Phase | Covers | Diagrams |
+|-------|--------|----------|
+| [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install, NIC fix, planned VMs | [Overview](diagrams/overview.png), [Proxmox](diagrams/proxmox.png) |
+| [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, Tailnet Lock, access rules, keys made by OpenTofu | [Tailscale](diagrams/tailscale.png) |
+| [03. Ansible](docs/03-ansible.md) | Both Proxmox hosts and the NAS as playbooks, compliance checks | |
+| [04. Secrets](docs/04-secrets.md) | Where secrets live, OpenBao set up and unsealed, the cluster's login, rotation, a SOPS example | [Secrets](diagrams/secrets.png) |
+| [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, the modules, state encryption, secrets from OpenBao | |
+| [06. Object storage](docs/06-object-storage.md) | Garage for backups | |
+| [07. Services VM](docs/07-services.md) | OpenBao, Garage, Pocket ID, Caddy and Tailscale as containers, managed by OpenTofu | [Request path](diagrams/request-path.png) |
+| [08. NAS](docs/08-nas.md) | ZFS on the second host, SMB for my devices, NFS for the cluster | [Overview](diagrams/overview.png) |
+| [09. Talos](docs/09-talos.md) | Image, VMs, config and bootstrap, Cilium, Flux, storage, secrets, certificates, Gateway, Immich | [Request path](diagrams/request-path.png), [GitOps](diagrams/gitops.png) |
 
 ## Hardware
 
@@ -202,23 +187,6 @@ written down and the homelab knowingly does something simpler.
 | File storage | A NAS on wired network with mirrored or RAID-Z disks, snapshots sent off site | ZFS on one HDD in an old desktop on WiFi. Checksums catch damage but cannot repair it, and nothing is copied off it yet ([details](docs/08-nas.md#limits)) |
 | Tailnet devices in the cluster | The Tailscale operator signs its own proxies, or Tailnet Lock is off | The operator cannot sign under Tailnet Lock yet, so each proxy it creates is signed once by hand with `tailscale lock sign` on `pve` ([details](docs/02-tailscale.md#tailnet-lock)) |
 | Backups | Proxmox Backup Server on a separate machine, plus a copy off site | A daily backup job for the services VM to `local` now, Proxmox Backup Server as a VM on the same host later. Both protect against mistakes, not against losing the host ([details](docs/01-proxmox.md#container-backups)) |
-
-## Work in progress
-
-The build, step by step, in the order it was done. One page per phase,
-with the tools, the options chosen and why.
-
-| Phase | Covers |
-|-------|--------|
-| [01. Proxmox](docs/01-proxmox.md) | Install USB, install, post-install, planned VMs |
-| [02. Tailscale](docs/02-tailscale.md) | Account, laptop, Proxmox host, hardening |
-| [03. Ansible](docs/03-ansible.md) | Proxmox host configuration as a playbook |
-| [04. Secrets](docs/04-secrets.md) | Where secrets live, OpenBao set up and unsealed, rotation, a SOPS example |
-| [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, the modules, state encryption, secrets from OpenBao |
-| [06. Object storage](docs/06-object-storage.md) | Garage for backups |
-| [07. Services VM](docs/07-services.md) | OpenBao, Garage, Pocket ID, Caddy and Tailscale as containers, managed by OpenTofu |
-| [08. NAS](docs/08-nas.md) | ZFS on the second host, SMB for my devices, NFS for the cluster |
-| [09. Talos](docs/09-talos.md) | Image, VMs, config and bootstrap, Cilium, Flux, storage, secrets, certificates, Gateway, Immich |
 
 ## Backlog
 

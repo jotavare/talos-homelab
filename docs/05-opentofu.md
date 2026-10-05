@@ -364,4 +364,4 @@ echo | openssl s_client -connect pve.home.<domain>:8006 2>/dev/null \
 - [Cloudflare OpenTofu provider](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs)
 - [Let's Encrypt challenge types](https://letsencrypt.org/docs/challenge-types/)
 
-[Back to the build log](../README.md#work-in-progress)
+[Back to the build log](../README.md#docs)

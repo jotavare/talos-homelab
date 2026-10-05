@@ -145,4 +145,4 @@ change, and every compliance check passes.
 - [uv](https://docs.astral.sh/uv/)
 - [Proxmox VE firewall](https://pve.proxmox.com/wiki/Firewall)
 
-[Back to the build log](../README.md#work-in-progress)
+[Back to the build log](../README.md#docs)

@@ -138,4 +138,4 @@ on the LAN, NFS blocked from anything but the Talos addresses.
 - [Debian NFS server setup](https://wiki.debian.org/NFSServerSetup)
 - [csi-driver-nfs](https://github.com/kubernetes-csi/csi-driver-nfs)
 
-[Back to the build log](../README.md#work-in-progress)
+[Back to the build log](../README.md#docs)

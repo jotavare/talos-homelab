@@ -313,4 +313,4 @@ secret files in `/srv/secrets` were removed. Both projects plan with
 - [OpenBao Docker image](https://hub.docker.com/r/openbao/openbao)
 - [Proxmox: containers or VMs for Docker](https://pve.proxmox.com/wiki/Linux_Container)
 
-[Back to the build log](../README.md#work-in-progress)
+[Back to the build log](../README.md#docs)
