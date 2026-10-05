@@ -10,6 +10,6 @@ resource "proxmox_backup_job" "containers" {
   repeat_missed = true
 
   prune_backups = {
-    keep-last = "7"
+    keep-last = "5"
   }
 }
