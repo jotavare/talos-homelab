@@ -7,9 +7,10 @@ OpenTofu. Sizes and IPs are in
 
 ## Design
 
-Written before building, so each choice has its reason next to it.
-Versions at the time: Talos v1.14.1, the `siderolabs/talos` OpenTofu
-provider v0.12.0, Cilium v1.20.2.
+Written before building, so each choice has its reason next to it, and
+updated after the build where reality differed. Versions: Talos v1.14.2
+(Kubernetes v1.37), the `siderolabs/talos` OpenTofu provider v0.12.0,
+Cilium v1.20.2.
 
 ### Image
 
@@ -50,8 +51,10 @@ own:
 | ICMP from the LAN | Ping |
 | `ipfilter` off | Cilium answers ARP for the LoadBalancer IPs (`.50` to `.99`) through the node's NIC; with `ipfilter` on, Proxmox would drop that traffic |
 
-Which app ports on the LoadBalancer pool are open, and to whom, is decided
-together with tailnet-only access for admin UIs (Backlog).
+Nothing on the LAN reaches the LoadBalancer pool: no rule allows it. The
+Gateway's `192.168.1.51` is announced on the LAN, but apps are reached
+only through its tailnet proxy
+([9. Secrets, certificates and the Gateway](#9-secrets-certificates-and-the-gateway)).
 
 ### API access
 
@@ -78,8 +81,8 @@ together with tailnet-only access for admin UIs (Backlog).
 
 Tailnet Lock refuses any new device until a signing node signs it
 ([02. Tailscale, Tailnet Lock](02-tailscale.md#tailnet-lock)). The nodes
-join with a **pre-signed auth key**: reusable, tagged `tag:talos`, and
-signed once with `tailscale lock sign` on `pve` or the laptop. Nodes that
+join with a **pre-signed auth key**: reusable, tagged `tag:talos`, made
+by OpenTofu and signed once with `tailscale lock sign` on `pve`. Nodes that
 use it join already trusted, which also survives rebuilds. The key is a
 secret, so it lives in OpenBao.
 
@@ -88,18 +91,27 @@ secret, so it lives in OpenBao.
 The `siderolabs/talos` OpenTofu provider generates the machine secrets,
 applies the machine configs, bootstraps etcd and returns the kubeconfig
 and talosconfig. All of it stays in the encrypted OpenTofu state
-([05. OpenTofu, State encryption](05-opentofu.md#state-encryption)). The
-`kubeconfig` and `talosconfig` files written for local use are in
-`.gitignore`.
+([05. OpenTofu, State encryption](05-opentofu.md#state-encryption)) and in
+OpenBao. The files for local use are written outside the repo, to
+`~/.kube/config` and `~/.talos/config`.
 
 ### Build order
 
-1. The services VM with OpenBao, since the auth key and secrets live
-   there, and Garage for backups.
-2. Talos image and the four VMs.
-3. Machine configs and bootstrap.
-4. Cilium.
-5. Flux.
+As it was done, each step a section below:
+
+1. Image from the Image Factory.
+2. The three VMs, waiting in maintenance mode.
+3. Machine configs and bootstrap, Tailscale on every node.
+4. Cilium, installed by OpenTofu.
+5. Flux, taking Cilium over.
+6. NFS storage on the NAS.
+7. Longhorn on a data disk per worker.
+8. CloudNativePG and Immich.
+9. External Secrets, cert-manager, the Tailscale operator and the Cilium
+   Gateway.
+
+The services VM with OpenBao came before all of it: the secrets and the
+nodes' auth key live there.
 
 ## Build
 
@@ -482,6 +494,42 @@ Settings often use types the chart itself brings: a Cilium IP pool only
 exists once Cilium is installed. Flux checks a whole folder before it
 applies any of it, so a pool next to the release would block the release
 too. `config/` is its own Flux step that waits for the release.
+
+### How Kustomize and Flux work here
+
+For someone used to Argo CD and Helm:
+
+| Argo CD and Helm | Here |
+|------------------|------|
+| A root `Application` that applies other `Application`s | The `FluxInstance` syncs `gitops/flux/`, which holds a Flux `Kustomization` per folder |
+| An `Application` per folder | A Flux `Kustomization`: `cilium`, `longhorn`, `immich`, ... |
+| Sync waves | `dependsOn` between Flux `Kustomization`s |
+| A Helm chart | A `HelmRelease`, still Helm, for every third-party app |
+| Templates and values for our own manifests | Plain YAML. The only variable is `${DOMAIN}` (and `${TAILNET}`), filled by Flux from `cluster-settings` (`postBuild.substituteFrom`) |
+
+Two things share the name:
+
+| | `kustomization.yaml` | Flux `Kustomization` |
+|-|----------------------|----------------------|
+| Tool | Kustomize, built into `kubectl` | Flux |
+| Answers | Which files make up this folder, and generators such as the ConfigMap from Cilium's `values.yaml` | When and in what order the folder is applied, and whether it is healthy |
+| Where | In every folder | `gitops/flux/infrastructure.yaml`, `gitops/flux/projects.yaml` |
+
+The cycle, with the intervals in use:
+
+| What | Interval | Effect |
+|------|----------|--------|
+| Fetch from GitHub (`GitRepository`) | 1 min | A push shows up within a minute; `reconcile.fluxcd.io/requestedAt` skips the wait |
+| Each step (`Kustomization`) | 10 min | Applies at once on a new commit, and re-applies every 10 min, which undoes manual changes |
+| Waiting for a dependency (`retryInterval`) | 1 min | A step whose dependency is not ready checks again every minute |
+| Helm charts (`HelmRelease`) | 30 min | Upgrade when the chart or values change. Cilium's values ConfigMap has `reconcile.fluxcd.io/watch: Enabled`, so it applies at once |
+| Chart indexes (`HelmRepository`) | 1 h | New chart versions show up |
+
+`wait: true` makes a step ready only once what it applied is healthy.
+`prune: true` deletes from the cluster what was deleted from git, except
+objects with `kustomize.toolkit.fluxcd.io/prune: disabled`: the Immich
+namespace, database and photo library. The Cilium step has `prune: false`:
+deleting its folder by mistake would take the network down.
 
 ## References
 
