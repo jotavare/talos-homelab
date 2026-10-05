@@ -136,18 +136,30 @@ certificate from `talosconfig`.
 
 ## GitOps layout
 
-The Kubernetes manifests go in `gitops/`, read by Flux:
+The Kubernetes manifests go in `gitops/`, read by Flux. One folder per
+thing, and a separate folder that says what Flux applies and in what
+order:
 
-| Path | What |
-|------|------|
-| `gitops/clusters/homelab/` | Flux's entry point: its own components and one `Kustomization` per layer below, with the order between them |
-| `gitops/infrastructure/controllers/` | Cluster add-ons that bring CRDs or controllers: Cilium, cert-manager, Longhorn, the NFS CSI driver |
-| `gitops/infrastructure/configs/` | Their settings, applied after the controllers: storage classes, issuers, LoadBalancer pools |
-| `gitops/projects/<app>/` | One folder per app, Immich first |
+```text
+gitops/
+  flux/                 Flux itself, plus one Kustomization per folder below
+  infrastructure/
+    cilium/             network: Helm release and its settings together
+    longhorn/
+    nfs/                NFS CSI driver and the storage class for the NAS
+  projects/
+    immich/
+```
 
-`projects/` and `infrastructure/` as at work. The split between
-controllers and configs is Flux's own example layout: a config that uses
-a CRD can only apply after the controller that brings it.
+| Folder | Holds |
+|--------|-------|
+| `flux/` | What Flux runs and the order: `infrastructure/longhorn` after `infrastructure/cilium`, every project after the infrastructure it needs (`dependsOn`) |
+| `infrastructure/<name>/` | A cluster component: its Helm release and its settings in one place |
+| `projects/<name>/` | An app, as at work |
+
+A component's settings sometimes use types its own chart brings (a Cilium
+IP pool needs Cilium installed first). Inside one folder Flux retries
+until they apply, so they stay together.
 
 ## References
 
