@@ -272,7 +272,6 @@ A pass over every page after the cluster build, checked against what runs.
       dependency retries every minute instead of every interval.
 - [ ] The `tag:talos` auth key expires after 90 days. Nodes already joined
       keep working; a rebuild needs a new key, signed again on `pve`.
-- [ ] Immich login through Pocket ID (OIDC).
 - [ ] Backups: CloudNativePG to Garage, Longhorn snapshots, the photo
       library off the NAS.
 

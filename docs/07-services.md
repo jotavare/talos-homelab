@@ -243,6 +243,13 @@ Both apps are OIDC clients of Pocket ID, all in OpenTofu: the clients in
 Proxmox realm in
 [modules/proxmox/realm.tf](../iac/modules/proxmox/realm.tf).
 
+Immich is a third client, `immich`, with callbacks for the web and the
+mobile app (`app.immich:///oauth-callback`); its secret goes to OpenBao
+`kv/k8s/immich-oauth` for the cluster
+([09. Talos, CloudNativePG and Immich](09-talos.md#8-cloudnativepg-and-immich)).
+The Immich admin has the same email as my Pocket ID user, so the first
+Pocket ID login links them; password login stays on as a fallback.
+
 | | OpenBao | Proxmox |
 |-|---------|---------|
 | Client ID | `openbao` | `proxmox` |

@@ -118,7 +118,7 @@ bao kv get -mount=kv config
 | `kv/talos` | The nodes' Tailscale key, pre-signed for Tailnet Lock |
 | `kv/talos/cluster` | Talos machine secrets, `talosconfig` and admin `kubeconfig`, written by OpenTofu |
 | `kv/talos/machine-configs` | The full machine config of each node, with Talos' field documentation, written by OpenTofu |
-| `kv/k8s/*` | Secrets for the cluster, read by External Secrets: `cert-manager` (Cloudflare DNS token), `tailscale-operator` (its OAuth client), `immich-database` (the Postgres user Immich logs in with). The cluster can read only these and `kv/config` |
+| `kv/k8s/*` | Secrets for the cluster, read by External Secrets: `cert-manager` (Cloudflare DNS token), `tailscale-operator` (its OAuth client), `immich-database` (the Postgres user Immich logs in with), `immich-oauth` (its Pocket ID client). The cluster can read only these and `kv/config` |
 | `kv/nas` | The Samba user and password, read by Ansible ([08. NAS](08-nas.md#shares)) |
 
 ## Commit guard

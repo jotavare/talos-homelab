@@ -359,6 +359,7 @@ extension. Its chart recommends exactly this setup, and
 | `database/secret.yaml` | An `ExternalSecret` with the database user and password from OpenBao `kv/k8s/immich-database`. CloudNativePG applies it to the `app` role through `managed.roles` and follows changes (`cnpg.io/reload`) |
 | `repository.yaml`, `release.yaml` | The Immich chart from its OCI registry, with Valkey on, the library claim, and the database credentials from that secret. CloudNativePG's own generated `immich-database-app` is not used |
 | `route.yaml` | The `HTTPRoute` for `immich.home.<domain>` on the Gateway |
+| `config.yaml` | Immich's settings as a file (`IMMICH_CONFIG_FILE`): the external address and login through Pocket ID. An `ExternalSecret` template renders it: Flux fills `${DOMAIN}`, External Secrets the OIDC client from `kv/k8s/immich-oauth`. With a config file the settings page is read-only, git is the source. A change needs `kubectl -n immich rollout restart deploy/immich-server` |
 
 | Data | Where | Why |
 |------|-------|-----|
