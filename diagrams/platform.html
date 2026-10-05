@@ -15,9 +15,9 @@
 </head>
 <body>
   <div class="frame">
-    <svg viewBox="0 0 1200 736" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="platform-title platform-desc">
+    <svg viewBox="0 0 1200 816" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="platform-title platform-desc">
       <title id="platform-title">Platform</title>
-      <desc id="platform-desc">The cluster platform in layers: the entry point from the tailnet, certificates from Let&#x27;s Encrypt, secrets from OpenBao, databases with CloudNativePG, metrics-server for kubectl top, storage on Longhorn and the NAS, and Cilium as the network, each layer with the outside system it depends on.</desc>
+      <desc id="platform-desc">The cluster platform in layers: the entry point from the tailnet, certificates from Let&#x27;s Encrypt, secrets from OpenBao, databases with CloudNativePG, metrics-server for kubectl top, the Intel GPU passed through from pve, storage on Longhorn and the NAS, and Cilium as the network, each layer with the outside system it depends on.</desc>
       <defs><marker id="platform-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker><marker id="platform-a-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#7ea6e6"/></marker><marker id="platform-a-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#6fd3c1"/></marker><marker id="platform-a-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#ef8354"/></marker></defs>
       <rect width="100%" height="100%" fill="#2d3142"/>
       <path d="M 896,136 L 952,136" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#platform-a-link)"/>
@@ -25,6 +25,7 @@
       <path d="M 896,296 L 952,296" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#platform-a-link)"/>
       <path d="M 896,536 L 952,536" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#platform-a-link)"/>
       <path d="M 896,616 L 952,616" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#platform-a-link)"/>
+      <path d="M 896,696 L 952,696" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#platform-a-link)"/>
       <rect x="24" y="24" width="1152" height="56" rx="6" fill="#2d3142"/>
       <rect x="24" y="24" width="1152" height="56" rx="6" fill="rgba(191,192,192,0.30)" stroke="#a3abbd" stroke-width="1.4"/>
       <text x="40" y="47.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Apps</text>
@@ -73,35 +74,45 @@
       <text x="216" y="461.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">metrics-server · kubectl top for nodes and pods</text>
       <rect x="24" y="504" width="160" height="64" rx="6" fill="#2d3142"/>
       <rect x="24" y="504" width="160" height="64" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
-      <text x="40" y="541.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Storage</text>
+      <text x="40" y="541.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">GPU</text>
       <rect x="200" y="504" width="696" height="64" rx="6" fill="#2d3142"/>
       <rect x="200" y="504" width="696" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
-      <text x="216" y="541.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Longhorn, default, 1 replica · csi-driver-nfs, class nas</text>
+      <text x="216" y="541.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Intel device plugin · i915 on talos-w-2 · shared by 2 pods</text>
       <rect x="952" y="504" width="224" height="64" rx="6" fill="#2d3142"/>
       <rect x="952" y="504" width="224" height="64" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
-      <text x="968" y="531.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Disks and NAS</text>
-      <text x="968" y="550.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">worker sdb · tank/k8s</text>
+      <text x="968" y="531.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">pve iGPU</text>
+      <text x="968" y="550.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">UHD 770, passthrough</text>
       <rect x="24" y="584" width="160" height="64" rx="6" fill="#2d3142"/>
       <rect x="24" y="584" width="160" height="64" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
-      <text x="40" y="621.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Network</text>
+      <text x="40" y="621.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Storage</text>
       <rect x="200" y="584" width="696" height="64" rx="6" fill="#2d3142"/>
       <rect x="200" y="584" width="696" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
-      <text x="216" y="621.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Cilium · no kube-proxy · L2 pool .50 to .99 · eth0 only</text>
+      <text x="216" y="621.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Longhorn, default, 1 replica · csi-driver-nfs, class nas</text>
       <rect x="952" y="584" width="224" height="64" rx="6" fill="#2d3142"/>
       <rect x="952" y="584" width="224" height="64" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
-      <text x="968" y="611.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">LAN</text>
-      <text x="968" y="630.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">192.168.1.0/24</text>
-      <line x1="24" y1="690" x2="1176" y2="690" stroke="rgba(245,245,245,0.14)" stroke-width="0.8"/>
-      <rect x="24" y="706" width="18" height="13" rx="2" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
-      <text x="50" y="716" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Where requests come in</text>
-      <rect x="220.8" y="706" width="18" height="13" rx="2" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
-      <text x="246.8" y="716" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Layer</text>
-      <rect x="308.8" y="706" width="18" height="13" rx="2" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
-      <text x="334.8" y="716" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">What runs in it</text>
-      <rect x="460.8" y="706" width="18" height="13" rx="2" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
-      <text x="486.8" y="716" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Outside the cluster</text>
-      <line x1="638.4000000000001" y1="712" x2="666.4000000000001" y2="712" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#platform-a-link)"/>
-      <text x="674.4000000000001" y="716" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Depends on</text>
+      <text x="968" y="611.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Disks and NAS</text>
+      <text x="968" y="630.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">worker sdb · tank/k8s</text>
+      <rect x="24" y="664" width="160" height="64" rx="6" fill="#2d3142"/>
+      <rect x="24" y="664" width="160" height="64" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="40" y="701.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Network</text>
+      <rect x="200" y="664" width="696" height="64" rx="6" fill="#2d3142"/>
+      <rect x="200" y="664" width="696" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="216" y="701.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Cilium · no kube-proxy · L2 pool .50 to .99 · eth0 only</text>
+      <rect x="952" y="664" width="224" height="64" rx="6" fill="#2d3142"/>
+      <rect x="952" y="664" width="224" height="64" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="968" y="691.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">LAN</text>
+      <text x="968" y="710.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">192.168.1.0/24</text>
+      <line x1="24" y1="770" x2="1176" y2="770" stroke="rgba(245,245,245,0.14)" stroke-width="0.8"/>
+      <rect x="24" y="786" width="18" height="13" rx="2" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
+      <text x="50" y="796" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Where requests come in</text>
+      <rect x="220.8" y="786" width="18" height="13" rx="2" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="246.8" y="796" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Layer</text>
+      <rect x="308.8" y="786" width="18" height="13" rx="2" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="334.8" y="796" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">What runs in it</text>
+      <rect x="460.8" y="786" width="18" height="13" rx="2" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="486.8" y="796" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Outside the cluster</text>
+      <line x1="638.4000000000001" y1="792" x2="666.4000000000001" y2="792" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#platform-a-link)"/>
+      <text x="674.4000000000001" y="796" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Depends on</text>
     </svg>
   </div>
 </body>

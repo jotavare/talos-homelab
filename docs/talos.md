@@ -24,7 +24,7 @@ schematic that lists the extensions.
 |--------|-------|-----|
 | Platform | `nocloud` | Proxmox passes the static IP through cloud-init, so each node has its address from the first boot, with no DHCP phase |
 | Boot | Disk image imported into Proxmox | No ISO boot and install step |
-| Extensions | `qemu-guest-agent`, `iscsi-tools`, `util-linux-tools`, `tailscale` | Clean shutdown and IP reporting in Proxmox, Longhorn, tailnet access |
+| Extensions | `qemu-guest-agent`, `iscsi-tools`, `util-linux-tools`, `tailscale`, `i915` | Clean shutdown and IP reporting in Proxmox, Longhorn, tailnet access, the Intel GPU driver and firmware |
 | Secure Boot | Off | Simpler for a proof of concept |
 
 ### VM settings
@@ -118,10 +118,27 @@ nodes' auth key live there.
 ## Image
 
 [iac/modules/talos/image.tf](../iac/modules/talos/image.tf): a
-`talos_image_factory_schematic` with the four extensions gives schematic
-`077514df…`; the same list always gives the same ID. Proxmox downloads
+`talos_image_factory_schematic` with the five extensions gives schematic
+`3db570be…`; the same list always gives the same ID. Adding `i915` changed
+it from `077514df…`. Proxmox downloads
 the `nocloud` qcow2 of that schematic for v1.14.2 into `local` as an
 `import` file, the same way as the Debian image of the services VM.
+
+A new schematic only changes the installer in the machine config. A
+running node keeps its image until it is upgraded to the new installer.
+`talosctl upgrade` drains the node through the Kubernetes API at the VIP,
+which the firewall only opens to the tailnet, so the drain is done with
+`kubectl` and the upgrade runs without its own:
+
+```bash
+kubectl drain talos-w-2 --ignore-daemonsets --delete-emptydir-data
+talosctl -n 192.168.1.22 upgrade --drain=false --wait \
+  --image factory.talos.dev/nocloud-installer/<schematic>:v1.14.2
+kubectl uncordon talos-w-2
+```
+
+Only `talos-w-2` runs the `i915` image so far, since only it has the GPU.
+The others pick it up with their next upgrade.
 
 ## VMs
 

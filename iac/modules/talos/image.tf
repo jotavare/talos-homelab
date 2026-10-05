@@ -3,6 +3,7 @@ resource "talos_image_factory_schematic" "this" {
     customization = {
       systemExtensions = {
         officialExtensions = [
+          "siderolabs/i915",
           "siderolabs/iscsi-tools",
           "siderolabs/qemu-guest-agent",
           "siderolabs/tailscale",

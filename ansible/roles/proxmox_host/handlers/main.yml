@@ -2,3 +2,7 @@
   ansible.builtin.systemd_service:
     name: smartmontools
     state: restarted
+
+- name: Update the initramfs
+  ansible.builtin.command: update-initramfs -u -k all
+  changed_when: true

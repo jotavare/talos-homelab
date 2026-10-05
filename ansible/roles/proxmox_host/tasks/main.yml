@@ -16,6 +16,20 @@
     proxmox_host_offload.stdout is search('(?m)^(tcp|generic)-segmentation-offload: on')
   changed_when: true
 
+- name: Load the VFIO modules at boot
+  ansible.builtin.copy:
+    src: "{{ proxmox_host_files }}/vfio/vfio.conf"
+    dest: /etc/modules-load.d/vfio.conf
+    mode: "0644"
+  notify: Update the initramfs
+
+- name: Give the iGPU to vfio-pci before i915 or xe can take it
+  ansible.builtin.copy:
+    src: "{{ proxmox_host_files }}/vfio/vfio-pci.conf"
+    dest: /etc/modprobe.d/vfio-pci.conf
+    mode: "0644"
+  notify: Update the initramfs
+
 - name: Configure smartd for the NVMe
   ansible.builtin.copy:
     src: "{{ proxmox_host_files }}/smartd/smartd.conf"

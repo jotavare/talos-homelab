@@ -37,7 +37,8 @@ data "talos_machine_configuration" "node" {
       }),
       ] : [
       file("${local.patches}/worker.yaml"),
-    ]
+    ],
+    each.value.gpu ? [file("${local.patches}/gpu.yaml")] : [],
   )
 }
 

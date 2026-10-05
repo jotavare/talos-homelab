@@ -152,6 +152,44 @@ kubectl top nodes
 kubectl top pods -n immich
 ```
 
+## GPU
+
+The i5-12500T's Intel UHD 770 is passed through to `talos-w-2` for
+Immich: video transcoding and machine learning, which ran on the CPU and
+kept both workers near 100%.
+
+| Layer | What | Where |
+|-------|------|-------|
+| Host | IOMMU is on by default; the iGPU is alone in IOMMU group 0. `vfio-pci` claims it at boot before `i915` or `xe` can | [proxmox/vfio/](../proxmox/vfio/), `proxmox_host` role |
+| Proxmox | A PCI resource mapping `igpu` (`0000:00:02.0`, `8086:4690`), attached to the VM as `hostpci0` with PCIe on | [iac/modules/talos/gpu.tf](../iac/modules/talos/gpu.tf), `gpu = true` on the node in `iac/main.tf` |
+| Talos | The `i915` extension, and the node label `intel-gpu=true` in a `KubeNodeConfig` | [talos/gpu.yaml](../talos/gpu.yaml), [Talos, Image](talos.md#image) |
+| Kubernetes | Intel's GPU device plugin, straight from its repository at a pinned tag, only on the labelled node, `-shared-dev-num=2` | `intel-gpu` and `intel-gpu-plugin` in [gitops/flux/infrastructure.yaml](../gitops/flux/infrastructure.yaml) |
+| Immich | `gpu.intel.com/i915: 1` on the server and machine learning | [Immich, Resources](immich.md#resources) |
+
+Full passthrough, not SR-IOV: the UHD 770 can split into 7 virtual GPUs,
+but the guest needs a driver that supports them, which the Talos kernel
+does not promise. One worker with the whole GPU is enough for one app.
+The host has no screen to lose; its console stays on the serial and web
+console.
+
+The VM restart that attaches the device let Proxmox move the iGPU from
+`i915` to `vfio-pci` without a host reboot. The files in `/etc/modprobe.d`
+make that the default from the next boot. The node label sits in
+`KubeNodeConfig`, not `machine.nodeLabels`: Talos 1.14 refuses the old
+field once a `KubeNodeConfig` document exists (`.machine.nodeLabels is
+already set in v1alpha1 config`).
+
+The plugin needs the host's `/dev/dri`, which Talos' default `baseline`
+pod security forbids, so it has its own namespace with
+`pod-security.kubernetes.io/enforce: privileged`. With
+`-shared-dev-num=2` the node offers `gpu.intel.com/i915: 2`, one for each
+Immich pod that uses it.
+
+```bash
+talosctl -n 192.168.1.22 ls /dev/dri
+kubectl get node talos-w-2 -o jsonpath='{.status.allocatable.gpu\.intel\.com/i915}'
+```
+
 ## References
 
 - [Cilium on Talos](https://www.talos.dev/v1.14/kubernetes-guides/network/deploying-cilium/)

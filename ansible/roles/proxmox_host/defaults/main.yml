@@ -10,6 +10,9 @@ proxmox_host_tofu_privs:
   - Datastore.AllocateSpace
   - Datastore.AllocateTemplate
   - Datastore.Audit
+  - Mapping.Audit
+  - Mapping.Modify
+  - Mapping.Use
   - SDN.Use
   - Sys.Audit
   - Sys.Modify

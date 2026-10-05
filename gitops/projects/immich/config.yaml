@@ -22,6 +22,9 @@ spec:
           storageTemplate:
             enabled: true
             template: "{{`{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}`}}"
+          ffmpeg:
+            accel: qsv
+            accelDecode: true
           passwordLogin:
             enabled: true
           oauth:

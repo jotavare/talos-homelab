@@ -59,7 +59,7 @@ module "talos" {
   nodes = {
     talos-cp-1 = { role = "controlplane", ip = "192.168.1.15", cores = 2, memory = 4096, disk = 32 }
     talos-w-1  = { role = "worker", ip = "192.168.1.21", cores = 4, memory = 8192, disk = 80, data = 50 }
-    talos-w-2  = { role = "worker", ip = "192.168.1.22", cores = 4, memory = 8192, disk = 80, data = 50 }
+    talos-w-2  = { role = "worker", ip = "192.168.1.22", cores = 4, memory = 8192, disk = 80, data = 50, gpu = true }
   }
 }
 

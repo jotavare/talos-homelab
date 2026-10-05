@@ -39,12 +39,15 @@ spec:
         main:
           containers:
             main:
+              image:
+                tag: v3.2.4-openvino
               resources:
                 requests:
                   cpu: 250m
                   memory: 1Gi
                 limits:
                   memory: 4Gi
+                  gpu.intel.com/i915: 1
     server:
       controllers:
         main:
@@ -69,3 +72,4 @@ spec:
                   memory: 512Mi
                 limits:
                   memory: 4Gi
+                  gpu.intel.com/i915: 1

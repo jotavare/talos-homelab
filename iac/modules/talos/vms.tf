@@ -57,6 +57,17 @@ resource "proxmox_virtual_environment_vm" "node" {
     }
   }
 
+  dynamic "hostpci" {
+    for_each = each.value.gpu ? [proxmox_hardware_mapping_pci.igpu.name] : []
+    content {
+      device  = "hostpci0"
+      mapping = hostpci.value
+      pcie    = true
+      rombar  = true
+      xvga    = false
+    }
+  }
+
   network_device {
     bridge   = "vmbr0"
     model    = "virtio"

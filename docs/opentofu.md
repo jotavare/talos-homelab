@@ -39,6 +39,7 @@ The role's privileges:
 | `VM.Backup` | Put VMs and containers in a backup job |
 | `VM.Config.*` (CD-ROM, CPU, Cloudinit, Disk, HWType, Memory, Network, Options) | Configure them |
 | `VM.GuestAgent.Audit` | Read the IPs reported by the guest agent |
+| `Mapping.Audit`, `Mapping.Modify`, `Mapping.Use` | Create the `igpu` PCI mapping and attach it to a VM. Passing a raw PCI address needs `root@pam`; a mapping works with the token ([Platform, GPU](platform.md#gpu)) |
 
 Not included: managing users, permissions or groups, the console,
 host power, snapshots and migration.

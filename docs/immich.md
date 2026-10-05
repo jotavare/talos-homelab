@@ -41,8 +41,8 @@ or face detection should use the free cores.
 
 | Pod | CPU request | Memory request | Memory limit |
 |-----|-------------|----------------|--------------|
-| server | 250m | 512Mi | 4Gi |
-| machine-learning | 250m | 1Gi | 4Gi |
+| server | 250m | 512Mi | 4Gi, and the GPU |
+| machine-learning | 250m | 1Gi | 4Gi, and the GPU |
 | valkey | 50m | 64Mi | 256Mi |
 | database | 100m | 256Mi | 1Gi |
 
@@ -54,6 +54,12 @@ kernel frees first. Check what a pod really uses with `kubectl top` or
 ```bash
 kubectl -n immich exec deploy/immich-server -- grep -E '^(anon|file) ' /sys/fs/cgroup/memory.stat
 ```
+
+Both share the Intel GPU on `talos-w-2` through the device plugin
+([Platform, GPU](platform.md#gpu)), so both are scheduled there. Machine
+learning runs the `-openvino` image: OpenVINO runs smart search, face
+detection and OCR on the GPU. The server transcodes video with Quick
+Sync (`ffmpeg.accel: qsv`) and decodes on the GPU too (`accelDecode`).
 
 ## Deploy
 

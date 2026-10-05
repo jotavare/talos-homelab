@@ -12,6 +12,7 @@ variable "nodes" {
     memory = number
     disk   = number
     data   = optional(number, 0)
+    gpu    = optional(bool, false)
   }))
 }
 
