@@ -82,7 +82,7 @@ detect damage but not repair it.
 | Share | For | Address | Login |
 |-------|-----|---------|-------|
 | SMB `files` | Laptop, phone | `\\192.168.1.11\files` | User `nas`, password in OpenBao `kv/nas` |
-| NFS `/tank/k8s` | Talos nodes `.12` and `.21` to `.23` | `192.168.1.11:/tank/k8s` | By IP, no login |
+| NFS `/tank/k8s` | Talos nodes `.15`, `.21` and `.22` | `192.168.1.11:/tank/k8s` | By IP, no login |
 
 On Windows: File Explorer, Map network drive, `\\192.168.1.11\files`,
 with the `nas` user. The password is generated straight into OpenBao and
