@@ -551,7 +551,7 @@ a separate file.
 | When | Every day at 03:00. With `repeat_missed`, a run missed because the host was off starts at the next boot |
 | Mode | `snapshot`: the guests keep running, OpenBao stays unsealed |
 | Where | `local` (`/var/lib/vz/dump`), `zstd` |
-| Retention | The last 7 |
+| Retention | The last 5: each new backup removes the oldest. About 1.5 GB each, 7.5 GB in all |
 
 The first run, still with two LXC containers, took 11 seconds and wrote
 under 600 MB. Failures go to the default
