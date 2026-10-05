@@ -28,3 +28,8 @@ securityContext:
       - SYS_RESOURCE
 operator:
   replicas: 1
+l2announcements:
+  enabled: true
+k8sClientRateLimit:
+  qps: 50
+  burst: 100

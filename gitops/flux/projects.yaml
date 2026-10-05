@@ -25,6 +25,7 @@ spec:
   dependsOn:
     - name: immich-database
     - name: nfs-config
+    - name: cilium-config
   interval: 10m
   path: ./gitops/projects/immich
   prune: true
