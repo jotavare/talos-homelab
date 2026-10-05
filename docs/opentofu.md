@@ -211,7 +211,7 @@ running on the services VM. The old states were removed from the git
 history.
 
 A local state has no copy off the laptop. It can be rebuilt with imports
-if lost, and a copy off the laptop is in the Backlog.
+if lost, and a copy off the laptop is [#20](https://github.com/jotavare/talos-homelab/issues/20).
 
 ## State encryption
 

@@ -570,7 +570,7 @@ pct restore 9130 /var/lib/vz/dump/vzdump-lxc-130-<date>.tar.zst --storage local-
 
 The backups are on the same disk as the containers: they cover a mistake
 or a broken container, not a dead drive. The Talos VMs are left for
-Proxmox Backup Server (Backlog).
+Proxmox Backup Server ([#28](https://github.com/jotavare/talos-homelab/issues/28)).
 
 ### Web UI certificate
 

@@ -194,79 +194,11 @@ written down and the homelab knowingly does something simpler.
 | Tailnet devices in the cluster | The Tailscale operator signs its own proxies, or Tailnet Lock is off | The operator cannot sign under Tailnet Lock yet, so each proxy it creates is signed once by hand with `tailscale lock sign` on `pve` ([details](docs/tailscale.md#tailnet-lock)) |
 | Backups | Proxmox Backup Server on a separate machine, plus a copy off site | A daily backup job for the services VM to `local` now, Proxmox Backup Server as a VM on the same host later. Both protect against mistakes, not against losing the host ([details](docs/proxmox.md#container-backups)) |
 
-## Backlog
+## Planned work
 
-Things skipped for now or not to forget. Removed once they land in a
-phase page.
-
-### Proxmox host
-
-- [ ] Back up `/etc/pve` off the host (firewall, users, 2FA, VM configs).
-- [ ] Interim NVMe wear alert: a daily cron job that reads "percentage
-      used" with `smartctl` and mails through the notification target.
-- [ ] NVMe wear alert in the monitoring stack, replacing the cron job.
-- [ ] QLC wear budget: etcd, metrics and log retention, database WAL and
-      Longhorn all write to the same drive. Keep retention short and
-      check "percentage used" monthly at first.
-- [ ] UPS with NUT for a clean shutdown on power loss.
-- [ ] Test the web UI over tailnet IPv6 from a phone.
-
-- [ ] Run the Ansible compliance checks on a schedule (a timer on the
-      laptop or CI with a Tailscale runner), so drift shows up without a
-      manual run.
-
-### Repository
-
-- [ ] Run the CI workflows on every push to `main` once they are trusted,
-      not only on pull requests and by hand.
-- [ ] OpenBao auth for Flux and CI (Kubernetes auth, AppRole or JWT), each
-      with its own narrow policy, instead of my own login.
-
-### NAS
-
-- [ ] A second disk for a mirror, or a copy of `tank/files` off the host.
-- [ ] Scrub `tank` monthly and alert on errors.
-- [ ] ZFS snapshots of `tank/k8s` (sanoid or a cron job in the `nas`
-      role), so photos deleted by mistake can come back.
-- [ ] A cable for `pve-desktop`, or a powerline adapter. Imports run at
-      about 9 MB/s over WiFi.
-
-### Cluster follow-ups
-
-- [ ] The `tag:talos` auth key expires after 90 days. Nodes already joined
-      keep working; a rebuild needs a new key, signed again on `pve`.
-- [ ] Backups: CloudNativePG to Garage every day, Longhorn snapshots.
-      Albums, faces and people live only in Postgres, on one Longhorn
-      replica. The photo library already has a copy on a separate disk of
-      mine; Immich also dumps its own database to the NAS every night.
-
-### Platform
-
-
-- [ ] Cloud-init for VM 130 (Docker, the guest agent, unattended upgrades,
-      the `docker` group), so a rebuilt VM needs no manual step.
-- [ ] An encrypted copy of the OpenTofu state off the laptop.
-- [ ] Break-glass copies in Bitwarden: the Proxmox API token and the state
-      passphrase ([Secrets](docs/secrets.md#when-openbao-is-down)).
-- [ ] Restore test: VM `130` from its backup under a new ID with its
-      network off, OpenBao unsealed, then deleted.
-- [ ] Rotate what is due in the rotation table
-      ([Secrets, Rotation](docs/secrets.md#rotation)).
-- [ ] Lockout and upgrade runbook: etcd snapshot before every upgrade,
-      copied off the host.
-- [ ] Optional: daily OpenBao Raft snapshot to Garage, on top of the
-      container backup. Portable into any OpenBao and restores the data
-      without rolling back the container.
-- [ ] Optional: Garage as an OCI image container (Proxmox 9.1+), fully in
-      OpenTofu with no Ansible role, once OCI containers leave tech preview
-      and the config file can be supplied without a bind mount.
-- [ ] Copy the Garage buckets off the host, encrypted, most likely to
-      Cloudflare R2 (10 GB free), or to a second machine once there is one.
-- [ ] PBS VM sizing: RAM, vCPU and a datastore disk.
-- [ ] Monitoring next, before more apps: metrics and logs, then one app at
-      a time while watching RAM.
-- [ ] Brute-force protection (CrowdSec) for anything exposed to the
-      internet through an ingress.
+Planned work, follow-ups and gaps are tracked as
+[issues](https://github.com/jotavare/talos-homelab/issues), labelled by
+area and type.
 
 ## Open questions
 

@@ -44,7 +44,7 @@ Written before building and corrected where the build changed it.
 | Image | Debian 13 cloud image, cloud-init with my SSH key | Same OS as the containers, no installer to click through |
 | Created by | OpenTofu | Like every other machine |
 | Containers managed by | OpenTofu, over SSH as `debian` (in the `docker` group), through `pve` as a jump host | The VM itself is not on the tailnet, only the stack is |
-| Docker | Debian's `docker.io` package | Security updates through `unattended-upgrades`, like the rest. Installed once; cloud-init for a rebuilt VM is in the Backlog |
+| Docker | Debian's `docker.io` package | Security updates through `unattended-upgrades`, like the rest. Installed once; cloud-init for a rebuilt VM is [#19](https://github.com/jotavare/talos-homelab/issues/19) |
 | VM firewall | Inbound `DROP`. SSH from `pve` (`.10`) only. Garage's S3 port later, from its clients | Nothing else needs to reach the VM on the LAN |
 | Backups | Added to the daily backup job | Same as the containers |
 
@@ -331,7 +331,7 @@ against a deleted bucket, a bad upgrade or a rebuilt cluster, not
 against losing the host or the drive (see the POC trade-offs in the
 [readme](../README.md#poc-trade-offs)). No versioning or object lock
 either: a client whose key leaks can delete its own bucket. A copy off the
-host, most likely to Cloudflare R2, is in the Backlog.
+host, most likely to Cloudflare R2, is [#27](https://github.com/jotavare/talos-homelab/issues/27).
 
 #### The OpenTofu state
 
