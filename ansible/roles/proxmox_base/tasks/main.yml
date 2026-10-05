@@ -76,3 +76,12 @@
     (proxmox_base_ts_prefs.stdout | from_json).CorpDNS or
     not (proxmox_base_ts_prefs.stdout | from_json).AutoUpdate.Apply
   changed_when: true
+
+- name: Set the root password from OpenBao
+  vars:
+    proxmox_base_host_secrets: "{{ lookup('community.hashi_vault.vault_kv2_get', 'hosts/' ~ inventory_hostname, engine_mount_point='kv').secret }}"
+  ansible.builtin.user:
+    name: root
+    password: "{{ proxmox_base_host_secrets.root_password | password_hash('sha512', proxmox_base_host_secrets.root_salt) }}"
+    update_password: always
+  no_log: true
