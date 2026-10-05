@@ -84,9 +84,9 @@ LAN `192.168.1.0/24`:
 |-------|------|-----|
 | `192.168.1.1` | Static | ISP router |
 | `192.168.1.2` | Static | Access point |
-| `192.168.1.10` | Static | Proxmox `pve` |
-| `192.168.1.11` | Static | Proxmox `pve-desktop`, the NAS (WiFi) |
-| `192.168.1.12` to `.19` | Static | Talos control plane |
+| `192.168.1.10` to `.14` | Static | Proxmox hosts: `pve` `.10`, `pve-desktop` `.11` (the NAS, WiFi) |
+| `192.168.1.15` to `.17` | Static | Talos control planes, three at most |
+| `192.168.1.18`, `.19` | Static | Spare |
 | `192.168.1.20` | Static | Kubernetes API VIP |
 | `192.168.1.21` to `.29` | Static | Talos workers |
 | `192.168.1.30` to `.49` | Static | Services outside the cluster (services VM `.30`) and other lab machines |

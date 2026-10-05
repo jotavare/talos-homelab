@@ -1,6 +1,6 @@
 # Talos
 
-The Kubernetes cluster: one control plane and three workers running
+The Kubernetes cluster: one control plane and two workers running
 [Talos Linux](https://www.talos.dev/) as VMs on Proxmox, built with
 OpenTofu. Sizes and IPs are in
 [01. Proxmox, Planned VMs](01-proxmox.md#planned-vms).
@@ -44,8 +44,10 @@ own:
 | Rule | Why |
 |------|-----|
 | `policy_in: DROP` | Nothing reaches a node unless allowed below |
-| Everything from the node range `.11` to `.29` | etcd, kubelet, Cilium and trustd between nodes |
-| `6443` and `50000` from the tailnet | Kubernetes and Talos API for my devices only |
+| Everything from the node range `.15` to `.29` | etcd, kubelet, Cilium and trustd between nodes |
+| `6443` and `50000` from the LAN, for now | The first config is applied over the LAN, before Tailscale runs on the nodes. Narrowed to the tailnet once it does |
+| UDP `41641` | Tailscale direct connections; tailnet traffic reaches the node inside this |
+| ICMP from the LAN | Ping |
 | `ipfilter` off | Cilium answers ARP for the LoadBalancer IPs (`.50` to `.99`) through the node's NIC; with `ipfilter` on, Proxmox would drop that traffic |
 
 Which app ports on the LoadBalancer pool are open, and to whom, is decided
@@ -57,14 +59,14 @@ together with tailnet-only access for admin UIs (Backlog).
 |------|-------|
 | VIP | `192.168.1.20`, the Talos built-in shared IP, used by the workers. With one control plane it is only an extra address, ready for more |
 | From my devices | The control plane's tailnet name, `talos-cp-1.<tailnet>.ts.net:6443`. The VIP is LAN only, so away from home the tailnet is the only way |
-| `certSANs` | `192.168.1.20`, `192.168.1.12`, and the control plane's tailnet name and IP |
+| `certSANs` | `192.168.1.20`, `192.168.1.15`, and the control plane's tailnet name and IP |
 | `talosconfig` | Endpoint: the control plane's tailnet name. Nodes: all four |
 
 ### Network and cluster
 
 | Item | Value |
 |------|-------|
-| Hostnames | `talos-cp-1`, `talos-w-1` to `talos-w-3` |
+| Hostnames | `talos-cp-1`, `talos-w-1`, `talos-w-2`. The VM ID is 100 plus the last octet of the IP: `115`, `121`, `122` (the services VM `.30` is `130`) |
 | DNS | `1.1.1.1`. Tailscale does not manage DNS on the nodes, same as on the host |
 | NTP | `time.cloudflare.com`, the Talos default |
 | IPv6 | Router advertisements and autoconf off with machine sysctls, same as the host |
@@ -98,6 +100,54 @@ and talosconfig. All of it stays in the encrypted OpenTofu state
 3. Machine configs and bootstrap.
 4. Cilium.
 5. Flux.
+
+## Build
+
+### 1. Image
+
+[iac/modules/talos/image.tf](../iac/modules/talos/image.tf): a
+`talos_image_factory_schematic` with the four extensions gives schematic
+`077514df…`; the same list always gives the same ID. Proxmox downloads
+the `nocloud` qcow2 of that schematic for v1.14.2 into `local` as an
+`import` file, the same way as the Debian image of the services VM.
+
+### 2. VMs
+
+[iac/modules/talos/vms.tf](../iac/modules/talos/vms.tf): one
+`for_each` over the nodes in [iac/main.tf](../iac/main.tf), each VM
+with its firewall. The disk is imported from the Talos image and grown to
+its size; cloud-init gives the static IP and DNS.
+
+The guest agent starts disabled: Talos only runs extension services once
+it has a machine config, and the Proxmox provider would wait 15 minutes
+for an agent that is not there yet. It is turned on after the install.
+
+After boot the nodes wait in maintenance mode, with the extensions
+already loaded:
+
+```bash
+talosctl -n 192.168.1.15 get extensions --insecure
+# iscsi-tools, qemu-guest-agent, tailscale, util-linux-tools, schematic 077514df…
+```
+
+`--insecure` is only possible in maintenance mode: there are no
+certificates yet. Once a node has its config, the API needs the client
+certificate from `talosconfig`.
+
+## GitOps layout
+
+The Kubernetes manifests go in `gitops/`, read by Flux:
+
+| Path | What |
+|------|------|
+| `gitops/clusters/homelab/` | Flux's entry point: its own components and one `Kustomization` per layer below, with the order between them |
+| `gitops/infrastructure/controllers/` | Cluster add-ons that bring CRDs or controllers: Cilium, cert-manager, Longhorn, the NFS CSI driver |
+| `gitops/infrastructure/configs/` | Their settings, applied after the controllers: storage classes, issuers, LoadBalancer pools |
+| `gitops/projects/<app>/` | One folder per app, Immich first |
+
+`projects/` and `infrastructure/` as at work. The split between
+controllers and configs is Flux's own example layout: a config that uses
+a CRD can only apply after the controller that brings it.
 
 ## References
 
