@@ -115,10 +115,10 @@
       "groupName": "cilium"
     },
     {
-      "matchManagers": [
-        "terraform"
-      ],
-      "groupName": "opentofu providers"
+      "groupName": "opentofu providers",
+      "matchDatasources": [
+        "terraform-provider"
+      ]
     },
     {
       "matchManagers": [
@@ -132,6 +132,15 @@
         "siderolabs/talos"
       ],
       "groupName": "talos"
+    },
+    {
+      "matchManagers": [
+        "terraform"
+      ],
+      "matchDatasources": [
+        "docker"
+      ],
+      "groupName": "service images"
     }
   ]
 }
