@@ -548,7 +548,7 @@ a separate file.
 |---------|-------|
 | Job | `daily-containers`, in `/etc/pve/jobs.cfg` |
 | Guests | `130`, the services VM |
-| When | Every day at 03:00 |
+| When | Every day at 03:00. With `repeat_missed`, a run missed because the host was off starts at the next boot |
 | Mode | `snapshot`: the guests keep running, OpenBao stays unsealed |
 | Where | `local` (`/var/lib/vz/dump`), `zstd` |
 | Retention | The last 7 |
