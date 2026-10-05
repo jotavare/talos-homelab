@@ -3,6 +3,9 @@ terraform {
     proxmox = {
       source = "bpg/proxmox"
     }
+    vault = {
+      source = "hashicorp/vault"
+    }
     talos = {
       source = "siderolabs/talos"
     }
