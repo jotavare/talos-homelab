@@ -118,7 +118,7 @@ bao kv get -mount=kv config
 | `kv/talos` | The nodes' Tailscale key, pre-signed for Tailnet Lock |
 | `kv/talos/cluster` | Talos machine secrets, `talosconfig` and admin `kubeconfig`, written by OpenTofu |
 | `kv/talos/machine-configs` | The full machine config of each node, with Talos' field documentation, written by OpenTofu |
-| `kv/k8s/*` | Secrets for the cluster, read by External Secrets: `cert-manager` (Cloudflare DNS token), `tailscale-operator` (its OAuth client). The cluster can read only these and `kv/config` |
+| `kv/k8s/*` | Secrets for the cluster, read by External Secrets: `cert-manager` (Cloudflare DNS token), `tailscale-operator` (its OAuth client), `immich-database` (the Postgres user Immich logs in with). The cluster can read only these and `kv/config` |
 | `kv/nas` | The Samba user and password, read by Ansible ([08. NAS](08-nas.md#shares)) |
 
 ## Commit guard
@@ -255,6 +255,7 @@ shared outside Bitwarden and is replaced first.
 | Gmail app password (SMTP) | Bitwarden, the host | Year | 2027-09 | New app password, update the notification target |
 | Garage access keys | OpenBao | Year | | `garage key create`, update the client, delete the old key |
 | Samba password, user `nas` | OpenBao `kv/nas`, the host | Year | 2027-10 | `bao kv patch`, then `smbpasswd nas` on `pve-desktop` with the new value |
+| Immich database password | OpenBao `kv/k8s/immich-database` | Year | 2027-10 | `bao kv patch`; External Secrets syncs it within an hour, CloudNativePG changes the role, then restart `immich-server` |
 | Pocket ID static API key | OpenBao `kv/services/pocket-id` | Year | 2027-10 | `bao kv patch` a new random value, `tofu apply` replaces Pocket ID with it |
 | Pocket ID client secrets (OpenBao, Proxmox) | OpenTofu state, OpenBao, Proxmox | Year | 2027-10 | Set `client_secret` on the client, raise both `_wo_version`s, apply |
 

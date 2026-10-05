@@ -268,8 +268,6 @@ A pass over every page after the cluster build, checked against what runs.
 
 ### Cluster follow-ups
 
-- [ ] Immich database password in OpenBao too: give CloudNativePG an
-      `ExternalSecret` for its app user instead of the generated one.
 - [ ] `retryInterval: 1m` on the Flux steps, so a step waiting for a
       dependency retries every minute instead of every interval.
 - [ ] The `tag:talos` auth key expires after 90 days. Nodes already joined
