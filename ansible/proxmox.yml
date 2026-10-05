@@ -1,4 +1,9 @@
-- name: Configure the Proxmox host
+- name: Configure the Proxmox hosts
   hosts: proxmox
+  roles:
+    - proxmox_base
+
+- name: Configure the main Proxmox host
+  hosts: pve
   roles:
     - proxmox_host

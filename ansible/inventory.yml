@@ -5,3 +5,9 @@ all:
         pve:
           ansible_host: "{{ homelab_config.proxmox_host }}"
           ansible_user: root
+        pve-desktop:
+          ansible_host: 192.168.1.11
+          ansible_user: root
+    nas:
+      hosts:
+        pve-desktop:

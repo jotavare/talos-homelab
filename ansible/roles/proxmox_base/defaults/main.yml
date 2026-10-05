@@ -1,0 +1,1 @@
+proxmox_base_files: "{{ playbook_dir }}/../proxmox"
