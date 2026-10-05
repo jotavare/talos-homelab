@@ -1,0 +1,18 @@
+instance:
+  distribution:
+    version: 2.9.x
+    registry: ghcr.io/fluxcd
+  components:
+    - source-controller
+    - kustomize-controller
+    - helm-controller
+    - notification-controller
+  cluster:
+    type: kubernetes
+    size: small
+    networkPolicy: true
+  sync:
+    kind: GitRepository
+    url: https://github.com/jotavare/talos-homelab.git
+    ref: refs/heads/main
+    path: gitops/flux
