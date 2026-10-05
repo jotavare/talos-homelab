@@ -284,7 +284,7 @@ the apply.
 
 | Item | Value |
 |------|-------|
-| Credential | An OAuth client with only the **Policy File** write scope, in OpenBao `kv/opentofu` |
+| Credential | An OAuth client with all scopes, in OpenBao `kv/opentofu`. It manages the policy, the auth keys for the nodes and device tags. Whoever holds it controls the whole tailnet, so it lives only in OpenBao |
 | Created in | Admin console → Settings → **Trust credentials** |
 | First run | `tofu apply` imported the live policy with `0 changed` |
 | Console | Settings → Policy file management: **Lock editor** on, external reference to the file on GitHub |

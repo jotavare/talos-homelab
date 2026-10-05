@@ -244,7 +244,7 @@ shared outside Bitwarden and is replaced first.
 | Proxmox API token `tofu@pve!opentofu` | OpenBao `kv/opentofu`, Bitwarden | Year | 2027-09 | New token in the UI, store it, delete the old one |
 | OpenTofu state passphrase | Bitwarden, OpenBao `kv/services/opentofu` | Year | 2027-09 | Add the new passphrase with the old one as `fallback`, `tofu apply -refresh-only`, then drop the old one |
 | age key | Laptop, Bitwarden, printed copy | Only if leaked | | Only the example uses it now |
-| Tailscale OAuth client `opentofu` (policy file only) | OpenBao `kv/opentofu` | Year | 2027-09 | Create a new client in Trust credentials, `bao kv patch`, revoke the old one |
+| Tailscale OAuth client `opentofu` (all scopes) | OpenBao `kv/opentofu` | Year | 2027-10 | Create a new client in Trust credentials, `bao kv patch`, revoke the old one |
 | Tailscale auth keys | Used once | Each use | | Generate per device, single use, 7 days; nothing to rotate afterwards |
 | Proxmox `root@pam` password, both hosts | OpenBao `kv/hosts/<host>`, Bitwarden | Year | 2027-09 | `bao kv patch` a new `root_password`, run `proxmox.yml`, copy to Bitwarden |
 | Proxmox 2FA recovery keys | Bitwarden | Year | 2027-09 | Web UI, new recovery keys |
