@@ -27,3 +27,17 @@ resource "pocketid_client" "proxmox" {
     "https://proxmox.home.${var.domain}:8006",
   ]
 }
+
+resource "pocketid_client" "immich" {
+  name         = "Immich"
+  client_id    = "immich"
+  launch_url   = "https://immich.home.${var.domain}"
+  is_public    = false
+  pkce_enabled = false
+
+  callback_urls = [
+    "https://immich.home.${var.domain}/auth/login",
+    "https://immich.home.${var.domain}/user-settings",
+    "app.immich:///oauth-callback",
+  ]
+}

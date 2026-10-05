@@ -83,6 +83,11 @@ module "k8s" {
   source           = "./modules/k8s"
   cloudflare_token = local.secrets["caddy"]["cloudflare_token"]
 
+  immich_oauth = {
+    client_id     = module.pocketid.immich_client_id
+    client_secret = module.pocketid.immich_client_secret
+  }
+
   settings = {
     DOMAIN  = var.domain
     TAILNET = local.config["tailnet"]

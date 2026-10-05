@@ -19,3 +19,12 @@ output "proxmox_client_secret" {
   value     = pocketid_client.proxmox.client_secret
   sensitive = true
 }
+
+output "immich_client_id" {
+  value = pocketid_client.immich.client_id
+}
+
+output "immich_client_secret" {
+  value     = pocketid_client.immich.client_secret
+  sensitive = true
+}

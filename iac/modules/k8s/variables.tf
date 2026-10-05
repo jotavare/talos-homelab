@@ -8,3 +8,9 @@ variable "cloudflare_token" {
   type        = string
   sensitive   = true
 }
+
+variable "immich_oauth" {
+  description = "Pocket ID client for Immich."
+  type        = object({ client_id = string, client_secret = string })
+  sensitive   = true
+}

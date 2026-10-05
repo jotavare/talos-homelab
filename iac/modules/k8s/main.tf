@@ -28,3 +28,9 @@ resource "vault_kv_secret_v2" "cert_manager" {
     cloudflare_token = var.cloudflare_token
   })
 }
+
+resource "vault_kv_secret_v2" "immich_oauth" {
+  mount     = "kv"
+  name      = "k8s/immich-oauth"
+  data_json = jsonencode(var.immich_oauth)
+}

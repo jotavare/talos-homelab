@@ -1,0 +1,38 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: immich-config
+  namespace: immich
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: openbao
+  target:
+    name: immich-config
+    template:
+      engineVersion: v2
+      data:
+        immich-config.yaml: |
+          server:
+            externalDomain: https://immich.home.${DOMAIN}
+          passwordLogin:
+            enabled: true
+          oauth:
+            enabled: true
+            issuerUrl: https://auth.home.${DOMAIN}
+            clientId: "{{ .client_id }}"
+            clientSecret: "{{ .client_secret }}"
+            scope: openid email profile
+            buttonText: Login with Pocket ID
+            autoRegister: false
+            autoLaunch: false
+  data:
+    - secretKey: client_id
+      remoteRef:
+        key: k8s/immich-oauth
+        property: client_id
+    - secretKey: client_secret
+      remoteRef:
+        key: k8s/immich-oauth
+        property: client_secret

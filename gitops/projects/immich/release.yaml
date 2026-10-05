@@ -17,6 +17,8 @@ spec:
             image:
               tag: v3.2.4
     immich:
+      configurationKind: Secret
+      existingConfiguration: immich-config
       persistence:
         library:
           existingClaim: immich-library
