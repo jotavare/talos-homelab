@@ -9,6 +9,14 @@ all:
           ansible_host: "{{ homelab_config.nas_host }}"
           ansible_user: root
           proxmox_base_host_fw: "{{ playbook_dir }}/../nas/host.fw"
+          proxmox_access_acme_domains:
+            - "pve-desktop.home.{{ homelab_config.domain }}"
+            - "proxmox-desktop.home.{{ homelab_config.domain }}"
+          proxmox_access_tofu_roles:
+            - name: TofuRealms
+              path: /access/realm
+              privs:
+                - Realm.Allocate
     nas:
       hosts:
         pve-desktop:

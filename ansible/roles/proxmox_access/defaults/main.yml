@@ -1,0 +1,48 @@
+proxmox_access_tofu_user: tofu@pve
+proxmox_access_tofu_token: opentofu
+proxmox_access_tofu_roles:
+  - name: TofuProvisioner
+    path: /
+    privs:
+      - Datastore.AllocateSpace
+      - Datastore.AllocateTemplate
+      - Datastore.Audit
+      - Mapping.Audit
+      - Mapping.Modify
+      - Mapping.Use
+      - SDN.Use
+      - Sys.Audit
+      - Sys.Modify
+      - VM.Allocate
+      - VM.Audit
+      - VM.Backup
+      - VM.Clone
+      - VM.Config.CDROM
+      - VM.Config.CPU
+      - VM.Config.Cloudinit
+      - VM.Config.Disk
+      - VM.Config.HWType
+      - VM.Config.Memory
+      - VM.Config.Network
+      - VM.Config.Options
+      - VM.GuestAgent.Audit
+      - VM.PowerMgmt
+  - name: TofuBackupStorage
+    path: /storage/local
+    privs:
+      - Datastore.Allocate
+      - Datastore.AllocateSpace
+      - Datastore.AllocateTemplate
+      - Datastore.Audit
+  - name: TofuRealms
+    path: /access/realm
+    privs:
+      - Realm.Allocate
+
+proxmox_access_sso_realm: pocket-id
+proxmox_access_sso_admin: "jotavare@{{ proxmox_access_sso_realm }}"
+
+proxmox_access_acme_account: default
+proxmox_access_acme_email: "{{ homelab_config.acme_email }}"
+proxmox_access_acme_directory: https://acme-v02.api.letsencrypt.org/directory
+proxmox_access_acme_domains: []

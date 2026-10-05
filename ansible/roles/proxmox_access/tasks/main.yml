@@ -1,0 +1,159 @@
+- name: Read Proxmox roles, users and permissions
+  ansible.builtin.command: "pveum {{ item }} list --output-format json"
+  loop: [role, user, acl]
+  register: proxmox_access_pveum
+  changed_when: false
+  check_mode: false
+
+- name: Index Proxmox roles, users and permissions
+  ansible.builtin.set_fact:
+    proxmox_access_roles: "{{ proxmox_access_pveum.results[0].stdout | from_json | items2dict(key_name='roleid', value_name='privs') }}"
+    proxmox_access_users: "{{ proxmox_access_pveum.results[1].stdout | from_json | map(attribute='userid') | list }}"
+    proxmox_access_acl: "{{ proxmox_access_pveum.results[2].stdout | from_json }}"
+
+- name: Create the OpenTofu roles
+  ansible.builtin.command: >-
+    pveum role add {{ item.name }} --privs {{ item.privs | join(',') }}
+  loop: "{{ proxmox_access_tofu_roles }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.name not in proxmox_access_roles
+  changed_when: true
+
+- name: Keep the OpenTofu role privileges exact
+  ansible.builtin.command: >-
+    pveum role modify {{ item.name }} --privs {{ item.privs | join(',') }}
+  loop: "{{ proxmox_access_tofu_roles }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.name in proxmox_access_roles
+    - (proxmox_access_roles[item.name] | default('')).split(',') | sort != item.privs | sort
+  changed_when: true
+
+- name: Create the OpenTofu user (no password, token only)
+  ansible.builtin.command: >-
+    pveum user add {{ proxmox_access_tofu_user }}
+    --comment "OpenTofu, talos-homelab"
+  when: proxmox_access_tofu_user not in proxmox_access_users
+  changed_when: true
+
+- name: Give the OpenTofu user each role on its path only
+  ansible.builtin.command: >-
+    pveum acl modify {{ item.path }} --users {{ proxmox_access_tofu_user }}
+    --roles {{ item.name }}
+  loop: "{{ proxmox_access_tofu_roles }}"
+  loop_control:
+    label: "{{ item.name }} on {{ item.path }}"
+  when: >-
+    proxmox_access_acl | selectattr('ugid', 'equalto', proxmox_access_tofu_user)
+    | selectattr('path', 'equalto', item.path)
+    | selectattr('roleid', 'equalto', item.name) | list | length == 0
+  changed_when: true
+
+- name: Read the realms
+  ansible.builtin.command: pveum realm list --output-format json
+  register: proxmox_access_realms
+  changed_when: false
+  check_mode: false
+
+- name: Create the SSO admin once OpenTofu made the realm
+  ansible.builtin.command: >-
+    pveum user add {{ proxmox_access_sso_admin }}
+    --comment "Admin through Pocket ID"
+  when:
+    - proxmox_access_sso_realm in (proxmox_access_realms.stdout | from_json | map(attribute='realm') | list)
+    - proxmox_access_sso_admin not in proxmox_access_users
+  changed_when: true
+
+- name: Give the SSO admin Administrator on /
+  ansible.builtin.command: >-
+    pveum acl modify / --users {{ proxmox_access_sso_admin }} --roles Administrator
+  when:
+    - proxmox_access_sso_realm in (proxmox_access_realms.stdout | from_json | map(attribute='realm') | list)
+    - >-
+      proxmox_access_acl | selectattr('ugid', 'equalto', proxmox_access_sso_admin)
+      | selectattr('path', 'equalto', '/')
+      | selectattr('roleid', 'equalto', 'Administrator') | list | length == 0
+  changed_when: true
+
+- name: Read the ACME accounts
+  ansible.builtin.command: pvesh get /cluster/acme/account --output-format json
+  register: proxmox_access_acme_accounts
+  changed_when: false
+  check_mode: false
+
+- name: Read the Let's Encrypt terms of service
+  ansible.builtin.command: pvesh get /cluster/acme/tos --output-format json
+  register: proxmox_access_acme_tos
+  changed_when: false
+  check_mode: false
+  when: >-
+    proxmox_access_acme_accounts.stdout | from_json
+    | selectattr('name', 'equalto', proxmox_access_acme_account) | list | length == 0
+
+- name: Register the ACME account (root only, so not in OpenTofu)
+  ansible.builtin.command: >-
+    pvesh create /cluster/acme/account --name {{ proxmox_access_acme_account }}
+    --contact {{ proxmox_access_acme_email }}
+    --directory {{ proxmox_access_acme_directory }}
+    --tos_url {{ proxmox_access_acme_tos.stdout | from_json }}
+  when: proxmox_access_acme_tos is not skipped
+  changed_when: true
+
+- name: Read the ACME plugins
+  ansible.builtin.command: pvesh get /cluster/acme/plugins --output-format json
+  register: proxmox_access_acme_plugins
+  changed_when: false
+  check_mode: false
+  when: proxmox_access_acme_domains | length > 0
+
+- name: Add the Cloudflare DNS plugin for the certificate
+  ansible.builtin.command: >-
+    pvesh create /cluster/acme/plugins --id cloudflare --type dns --api cf
+    --validation-delay 30
+    --data {{ proxmox_access_acme_data | b64encode }}
+  vars:
+    proxmox_access_acme_secrets: "{{ lookup('community.hashi_vault.vault_kv2_get', 'opentofu', engine_mount_point='kv').secret }}"
+    proxmox_access_acme_data: "CF_Token={{ proxmox_access_acme_secrets.cloudflare_pve_acme_token }}\nCF_Zone_ID={{ homelab_config.cloudflare_zone_id }}\n"
+  no_log: true
+  when:
+    - proxmox_access_acme_domains | length > 0
+    - proxmox_access_acme_plugins.stdout | from_json | selectattr('plugin', 'equalto', 'cloudflare') | list | length == 0
+  changed_when: true
+
+- name: Read the node certificate settings and certificates
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - pvenode config get
+    - pvenode cert info --output-format json
+  register: proxmox_access_cert_state
+  changed_when: false
+  check_mode: false
+  when: proxmox_access_acme_domains | length > 0
+
+- name: Point the node certificate at the domains and the plugin
+  ansible.builtin.command: >-
+    pvenode config set --acme account={{ proxmox_access_acme_account }}
+    --acmedomain{{ index }} domain={{ item }},plugin=cloudflare
+  loop: "{{ proxmox_access_acme_domains }}"
+  loop_control:
+    index_var: index
+  when: >-
+    proxmox_access_cert_state.results[0].stdout
+    is not search('acmedomain' ~ index ~ ': domain=' ~ item ~ ',plugin=cloudflare')
+  changed_when: true
+
+- name: Order the certificate from Let's Encrypt
+  ansible.builtin.command: pvenode acme cert order --force
+  when:
+    - proxmox_access_acme_domains | length > 0
+    - >-
+      proxmox_access_cert_state.results[1].stdout | from_json
+      | selectattr('filename', 'equalto', 'pveproxy-ssl.pem') | map(attribute='san') | first | default([])
+      | intersect(proxmox_access_acme_domains) | length != proxmox_access_acme_domains | length
+  changed_when: true
+
+- name: Verify access
+  ansible.builtin.import_tasks: verify.yml
+  tags: [verify]

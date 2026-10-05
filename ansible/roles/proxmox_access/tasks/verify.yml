@@ -1,0 +1,75 @@
+- name: Read the OpenTofu roles, permissions, token and realms
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - pveum role list --output-format json
+    - pveum acl list --output-format json
+    - pveum user token list {{ proxmox_access_tofu_user }} --output-format json
+    - pveum realm list --output-format json
+  register: proxmox_access_state
+  changed_when: false
+  check_mode: false
+
+- name: Check the OpenTofu user has only its roles, and its token
+  vars:
+    proxmox_access_v_roles: "{{ proxmox_access_state.results[0].stdout | from_json | items2dict(key_name='roleid', value_name='privs') }}"
+    proxmox_access_v_acl: "{{ proxmox_access_state.results[1].stdout | from_json | selectattr('ugid', 'equalto', proxmox_access_tofu_user) | list }}"
+    proxmox_access_v_tokens: "{{ proxmox_access_state.results[2].stdout | from_json }}"
+  ansible.builtin.assert:
+    that:
+      - proxmox_access_v_acl | length == proxmox_access_tofu_roles | length
+      - proxmox_access_v_tokens | selectattr('tokenid', 'equalto', proxmox_access_tofu_token) | list | length == 1
+      - proxmox_access_v_roles[item.name].split(',') | sort == item.privs | sort
+      - >-
+        proxmox_access_v_acl | selectattr('path', 'equalto', item.path)
+        | selectattr('roleid', 'equalto', item.name) | list | length == 1
+    quiet: true
+    fail_msg: OpenTofu user, role or token drifted, see docs/opentofu.md
+  loop: "{{ proxmox_access_tofu_roles }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Check the SSO realm and its admin
+  vars:
+    proxmox_access_v_acl: "{{ proxmox_access_state.results[1].stdout | from_json | selectattr('ugid', 'equalto', proxmox_access_sso_admin) | list }}"
+  ansible.builtin.assert:
+    that:
+      - proxmox_access_sso_realm in (proxmox_access_state.results[3].stdout | from_json | map(attribute='realm') | list)
+      - >-
+        proxmox_access_v_acl | selectattr('path', 'equalto', '/')
+        | selectattr('roleid', 'equalto', 'Administrator') | list | length == 1
+    quiet: true
+    fail_msg: Pocket ID realm or its admin missing, see docs/sso.md
+
+- name: Read the ACME account
+  ansible.builtin.command: pvesh get /cluster/acme/account/{{ proxmox_access_acme_account }} --output-format json
+  register: proxmox_access_acme_state
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Check the ACME account
+  ansible.builtin.assert:
+    that:
+      - proxmox_access_acme_state.rc == 0
+      - (proxmox_access_acme_state.stdout | from_json).directory == proxmox_access_acme_directory
+      - (proxmox_access_acme_state.stdout | from_json).account.status == 'valid'
+    quiet: true
+    fail_msg: ACME account missing or drifted, see docs/proxmox.md
+
+- name: Read the web UI certificate
+  ansible.builtin.command: pvenode cert info --output-format json
+  register: proxmox_access_cert_info
+  changed_when: false
+  check_mode: false
+  when: proxmox_access_acme_domains | length > 0
+
+- name: Check the web UI has its Let's Encrypt certificate
+  ansible.builtin.assert:
+    that:
+      - >-
+        proxmox_access_cert_info.stdout | from_json
+        | selectattr('filename', 'equalto', 'pveproxy-ssl.pem') | map(attribute='san') | first | default([])
+        | intersect(proxmox_access_acme_domains) | length == proxmox_access_acme_domains | length
+    quiet: true
+    fail_msg: Web UI certificate missing, see docs/nas.md
+  when: proxmox_access_acme_domains | length > 0

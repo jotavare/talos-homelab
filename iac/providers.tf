@@ -5,6 +5,12 @@ provider "proxmox" {
   api_token = ephemeral.vault_kv_secret_v2.opentofu.data["proxmox_api_token"]
 }
 
+provider "proxmox" {
+  alias     = "nas"
+  endpoint  = "https://proxmox-desktop.home.${var.domain}:8006/"
+  api_token = ephemeral.vault_kv_secret_v2.opentofu.data["proxmox_nas_api_token"]
+}
+
 provider "cloudflare" {
   api_token = ephemeral.vault_kv_secret_v2.opentofu.data["cloudflare_dns_token"]
 }

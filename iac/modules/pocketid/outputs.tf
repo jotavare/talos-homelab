@@ -20,6 +20,15 @@ output "proxmox_client_secret" {
   sensitive = true
 }
 
+output "nas_client_id" {
+  value = pocketid_client.nas.client_id
+}
+
+output "nas_client_secret" {
+  value     = pocketid_client.nas.client_secret
+  sensitive = true
+}
+
 output "immich_client_id" {
   value = pocketid_client.immich.client_id
 }

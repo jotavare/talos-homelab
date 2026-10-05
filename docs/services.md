@@ -77,6 +77,8 @@ Every `*.home.<domain>` name, and who serves it:
 | `https://s3.home.<domain>` | Caddy | `garage:3900`, Garage's S3 API |
 | `https://pve.home.<domain>` | Caddy | `192.168.1.10:8006`, the Proxmox web UI |
 | `https://proxmox.home.<domain>:8006` | Proxmox itself | `pve`'s tailnet IP, for OpenTofu ([OpenTofu](opentofu.md#reaching-proxmox)) |
+| `https://pve-desktop.home.<domain>` | Caddy | `192.168.1.11:8006`, the NAS host's Proxmox web UI |
+| `https://proxmox-desktop.home.<domain>:8006` | Proxmox itself | `pve-desktop`'s tailnet IP, for OpenTofu |
 | `https://immich.home.<domain>` | Cilium Gateway in the cluster | Immich ([Talos, Gateway](platform.md#secrets-certificates-and-the-gateway)) |
 
 Caddy only serves what runs outside the cluster. Apps in the cluster have

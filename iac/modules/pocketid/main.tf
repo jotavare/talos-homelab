@@ -28,6 +28,19 @@ resource "pocketid_client" "proxmox" {
   ]
 }
 
+resource "pocketid_client" "nas" {
+  name         = "Proxmox NAS"
+  client_id    = "pve-desktop"
+  launch_url   = "https://pve-desktop.home.${var.domain}"
+  is_public    = false
+  pkce_enabled = false
+
+  callback_urls = [
+    "https://pve-desktop.home.${var.domain}",
+    "https://proxmox-desktop.home.${var.domain}:8006",
+  ]
+}
+
 resource "pocketid_client" "immich" {
   name         = "Immich"
   client_id    = "immich"

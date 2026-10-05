@@ -18,6 +18,11 @@ variable "proxmox_ip" {
   type        = string
 }
 
+variable "nas_ip" {
+  description = "Tailnet address of pve-desktop."
+  type        = string
+}
+
 variable "gateway_ip" {
   description = "Tailnet address of the cluster Gateway."
   type        = string

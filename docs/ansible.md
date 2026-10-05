@@ -40,11 +40,12 @@ ansible-galaxy collection install -r requirements.yml
 | [ansible/ansible.cfg](../ansible/ansible.cfg) | Settings: inventory, roles path, YAML output |
 | [ansible/inventory.yml](../ansible/inventory.yml) | The hosts `pve` and `pve-desktop`, reached at their tailnet addresses (`proxmox_host` and `nas_host` in OpenBao `kv/config`, so they stay out of the repo). `pve-desktop` picks its own firewall file |
 | [ansible/group_vars/all.yml](../ansible/group_vars/all.yml) | Reads `kv/config` from OpenBao with the `community.hashi_vault` lookup |
-| [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook for the hosts: `proxmox_base` on both, `proxmox_host` on `pve` only |
+| [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook for the hosts: `proxmox_base` and `proxmox_access` on both, `proxmox_host` on `pve` only |
 | [ansible/nas.yml](../ansible/nas.yml) | The NAS on `pve-desktop` ([NAS](nas.md)) |
 | [ansible/requirements.yml](../ansible/requirements.yml) | The `community.proxmox` and `community.hashi_vault` collections |
 | [ansible/roles/proxmox_base/](../ansible/roles/proxmox_base/) | What every Proxmox host gets: repositories, unattended upgrades, SSH hardening, IPv6 autoconf off, Tailscale, the root password from OpenBao, the firewall behind the dead-man switch |
-| [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | What only `pve` gets: smartd for the NVMe, the NIC offload fix, the iGPU bound to `vfio-pci`, the OpenTofu user and roles, the ACME account, the SSO admin, and the compliance checks (`tasks/verify.yml`) |
+| [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | What only `pve` gets: smartd for the NVMe, the NIC offload fix, the iGPU bound to `vfio-pci`, and the compliance checks (`tasks/verify.yml`) |
+| [ansible/roles/proxmox_access/](../ansible/roles/proxmox_access/) | Who may do what on each host: the OpenTofu user with one role per path (all three on `pve`, only `TofuRealms` on `pve-desktop`, set in the inventory), the ACME account, the SSO admin once the realm exists, and on `pve-desktop` the web UI certificate. Its checks fail if the user has a role it should not |
 | [ansible/roles/nas/](../ansible/roles/nas/) | The NAS: ZFS pool, the Immich library quota, Samba, NFS, WiFi power saving, and its own checks |
 | [proxmox/](../proxmox/), [nas/](../nas/) | The config files the roles copy. Each file lives in one place and is explained in [Proxmox](proxmox.md) or [NAS](nas.md) |
 

@@ -83,56 +83,6 @@
     quiet: true
     fail_msg: IPv6 autoconf is on or alerts do not use the SMTP target, see docs/proxmox.md
 
-- name: Read the OpenTofu user, role and token
-  ansible.builtin.command: "{{ item }}"
-  loop:
-    - pveum role list --output-format json
-    - pveum acl list --output-format json
-    - pveum user token list {{ proxmox_host_tofu_user }} --output-format json
-  register: proxmox_host_tofu_state
-  changed_when: false
-  check_mode: false
-
-- name: Check the OpenTofu user has only its role, and its token
-  vars:
-    proxmox_host_tofu_roles: "{{ proxmox_host_tofu_state.results[0].stdout | from_json | items2dict(key_name='roleid', value_name='privs') }}"
-    proxmox_host_tofu_acl: "{{ proxmox_host_tofu_state.results[1].stdout | from_json | selectattr('ugid', 'equalto', proxmox_host_tofu_user) | list }}"
-    proxmox_host_tofu_tokens: "{{ proxmox_host_tofu_state.results[2].stdout | from_json }}"
-  ansible.builtin.assert:
-    that:
-      - proxmox_host_tofu_roles[proxmox_host_tofu_role].split(',') | sort == proxmox_host_tofu_privs | sort
-      - proxmox_host_tofu_roles[proxmox_host_tofu_backup_role].split(',') | sort == proxmox_host_tofu_backup_privs | sort
-      - proxmox_host_tofu_roles[proxmox_host_tofu_realm_role].split(',') | sort == proxmox_host_tofu_realm_privs | sort
-      - proxmox_host_tofu_acl | length == 3
-      - >-
-        proxmox_host_tofu_acl | selectattr('path', 'equalto', '/')
-        | selectattr('roleid', 'equalto', proxmox_host_tofu_role) | list | length == 1
-      - >-
-        proxmox_host_tofu_acl | selectattr('path', 'equalto', proxmox_host_tofu_backup_path)
-        | selectattr('roleid', 'equalto', proxmox_host_tofu_backup_role) | list | length == 1
-      - >-
-        proxmox_host_tofu_acl | selectattr('path', 'equalto', proxmox_host_tofu_realm_path)
-        | selectattr('roleid', 'equalto', proxmox_host_tofu_realm_role) | list | length == 1
-      - proxmox_host_tofu_tokens | selectattr('tokenid', 'equalto', 'opentofu') | list | length == 1
-    quiet: true
-    fail_msg: OpenTofu user, role or token drifted, see docs/opentofu.md
-
-- name: Read the ACME account
-  ansible.builtin.command: pvesh get /cluster/acme/account/{{ proxmox_host_acme_account }} --output-format json
-  register: proxmox_host_acme_state
-  changed_when: false
-  failed_when: false
-  check_mode: false
-
-- name: Check the ACME account
-  ansible.builtin.assert:
-    that:
-      - proxmox_host_acme_state.rc == 0
-      - (proxmox_host_acme_state.stdout | from_json).directory == proxmox_host_acme_directory
-      - (proxmox_host_acme_state.stdout | from_json).account.status == 'valid'
-    quiet: true
-    fail_msg: ACME account missing or drifted, see docs/proxmox.md
-
 - name: Check for pending upgrades and reboots
   ansible.builtin.shell: |
     set -o pipefail

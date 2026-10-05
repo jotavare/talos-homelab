@@ -113,7 +113,7 @@ bao kv get -mount=kv config
 | Path | Holds |
 |------|-------|
 | `kv/config` | `proxmox_host`, `nas_host`, `domain`, `tailnet`, `cloudflare_zone_id`, `acme_email`, `services_tailnet_ip` |
-| `kv/opentofu` | The Proxmox API token, the two Cloudflare tokens, the Tailscale OAuth client |
+| `kv/opentofu` | The Proxmox API tokens for `pve` and `pve-desktop`, the two Cloudflare tokens, the Tailscale OAuth client |
 | `kv/services/caddy`, `tailscale`, `garage`, `pocket-id` | The stack's secrets |
 | `kv/services/opentofu` | The passphrase of the OpenTofu state (also in Bitwarden) |
 | `kv/openbao` | The unseal key and my `jotavare` password, copies of the Bitwarden ones |
@@ -259,8 +259,9 @@ shared outside Bitwarden and is replaced first.
 | OpenBao `jotavare` password | Bitwarden, OpenBao `kv/openbao` | 6 months | 2027-03 | `bao write auth/userpass/users/jotavare/password password=...`, then `bao kv patch` the copy |
 | Cloudflare `caddy-dns` token | OpenBao `kv/services/caddy`, copied by OpenTofu to `kv/k8s/cert-manager` | Year | 2027-09 | Roll in the dashboard, `bao kv patch`, `tofu apply`: it replaces Caddy and updates the copy cert-manager reads |
 | Cloudflare `opentofu-dns` token | OpenBao `kv/opentofu` | Year | 2027-09 | Roll in the dashboard, store the new value |
-| Cloudflare `pve-acme` token | OpenBao `kv/opentofu`, then Proxmox | Year | 2027-09 | Roll, store, raise `data_wo_version`, apply |
+| Cloudflare `pve-acme` token | OpenBao `kv/opentofu`, then both Proxmox hosts | Year | 2027-09 | Roll, store, raise `data_wo_version`, apply; on `pve-desktop` delete the `cloudflare` plugin and run `proxmox.yml` |
 | Proxmox API token `tofu@pve!opentofu` | OpenBao `kv/opentofu`, Bitwarden | Year | 2027-09 | New token in the UI, store it, delete the old one |
+| Proxmox API token `tofu@pve!opentofu` on `pve-desktop` | OpenBao `kv/opentofu` (`proxmox_nas_api_token`), Bitwarden | Year | 2027-10 | New token over SSH piped into `bao kv patch` ([OpenTofu](opentofu.md#reaching-proxmox)), delete the old one |
 | OpenTofu state passphrase | Bitwarden, OpenBao `kv/services/opentofu` | Year | 2027-09 | Add the new passphrase with the old one as `fallback`, `tofu apply -refresh-only`, then drop the old one |
 | age key | Laptop, Bitwarden, printed copy | Only if leaked | | Only the example uses it now |
 | GitHub token `renovate-talos-homelab` | OpenBao `kv/github/renovate`, repo secret `RENOVATE_TOKEN` | Year, by expiry | 2027-10 | New fine-grained token on GitHub, `bao kv put`, then `gh secret set RENOVATE_TOKEN --body "$(bao kv get -mount=kv -field=token github/renovate)"`, delete the old one |

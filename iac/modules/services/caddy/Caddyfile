@@ -15,6 +15,14 @@ pve.home.{$DOMAIN} {
 	}
 }
 
+pve-desktop.home.{$DOMAIN} {
+	reverse_proxy https://192.168.1.11:8006 {
+		transport http {
+			tls_server_name pve-desktop.home.{$DOMAIN}
+		}
+	}
+}
+
 s3.home.{$DOMAIN} {
 	reverse_proxy garage:3900
 }

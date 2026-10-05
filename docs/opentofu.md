@@ -124,9 +124,10 @@ OpenBao, configures the providers and calls one module per area:
 | Module | What it manages |
 |--------|-----------------|
 | [proxmox](../iac/modules/proxmox/) | The Debian cloud image, the services VM and its firewall, the daily backup job, the ACME plugin and certificate, the Pocket ID realm |
+| [nas](../iac/modules/nas/) | The Pocket ID realm on `pve-desktop`, through the `proxmox.nas` provider |
 | [dns](../iac/modules/dns/) | The `*.home.<domain>` records: services on Caddy, cluster apps on the Gateway |
 | [services](../iac/modules/services/) | The containers on the services VM, each config file next to its `.tf` ([Services](services.md)) |
-| [pocketid](../iac/modules/pocketid/) | The OIDC clients for OpenBao, Proxmox and Immich |
+| [pocketid](../iac/modules/pocketid/) | The OIDC clients for OpenBao, both Proxmox hosts and Immich |
 | [openbao](../iac/modules/openbao/) | OpenBao's own configuration: `kv`, `userpass`, the `admin` policy, my user's token settings, OIDC login, the JWT login for the cluster |
 | [tailscale](../iac/modules/tailscale/) | The tailnet policy, the nodes' auth key, the Gateway's tailnet IP ([Tailscale](tailscale.md#keys-and-clients-made-by-opentofu)) |
 | [talos](../iac/modules/talos/) | The image, the VMs and their firewall, the machine configs from [talos/](../talos/), bootstrap, and the cluster secrets in OpenBao ([Talos](talos.md)) |
@@ -200,6 +201,21 @@ pointing straight at `pve`'s tailnet IP, and a second name on Proxmox's
 own Let's Encrypt certificate. It does not go through Caddy, so an apply
 that replaces Caddy or Tailscale on the services VM cannot cut its own
 connection halfway.
+
+`pve-desktop` is a second, standalone Proxmox host, so it has its own
+provider block, `proxmox.nas`, at `https://proxmox-desktop.home.<domain>:8006`,
+and its own token in `kv/opentofu` (`proxmox_nas_api_token`). There
+`tofu@pve` only has `TofuRealms` on `/access/realm`: OpenTofu only makes
+the realm. The certificate is ordered by Ansible instead, because the
+provider needs a trusted certificate before it can connect, and skipping
+TLS checks for a first run is not worth it. The token was created over SSH
+and piped straight into OpenBao, never printed:
+
+```bash
+ssh root@<nas_host> 'pveum user token add tofu@pve opentofu --privsep 0 --output-format json' \
+  | python3 -c "import json,sys;d=json.load(sys.stdin);sys.stdout.write(d['full-tokenid']+'='+d['value'])" \
+  | bao kv patch -mount=kv opentofu proxmox_nas_api_token=-
+```
 
 ### How the state got here
 
@@ -301,6 +317,8 @@ Public A records in Cloudflare point each name at its tailnet IP:
 | `pve.home.<domain>` | The services stack's tailnet IP; Caddy forwards to the web UI |
 | `immich.home.<domain>` | The cluster Gateway's tailnet IP, read from the Tailscale API (`cluster_apps` in `main.tf`) |
 | `proxmox.home.<domain>` | `pve`'s own tailnet IP, port `8006`; used by OpenTofu |
+| `pve-desktop.home.<domain>` | The services stack's tailnet IP; Caddy forwards to `pve-desktop`'s web UI |
+| `proxmox-desktop.home.<domain>` | `pve-desktop`'s own tailnet IP, port `8006`; used by OpenTofu |
 | `s3.home.<domain>` | The services stack's tailnet IP; Caddy forwards to Garage |
 | `auth.home.<domain>` | The services stack's tailnet IP; Caddy forwards to Pocket ID |
 | `openbao.home.<domain>` | The services stack's tailnet IP; Caddy forwards to OpenBao |
@@ -321,7 +339,7 @@ can be revoked alone:
 | Token | Used by | Kept in |
 |-------|---------|---------|
 | `opentofu-dns` | OpenTofu, for the records | OpenBao `kv/opentofu` |
-| `pve-acme` | Proxmox, to renew its certificate | OpenBao `kv/opentofu`, then Proxmox's own plugin config |
+| `pve-acme` | Both Proxmox hosts, to renew their certificates | OpenBao `kv/opentofu`, then each host's plugin config |
 | `caddy-dns` | Caddy, for the services stack | OpenBao `kv/services/caddy` |
 
 The zone ID is in `kv/config`, so the tokens need no Zone Read

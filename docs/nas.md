@@ -153,6 +153,14 @@ host rules in [nas/host.fw](../nas/host.fw):
 | `41641/udp` | Anyone, Tailscale direct connections |
 | `22`, `8006` | The tailnet only, so Ansible now reaches it at its tailnet address, `nas_host` in `kv/config` |
 
+The web UI is `https://pve-desktop.home.<domain>`, through Caddy on the
+services VM like `pve.home` ([Services](services.md)), which is why
+`host.fw` lets `192.168.1.30` reach `8006`. OpenTofu goes straight to the
+host at `https://proxmox-desktop.home.<domain>:8006`. Both names are on a
+Let's Encrypt certificate ordered by Ansible over SSH (the Cloudflare plugin with the `pve-acme` token, then
+`pvenode acme cert order`). Login is through Pocket ID ([SSO](sso.md)),
+with `root@pam` as the fallback.
+
 The firewall tasks moved into the shared `proxmox_base` role with the
 dead-man switch, and each host picks its own `host.fw`. Files in
 `/etc/pve` live on Proxmox's cluster filesystem, which refuses Ansible's

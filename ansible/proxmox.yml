@@ -2,6 +2,7 @@
   hosts: proxmox
   roles:
     - proxmox_base
+    - proxmox_access
 
 - name: Configure the main Proxmox host
   hosts: pve

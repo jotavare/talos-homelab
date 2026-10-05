@@ -4,6 +4,7 @@ module "dns" {
   zone_id     = local.config["cloudflare_zone_id"]
   services_ip = local.config["services_tailnet_ip"]
   proxmox_ip  = var.proxmox_host
+  nas_ip      = local.config["nas_host"]
 
   gateway_ip   = module.tailscale.gateway_ip
   cluster_apps = ["immich"]
@@ -17,6 +18,17 @@ module "proxmox" {
   oidc_issuer           = "https://auth.home.${var.domain}"
   oidc_client_id        = module.pocketid.proxmox_client_id
   oidc_client_secret    = module.pocketid.proxmox_client_secret
+}
+
+module "nas" {
+  source             = "./modules/nas"
+  oidc_issuer        = "https://auth.home.${var.domain}"
+  oidc_client_id     = module.pocketid.nas_client_id
+  oidc_client_secret = module.pocketid.nas_client_secret
+
+  providers = {
+    proxmox = proxmox.nas
+  }
 }
 
 module "services" {

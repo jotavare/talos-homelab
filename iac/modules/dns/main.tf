@@ -1,10 +1,12 @@
 locals {
   records = {
-    pve     = var.services_ip
-    openbao = var.services_ip
-    s3      = var.services_ip
-    auth    = var.services_ip
-    proxmox = var.proxmox_ip
+    pve               = var.services_ip
+    openbao           = var.services_ip
+    s3                = var.services_ip
+    auth              = var.services_ip
+    proxmox           = var.proxmox_ip
+    "pve-desktop"     = var.services_ip
+    "proxmox-desktop" = var.nas_ip
   }
 }
 
