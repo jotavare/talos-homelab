@@ -15,6 +15,12 @@ spec:
         login: true
         passwordSecret:
           name: immich-database-credentials
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
   storage:
     storageClass: longhorn
     size: 5Gi

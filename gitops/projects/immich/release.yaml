@@ -24,6 +24,27 @@ spec:
           existingClaim: immich-library
     valkey:
       enabled: true
+      controllers:
+        main:
+          containers:
+            main:
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  memory: 256Mi
+    machine-learning:
+      controllers:
+        main:
+          containers:
+            main:
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 1Gi
+                limits:
+                  memory: 4Gi
     server:
       controllers:
         main:
@@ -42,3 +63,9 @@ spec:
                     secretKeyRef:
                       name: immich-database-credentials
                       key: password
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 512Mi
+                limits:
+                  memory: 4Gi
