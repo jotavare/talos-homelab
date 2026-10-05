@@ -234,9 +234,6 @@ phase page.
 
 ### Before Talos
 
-- [ ] Caddy does not come back after a reboot of the services VM: Docker
-      starts it before the `tailscale` container whose network it shares,
-      fails once and never retries. Start it by hand until fixed.
 
 - [ ] Cloud-init for VM 130 (Docker, the guest agent, unattended upgrades,
       the `docker` group), so a rebuilt VM needs no manual step.
