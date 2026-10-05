@@ -4,3 +4,4 @@ resources:
   - library.yaml
   - repository.yaml
   - release.yaml
+  - route.yaml
