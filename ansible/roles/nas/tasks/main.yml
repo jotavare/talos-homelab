@@ -87,8 +87,8 @@
     state: directory
   loop: "{{ nas_quotas }}"
 
-- name: Read the project of each quota folder
-  ansible.builtin.command: zfs project -d /{{ nas_pool }}/{{ item.path }}
+- name: Find files outside the project of each quota folder
+  ansible.builtin.command: zfs project -c -r -p {{ item.project }} /{{ nas_pool }}/{{ item.path }}
   loop: "{{ nas_quotas }}"
   register: nas_projects
   changed_when: false
@@ -99,7 +99,7 @@
   loop: "{{ nas_projects.results }}"
   loop_control:
     label: "{{ item.item.path }}"
-  when: (item.stdout.split() | first) != (item.item.project | string) or ' P ' not in item.stdout
+  when: item.stdout | length > 0
   changed_when: true
 
 - name: Read the project quotas
