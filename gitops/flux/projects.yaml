@@ -7,6 +7,7 @@ spec:
   dependsOn:
     - name: cnpg
     - name: longhorn
+    - name: external-secrets-config
   interval: 10m
   path: ./gitops/projects/immich/database
   prune: true
