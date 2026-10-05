@@ -233,6 +233,51 @@ phase page.
 - [ ] A second disk for a mirror, or a copy of `tank/files` off the host.
 - [ ] Scrub `tank` monthly and alert on errors.
 
+### Docs and diagrams
+
+A pass over every page after the cluster build, checked against what runs.
+
+- [ ] README: phases table (08 NAS, 09 Talos), core stack (Cilium Gateway,
+      Longhorn, CloudNativePG, NFS CSI marked as in use), IP table (`.50`
+      to `.99` pool, Gateway `.51`), remove backlog items that landed.
+- [ ] 02 Tailscale: the all-scope OAuth client, the `tag:talos` key made by
+      OpenTofu and signed on `pve`, the `tag:k8s` grants and tests.
+- [ ] 03 Ansible: `proxmox_base` and `proxmox_host` split, `pve-desktop` and
+      the `nas` playbook, root passwords from OpenBao, the NIC offload fix,
+      the firewall per host, the verify tasks.
+- [ ] 04 Secrets: every new path (`kv/hosts/*`, `kv/openbao`, `kv/talos/*`,
+      `kv/k8s/*`, `kv/immich`, `kv/nas`), the cluster's JWT login, and new
+      rows in the rotation table (operator OAuth client, Talos auth key,
+      Immich admin, Samba).
+- [ ] 05 OpenTofu: the module table (`talos`, `cilium`, `flux`, `k8s`,
+      `pocketid`), the providers (`talos`, `helm`, `kubernetes`, `tls`),
+      the saved-plan apply routine, `ignore_changes` on the Cilium release.
+- [ ] 07 Services VM: names table with every `*.home` name and who serves
+      it (Caddy or the Gateway).
+- [ ] 09 Talos: refresh the design tables written before the build (build
+      order, firewall, API access), and a section on how Kustomize and Flux
+      work here: intervals, dependencies, substitution, pruning.
+- [ ] Diagrams: redraw `overview` (two hosts, the NAS, the real Talos VMs)
+      and `proxmox` (VM IDs, sizes, the data disks, RAM left).
+- [ ] New diagram: request path, tailnet to Gateway to app, next to the
+      Caddy path for services outside the cluster.
+- [ ] New diagram: GitOps, Flux steps and their `dependsOn` order.
+- [ ] New diagram: secrets flow, OpenBao to OpenTofu, Ansible and External
+      Secrets.
+- [ ] Check every link and every command in the pages still works.
+
+### Cluster follow-ups
+
+- [ ] Immich database password in OpenBao too: give CloudNativePG an
+      `ExternalSecret` for its app user instead of the generated one.
+- [ ] `retryInterval: 1m` on the Flux steps, so a step waiting for a
+      dependency retries every minute instead of every interval.
+- [ ] The `tag:talos` auth key expires after 90 days. Nodes already joined
+      keep working; a rebuild needs a new key, signed again on `pve`.
+- [ ] Immich login through Pocket ID (OIDC).
+- [ ] Backups: CloudNativePG to Garage, Longhorn snapshots, the photo
+      library off the NAS.
+
 ### Before Talos
 
 
