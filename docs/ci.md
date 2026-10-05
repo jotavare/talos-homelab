@@ -15,7 +15,7 @@ lives in one place and does one thing, from the laptop to GitHub.
 | [.gitleaksignore](../.gitleaksignore) | Known false positives, by fingerprint |
 | [iac/.tflint.hcl](../iac/.tflint.hcl) | tflint rules for OpenTofu |
 | [.github/scripts/check-encrypted.sh](../.github/scripts/check-encrypted.sh) | Refuses an unencrypted `*.sops.yaml` or OpenTofu state |
-| [.github/workflows/](../.github/workflows/) | One workflow per concern: `lint`, `secrets`, `manifests`, `scorecard` |
+| [.github/workflows/](../.github/workflows/) | One workflow per concern: `lint`, `secrets`, `manifests`, `scorecard`, `renovate` |
 | [.github/flux-schema.env](../.github/flux-schema.env) | Example values for `${DOMAIN}` and `${TAILNET}`, so the manifests validate |
 | [.github/renovate.json](../.github/renovate.json) | Renovate: what it updates, when, and in which groups |
 
@@ -108,8 +108,9 @@ if flux-schema, still a preview, breaks.
 | `secrets` | Pull requests, by hand | gitleaks and TruffleHog over the full history |
 | `manifests` | Pull requests, by hand | flux-schema on `gitops/` |
 | `scorecard` | By hand | OpenSSF Scorecard, results in the Security tab |
+| `renovate` | Mondays at 06:00 UTC, by hand | Renovate on this repo |
 
-Pushes to `main` do not start them: pre-commit and push protection
+Pushes to `main` do not start the checks: pre-commit and push protection
 already ran. Every workflow starts with no permissions and each job asks
 only for what it needs, usually `contents: read`. Actions are pinned to a
 commit hash with the version next to it, so a moved tag cannot change
@@ -129,27 +130,49 @@ there is no badge and results are not published.
 ## Renovate
 
 [Renovate](https://docs.renovatebot.com/) opens pull requests when
-something pinned in the repo has a new version, every Monday morning,
-grouped, with a dependency dashboard issue listing what is pending.
-Nothing merges on its own.
+something pinned in the repo has a new version, grouped, with a
+dependency dashboard issue listing what is pending. Nothing merges on its
+own.
 
-| What | Where | How Renovate finds it |
-|------|-------|-----------------------|
-| Helm charts and OCI charts | `gitops/` HelmReleases and OCIRepositories | flux manager, pointed at `gitops/` |
-| OpenTofu providers | `iac/versions.tf`, the lock file | terraform manager, from the OpenTofu registry |
-| Talos release | `talos_version` in `iac/main.tf` | custom rule, GitHub releases |
-| Cilium and the Flux Operator | `iac/main.tf` | custom rules; Cilium is grouped with its Flux copy |
-| Service images | `docker_image` in `iac/modules/services/` | custom rule, tag and digest |
-| Immich and VectorChord images | `gitops/projects/immich/` | custom rules |
-| Actions and pre-commit hooks | `.github/workflows/`, `.pre-commit-config.yaml` | built in, grouped as CI tools |
+It runs here, in the `renovate` workflow, every Monday at 06:00 UTC and
+by hand, not as Mend's hosted app. The hosted app would need write access
+to the repo for a third party; the workflow uses one token of mine, keeps
+the logs next to the other checks, and pins the Renovate version, which
+Renovate then updates like any other dependency.
+
+| Setting | Value |
+|---------|-------|
+| Token | A fine-grained token for this repo only: contents, pull requests, issues and workflows read and write, metadata read. In OpenBao `kv/github/renovate` and the repo secret `RENOVATE_TOKEN` ([Secrets, Rotation](secrets.md#rotation)) |
+| Config | [.github/renovate.json](../.github/renovate.json), required: no onboarding pull request |
+| Schedule | Before 09:00 on Mondays, Lisbon time; the dashboard can create a pull request early |
+| Commits | As my GitHub noreply address |
+
+GitHub cannot create a personal token through its API, so the token was
+made once on the website and stored straight into OpenBao. The workflow's
+own `GITHUB_TOKEN` would not do: pull requests it opens do not start
+other workflows, so `lint`, `secrets` and `manifests` would never check
+them, and it cannot change files in `.github/workflows/`.
+
+| What | Where | How Renovate finds it | Group |
+|------|-------|-----------------------|-------|
+| Helm and OCI charts | `gitops/` HelmReleases and OCIRepositories | flux manager, pointed at `gitops/` | one each |
+| OpenTofu providers | `iac/versions.tf`, the lock file | terraform manager, from the OpenTofu registry | opentofu providers |
+| Service images | `docker_image` in `iac/modules/services/` | terraform manager, tag and digest | service images |
+| Caddy base image | `iac/modules/services/caddy/Dockerfile` | dockerfile manager | caddy |
+| Talos release | `talos_version` in `iac/main.tf` | custom rule, GitHub releases | talos |
+| Cilium and the Flux Operator | `iac/main.tf` | custom rules; Cilium is grouped with its Flux copy | cilium |
+| Immich and VectorChord images | `gitops/projects/immich/` | custom rules | one each |
+| Actions, pre-commit hooks, Renovate itself | `.github/workflows/`, `.pre-commit-config.yaml` | built in | ci tools |
+| Ansible collections | `ansible/requirements.yml` | built in | one each |
+
+Left out on purpose: `caddy-cloudflare`, built locally from the
+Dockerfile and in no registry, and `required_version`, which is
+OpenTofu's and not Terraform's. Not covered: the vendored Gateway API
+CRDs, which are one file to download again, and the CloudNativePG
+Postgres image, whose tag is not a version.
 
 A Renovate pull request to `iac/` only changes the pinned version. The
-change reaches the cluster through a saved OpenTofu plan, as usual. Not
-covered: the vendored Gateway API CRDs, which are one file to download
-again, and the CloudNativePG Postgres image, whose tag is not a version.
-
-Renovate runs as the free Mend Renovate GitHub app, installed on this one
-repository.
+change reaches the cluster through a saved OpenTofu plan, as usual.
 
 ## References
 

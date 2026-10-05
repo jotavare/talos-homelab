@@ -124,6 +124,7 @@ bao kv get -mount=kv config
 | `kv/k8s/*` | Secrets for the cluster, read by External Secrets: `cert-manager` (Cloudflare DNS token), `tailscale-operator` (its OAuth client), `immich-database` (the Postgres user Immich logs in with), `immich-oauth` (its Pocket ID client). The cluster can read only these and `kv/config` |
 | `kv/nas` | The Samba user and password, read by Ansible ([NAS](nas.md#shares)) |
 | `kv/immich` | The Immich admin login |
+| `kv/github/renovate` | Renovate's fine-grained GitHub token, copied to the repo secret `RENOVATE_TOKEN` ([CI](ci.md#renovate)) |
 
 ### Secrets in the cluster
 
@@ -262,6 +263,7 @@ shared outside Bitwarden and is replaced first.
 | Proxmox API token `tofu@pve!opentofu` | OpenBao `kv/opentofu`, Bitwarden | Year | 2027-09 | New token in the UI, store it, delete the old one |
 | OpenTofu state passphrase | Bitwarden, OpenBao `kv/services/opentofu` | Year | 2027-09 | Add the new passphrase with the old one as `fallback`, `tofu apply -refresh-only`, then drop the old one |
 | age key | Laptop, Bitwarden, printed copy | Only if leaked | | Only the example uses it now |
+| GitHub token `renovate-talos-homelab` | OpenBao `kv/github/renovate`, repo secret `RENOVATE_TOKEN` | Year, by expiry | 2027-10 | New fine-grained token on GitHub, `bao kv put`, then `gh secret set RENOVATE_TOKEN --body "$(bao kv get -mount=kv -field=token github/renovate)"`, delete the old one |
 | Tailscale OAuth client `opentofu` (all scopes) | OpenBao `kv/opentofu` | Year | 2027-10 | Create a new client in Trust credentials, `bao kv patch`, revoke the old one |
 | Tailscale auth keys for hosts | Used once | Each use | | Generate per device, single use, 7 days; nothing to rotate afterwards |
 | Tailscale `tag:talos` key | OpenTofu state, OpenBao `kv/talos` (signed) | 90 days, by expiry | 2026-12 | `tofu apply` makes a new one when it expires; sign it on `pve`, store it in `kv/talos`. Only new or rebuilt nodes need it |
