@@ -45,7 +45,7 @@ own:
 |------|-----|
 | `policy_in: DROP` | Nothing reaches a node unless allowed below |
 | Everything from the node range `.15` to `.29` | etcd, kubelet, Cilium and trustd between nodes |
-| `6443` and `50000` from the LAN, for now | The first config is applied over the LAN, before Tailscale runs on the nodes. Narrowed to the tailnet once it does |
+| No `6443` or `50000` from the LAN | The first config went over the LAN, before Tailscale ran on the nodes. Afterwards OpenTofu, `talosctl` and `kubectl` moved to `talos-cp-1.<tailnet>.ts.net`, and the LAN rules were removed. Tailnet traffic arrives inside UDP `41641` and the node's own `tailscale0`, so the Proxmox firewall never sees it |
 | UDP `41641` | Tailscale direct connections; tailnet traffic reaches the node inside this |
 | ICMP from the LAN | Ping |
 | `ipfilter` off | Cilium answers ARP for the LoadBalancer IPs (`.50` to `.99`) through the node's NIC; with `ipfilter` on, Proxmox would drop that traffic |
@@ -60,7 +60,7 @@ together with tailnet-only access for admin UIs (Backlog).
 | VIP | `192.168.1.20`, the Talos built-in shared IP, used by the workers. With one control plane it is only an extra address, ready for more |
 | From my devices | The control plane's tailnet name, `talos-cp-1.<tailnet>.ts.net:6443`. The VIP is LAN only, so away from home the tailnet is the only way |
 | `certSANs` | `192.168.1.20`, `192.168.1.15`, and the control plane's tailnet name and IP |
-| `talosconfig` | Endpoint: the control plane's tailnet name. Nodes: all four |
+| `talosconfig` | Endpoint: the control plane's tailnet name. Nodes by LAN IP, reached through the control plane's API |
 
 ### Network and cluster
 
