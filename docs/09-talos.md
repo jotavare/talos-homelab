@@ -306,6 +306,41 @@ NAS. The pod needs `runAsGroup` and `fsGroup`: the driver chowns the new
 folder to the `fsGroup`, and without a matching group the write is
 refused. The test volume and its folder were deleted afterwards.
 
+### 7. Longhorn
+
+Block storage for databases and anything that should not sit on NFS over
+WiFi. Two parts:
+
+**A data disk per worker.** Talos 1.14 no longer has kubelet extra
+mounts; the way to give Longhorn its own place is a `UserVolumeConfig`.
+The 80 GB system disk was already all `EPHEMERAL`, so each worker got a
+second 50 GB disk (`scsi1`, the `data` field in
+[iac/main.tf](../iac/main.tf)), hot-plugged without a reboot.
+[talos/worker.yaml](../talos/worker.yaml) formats it as XFS and Talos
+mounts it at `/var/mnt/longhorn`:
+
+```bash
+talosctl -n 192.168.1.21 get volumestatus u-longhorn   # disk, ready, /dev/sdb, 54 GB
+```
+
+**Longhorn through Flux**, in
+[gitops/infrastructure/longhorn](../gitops/infrastructure/longhorn/):
+
+| Value | Why |
+|-------|-----|
+| Namespace labelled `pod-security ... privileged` | Longhorn's managers need host access; the cluster default is `baseline` |
+| `defaultDataPath: /var/mnt/longhorn` | The user volume above |
+| `defaultReplicaCount: 1`, `defaultClassReplicaCount: 1` | Every replica would land on the same NVMe anyway (README trade-offs) |
+| `persistence.defaultClass: true` | Claims without a storage class get Longhorn; the NAS is asked for by name, `nas` |
+| CSI sidecars and UI at one replica | Saves RAM on a two-worker cluster |
+| `preUpgradeChecker.jobEnabled: false` | The checker job does not work with Flux' Helm upgrades |
+
+Longhorn runs on the workers only: the control plane keeps its
+`NoSchedule` taint.
+
+The install was also what exposed the `pve` NIC hang
+([01. Proxmox, NIC hang](01-proxmox.md#nic-hang)).
+
 ## GitOps layout
 
 The Kubernetes manifests go in `gitops/`, read by Flux. One folder per
