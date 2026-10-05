@@ -11,6 +11,7 @@ variable "nodes" {
     cores  = number
     memory = number
     disk   = number
+    data   = optional(number, 0)
   }))
 }
 

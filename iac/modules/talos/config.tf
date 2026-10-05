@@ -35,7 +35,9 @@ data "talos_machine_configuration" "node" {
         hostname = each.key
         tailnet  = var.tailnet
       }),
-    ] : []
+      ] : [
+      file("${local.patches}/worker.yaml"),
+    ]
   )
 }
 

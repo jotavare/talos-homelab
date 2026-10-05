@@ -45,6 +45,18 @@ resource "proxmox_virtual_environment_vm" "node" {
     ssd          = true
   }
 
+  dynamic "disk" {
+    for_each = each.value.data > 0 ? [each.value.data] : []
+    content {
+      datastore_id = "local-lvm"
+      interface    = "scsi1"
+      size         = disk.value
+      iothread     = true
+      discard      = "on"
+      ssd          = true
+    }
+  }
+
   network_device {
     bridge   = "vmbr0"
     model    = "virtio"
