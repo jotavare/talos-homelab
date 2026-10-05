@@ -112,20 +112,37 @@ OpenBao, configures the providers and calls one module per area:
 |------|------------|
 | [versions.tf](../iac/versions.tf) | Provider versions, state encryption |
 | [variables.tf](../iac/variables.tf) | The passphrase, the `pve` address, the domain, the email |
-| [secrets.tf](../iac/secrets.tf) | Reads `kv/opentofu`, `kv/config` and `kv/services/*` from OpenBao |
-| [providers.tf](../iac/providers.tf) | Proxmox, Cloudflare, Docker, Tailscale, OpenBao and Pocket ID, configured with those secrets |
-| [main.tf](../iac/main.tf) | The module calls, and the Proxmox version as an output |
+| [secrets.tf](../iac/secrets.tf) | Reads `kv/opentofu`, `kv/config`, `kv/services/*` and `kv/talos` from OpenBao |
+| [providers.tf](../iac/providers.tf) | Proxmox, Cloudflare, Docker, Tailscale, OpenBao, Pocket ID, Helm and Kubernetes, configured with those secrets and the cluster's admin credentials |
+| [main.tf](../iac/main.tf) | The module calls, the Talos node list, and the outputs: the Proxmox version, `talosconfig`, `kubeconfig` |
 | `terraform.tfstate`, `terraform.tfvars` | Local only, git-ignored |
 | `.terraform.lock.hcl` | Pinned provider checksums, kept in git |
 
 | Module | What it manages |
 |--------|-----------------|
 | [proxmox](../iac/modules/proxmox/) | The Debian cloud image, the services VM and its firewall, the daily backup job, the ACME plugin and certificate, the Pocket ID realm |
-| [dns](../iac/modules/dns/) | The `*.home.<domain>` records |
+| [dns](../iac/modules/dns/) | The `*.home.<domain>` records: services on Caddy, cluster apps on the Gateway |
 | [services](../iac/modules/services/) | The containers on the services VM, each config file next to its `.tf` ([07. Services VM](07-services.md)) |
-| [pocketid](../iac/modules/pocketid/) | The OIDC clients for OpenBao and Proxmox |
-| [openbao](../iac/modules/openbao/) | OpenBao's own configuration: `kv`, `userpass`, the `admin` policy, my user's token settings, OIDC login |
-| [tailscale](../iac/modules/tailscale/) | The tailnet policy ([02. Tailscale](02-tailscale.md#policy-in-opentofu)) |
+| [pocketid](../iac/modules/pocketid/) | The OIDC clients for OpenBao, Proxmox and Immich |
+| [openbao](../iac/modules/openbao/) | OpenBao's own configuration: `kv`, `userpass`, the `admin` policy, my user's token settings, OIDC login, the JWT login for the cluster |
+| [tailscale](../iac/modules/tailscale/) | The tailnet policy, the nodes' auth key, the Gateway's tailnet IP ([02. Tailscale](02-tailscale.md#keys-and-clients-made-by-opentofu)) |
+| [talos](../iac/modules/talos/) | The image, the VMs and their firewall, the machine configs from [talos/](../talos/), bootstrap, and the cluster secrets in OpenBao ([09. Talos](09-talos.md)) |
+| [cilium](../iac/modules/cilium/) | Cilium, once, so a new cluster has a network before Flux runs. `ignore_changes = all`: Flux owns it afterwards |
+| [flux](../iac/modules/flux/) | The Flux Operator and the `FluxInstance` |
+| [k8s](../iac/modules/k8s/) | What the cluster needs from outside: `cluster-settings`, the operator's OAuth client, the copies in `kv/k8s/*` |
+
+| Provider | Version | Used for |
+|----------|---------|----------|
+| `bpg/proxmox` | `~> 0.114` | VMs, firewall, backups, ACME, realm |
+| `cloudflare/cloudflare` | `~> 5.26` | DNS |
+| `kreuzwerker/docker` | `~> 4.6` | The services VM's containers, over SSH |
+| `hashicorp/vault` | `~> 5.12` | OpenBao, reads and its configuration |
+| `tailscale/tailscale` | `~> 0.29` | Policy, keys, OAuth clients, devices |
+| `trozz/pocketid` | `~> 2.5` | OIDC clients. Community provider without a signing key in the registry |
+| `siderolabs/talos` | `~> 0.12` | Image Factory, machine configs, bootstrap |
+| `hashicorp/helm` | `~> 3.3` | Cilium and Flux |
+| `hashicorp/kubernetes` | `~> 3.0` | `cluster-settings` |
+| `hashicorp/tls` | `~> 4.1` | The public half of the cluster's service-account key |
 
 Providers are configured only in the root and passed down by default.
 Secrets reach a module as inputs: the ACME token is an `ephemeral`
@@ -142,9 +159,14 @@ Running it, after one `bao login`:
 ```bash
 cd iac
 export TF_VAR_state_passphrase="$(bao kv get -mount=kv -field=state_passphrase services/opentofu)"
-tofu plan
-tofu apply
+tofu plan -out=change.tfplan
+tofu show -json change.tfplan | jq -r '.resource_changes[] | select(.change.actions != ["no-op"] and .change.actions != ["read"]) | "\(.change.actions) \(.address)"'
+tofu apply change.tfplan
 ```
+
+Every change goes through a saved plan: the list of what changes is read
+first, and exactly that plan is applied, nothing that appeared since. A
+plan with a `delete` that was not expected stops there.
 
 `terraform.tfvars` holds the domain, the `pve` tailnet address and the
 Let's Encrypt email: the settings OpenTofu needs even when OpenBao is
@@ -274,6 +296,7 @@ Public A records in Cloudflare point each name at its tailnet IP:
 | Name | Points to |
 |------|-----------|
 | `pve.home.<domain>` | The services stack's tailnet IP; Caddy forwards to the web UI |
+| `immich.home.<domain>` | The cluster Gateway's tailnet IP, read from the Tailscale API (`cluster_apps` in `main.tf`) |
 | `proxmox.home.<domain>` | `pve`'s own tailnet IP, port `8006`; used by OpenTofu |
 | `s3.home.<domain>` | The services stack's tailnet IP; Caddy forwards to Garage |
 | `auth.home.<domain>` | The services stack's tailnet IP; Caddy forwards to Pocket ID |
@@ -282,9 +305,9 @@ Public A records in Cloudflare point each name at its tailnet IP:
 They resolve for anyone, but the `100.x` addresses only answer inside the
 tailnet. The other options were split DNS on the tailnet (one more
 service to run, and nothing resolves when it is down) and `/etc/hosts`
-on every device (no phones). Public records reveal the host names, so the
-certificates are per host rather than one wildcard: a wildcard would hide
-nothing more.
+on every device (no phones). Public records reveal the host names, so Caddy's
+certificates are per host. The cluster uses one wildcard,
+`*.home.<domain>`, so a new app needs no new certificate.
 
 ### Cloudflare tokens
 
