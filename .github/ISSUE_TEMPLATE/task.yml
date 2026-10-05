@@ -1,0 +1,27 @@
+name: Task
+description: Planned work, a follow-up or a gap
+labels: []
+body:
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: The problem or the risk, in one or two sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: The change, without the step-by-step.
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: Checkable results, one per line.
+      value: |
+        - [ ]
+    validations:
+      required: true
