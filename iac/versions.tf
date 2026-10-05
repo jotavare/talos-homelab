@@ -14,6 +14,10 @@ terraform {
       source  = "kreuzwerker/docker"
       version = "~> 4.6"
     }
+    talos = {
+      source  = "siderolabs/talos"
+      version = "~> 0.12"
+    }
     tailscale = {
       source  = "tailscale/tailscale"
       version = "~> 0.29"

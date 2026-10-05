@@ -42,6 +42,11 @@ module "tailscale" {
   policy = file("${path.root}/../tailscale/policy.hujson")
 }
 
+module "talos" {
+  source        = "./modules/talos"
+  talos_version = "v1.14.2"
+}
+
 output "proxmox_version" {
   value = module.proxmox.version
 }
