@@ -22,6 +22,10 @@ terraform {
       source  = "tailscale/tailscale"
       version = "~> 0.29"
     }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 3.3"
+    }
     pocketid = {
       source  = "trozz/pocketid"
       version = "~> 2.5"

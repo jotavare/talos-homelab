@@ -57,6 +57,14 @@ module "talos" {
   }
 }
 
+module "cilium" {
+  source        = "./modules/cilium"
+  chart_version = "1.20.2"
+  values        = file("${path.root}/../gitops/infrastructure/cilium/values.yaml")
+
+  depends_on = [module.talos]
+}
+
 output "proxmox_version" {
   value = module.proxmox.version
 }

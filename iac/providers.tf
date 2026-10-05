@@ -24,3 +24,12 @@ provider "pocketid" {
   base_url  = "https://auth.home.${var.domain}"
   api_token = local.secrets["pocket-id"]["api_key"]
 }
+
+provider "helm" {
+  kubernetes = {
+    host                   = module.talos.kubernetes.host
+    cluster_ca_certificate = base64decode(module.talos.kubernetes.ca_certificate)
+    client_certificate     = base64decode(module.talos.kubernetes.client_certificate)
+    client_key             = base64decode(module.talos.kubernetes.client_key)
+  }
+}
