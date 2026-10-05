@@ -1,5 +1,6 @@
-drafts/
 .env
+.env.*
+drafts/
 
 secrets/*
 !secrets/*.sops.yaml
@@ -7,11 +8,13 @@ keys.txt
 *.agekey
 *.dec.yaml
 *.dec.json
+*.pem
+*.key
 
 .terraform/
 *.tfplan
 *.tfstate
-*.tfstate.backup
+*.tfstate.*
 *.tfvars
 *.tfvars.json
 crash.log
@@ -22,9 +25,16 @@ override.tf.json
 *_override.tf.json
 .terraformrc
 terraform.rc
+.tofurc
 
 talosconfig
 kubeconfig
 *.kubeconfig
+/secrets.yaml
+/controlplane.yaml
+/worker.yaml
 
+.ansible/
 *.retry
+
+*.sarif
