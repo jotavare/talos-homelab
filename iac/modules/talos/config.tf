@@ -19,8 +19,8 @@ data "talos_machine_configuration" "node" {
   machine_type     = each.value.role
   machine_secrets  = talos_machine_secrets.this.machine_secrets
   talos_version    = var.talos_version
-  docs             = false
-  examples         = false
+  docs             = true
+  examples         = true
 
   config_patches = concat(
     [

@@ -8,3 +8,12 @@ resource "vault_kv_secret_v2" "cluster" {
     kubeconfig      = talos_cluster_kubeconfig.this.kubeconfig_raw
   })
 }
+
+resource "vault_kv_secret_v2" "machine_configs" {
+  mount = "kv"
+  name  = "talos/machine-configs"
+
+  data_json = jsonencode({
+    for k, v in data.talos_machine_configuration.node : k => v.machine_configuration
+  })
+}

@@ -211,10 +211,15 @@ each node, in its encrypted `STATE` partition, read through the API:
 talosctl -n 192.168.1.15 get machineconfig -o yaml   # contains secrets, do not paste it anywhere
 ```
 
-To read every field with its documentation, generate a throwaway config
-outside the repo: `talosctl gen config test https://192.168.1.20:6443`
-writes `controlplane.yaml` with a comment above each field. The node
-stores its config without comments.
+The configs are generated with Talos' own documentation (`docs` and
+`examples` on), a comment above each field, the same file
+`talosctl gen config` writes. The node keeps only a few of those
+comments, so the full commented file of each node is also stored in
+OpenBao by OpenTofu:
+
+```bash
+bao kv get -mount=kv -field=talos-cp-1 talos/machine-configs   # contains secrets
+```
 
 ### Secrets and configs in OpenBao
 
