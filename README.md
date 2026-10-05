@@ -189,6 +189,7 @@ written down and the homelab knowingly does something simpler.
 | OpenTofu state | Remote backend with locking and versioning (S3, GCS, Azure Blob) on separate infrastructure | One local state file on my laptop, encrypted with a passphrase. No locking, no history, no copy elsewhere; fine for one person on one laptop, and it can be rebuilt with imports ([details](docs/opentofu.md#how-the-state-got-here)) |
 | Object storage | Several nodes with replication, versioning and object lock, plus a copy off site | One Garage in the services VM on the same host, one copy of each object, no versioning. Survives a cluster rebuild, not the loss of the host or the drive ([details](docs/services.md#limits)) |
 | File storage | A NAS on wired network with mirrored or RAID-Z disks, snapshots sent off site | ZFS on one HDD in an old desktop on WiFi. Checksums catch damage but cannot repair it, and nothing is copied off it yet ([details](docs/nas.md#limits)) |
+| Metrics | Kubelet serving certificates signed by the cluster (`rotate-server-certificates` plus kubelet-serving-cert-approver), checked by metrics-server | metrics-server with `--kubelet-insecure-tls`: one flag instead of a kubelet change on every node. It only talks to the nodes inside the cluster ([details](docs/platform.md#metrics)) |
 | Tailnet devices in the cluster | The Tailscale operator signs its own proxies, or Tailnet Lock is off | The operator cannot sign under Tailnet Lock yet, so each proxy it creates is signed once by hand with `tailscale lock sign` on `pve` ([details](docs/tailscale.md#tailnet-lock)) |
 | Backups | Proxmox Backup Server on a separate machine, plus a copy off site | A daily backup job for the services VM to `local` now, Proxmox Backup Server as a VM on the same host later. Both protect against mistakes, not against losing the host ([details](docs/proxmox.md#container-backups)) |
 
@@ -225,14 +226,19 @@ phase page.
 
 - [ ] A second disk for a mirror, or a copy of `tank/files` off the host.
 - [ ] Scrub `tank` monthly and alert on errors.
+- [ ] ZFS snapshots of `tank/k8s` (sanoid or a cron job in the `nas`
+      role), so photos deleted by mistake can come back.
+- [ ] A cable for `pve-desktop`, or a powerline adapter. Imports run at
+      about 9 MB/s over WiFi.
 
 ### Cluster follow-ups
 
 - [ ] The `tag:talos` auth key expires after 90 days. Nodes already joined
       keep working; a rebuild needs a new key, signed again on `pve`.
-- [ ] Backups: CloudNativePG to Garage, Longhorn snapshots. The photo
-      library already has a copy on a separate disk of mine; Immich also
-      dumps its own database to the NAS every night.
+- [ ] Backups: CloudNativePG to Garage every day, Longhorn snapshots.
+      Albums, faces and people live only in Postgres, on one Longhorn
+      replica. The photo library already has a copy on a separate disk of
+      mine; Immich also dumps its own database to the NAS every night.
 
 ### Platform
 

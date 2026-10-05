@@ -14,7 +14,7 @@ extension. Its chart recommends exactly this setup, and
 
 | File | What |
 |------|------|
-| `database.yaml` | A one-instance `Cluster` on Longhorn (5 Gi), Postgres 18, with the VectorChord extension mounted as an image (`vchord-scratch`) and loaded at start. A `Database` resource creates the extensions Immich uses |
+| `database/cluster.yaml` | A one-instance `Cluster` on Longhorn (5 Gi), Postgres 18, with the VectorChord extension mounted as an image (`vchord-scratch`) and loaded at start. A `Database` resource creates the extensions Immich uses |
 | `library.yaml` | The photo library, a claim on the `nas` storage class: the files live on `pve-desktop` in `/tank/k8s/immich/immich-library` |
 | `database/secret.yaml` | An `ExternalSecret` with the database user and password from OpenBao `kv/k8s/immich-database`. CloudNativePG applies it to the `app` role through `managed.roles` and follows changes (`cnpg.io/reload`) |
 | `repository.yaml`, `release.yaml` | The Immich chart from its OCI registry, with Valkey on, the library claim, and the database credentials from that secret. CloudNativePG's own generated `immich-database-app` is not used |
@@ -29,6 +29,31 @@ extension. Its chart recommends exactly this setup, and
 
 The Flux step `immich` waits for `cnpg`, `longhorn` and `nfs-config`
 ([gitops/flux/projects.yaml](../gitops/flux/projects.yaml)).
+
+The library has a real limit of 400G, a ZFS project quota on its folder
+([NAS, Quotas](nas.md#quotas)), and the claim says 400 Gi to match.
+
+## Resources
+
+Every pod has a memory limit and CPU and memory requests. No CPU limits:
+they throttle a pod even when the CPU is idle, and a burst of thumbnails
+or face detection should use the free cores.
+
+| Pod | CPU request | Memory request | Memory limit |
+|-----|-------------|----------------|--------------|
+| server | 250m | 512Mi | 4Gi |
+| machine-learning | 250m | 1Gi | 4Gi |
+| valkey | 50m | 64Mi | 256Mi |
+| database | 100m | 256Mi | 1Gi |
+
+Under load the server sat near 3.8Gi of its 4Gi, but only
+1.3Gi of that was its own memory; the rest was file cache, which the
+kernel frees first. Check what a pod really uses with `kubectl top` or
+`anon` in its cgroup:
+
+```bash
+kubectl -n immich exec deploy/immich-server -- grep -E '^(anon|file) ' /sys/fs/cgroup/memory.stat
+```
 
 ## Deploy
 

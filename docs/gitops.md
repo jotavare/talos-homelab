@@ -56,6 +56,7 @@ gitops/
     cnpg/
     nfs/                NFS CSI driver
       config/           the storage class for the NAS
+    metrics-server/     CPU and memory for kubectl top
   projects/
     immich/
       database/         namespace and Postgres, applied first

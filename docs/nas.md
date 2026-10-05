@@ -79,6 +79,34 @@ ZFS checksums every block, so a dying disk shows up as errors in
 `zpool status` instead of silently bad photos. With one disk it can
 detect damage but not repair it.
 
+## Quotas
+
+The size on a claim of the `nas` class is only a label. The CSI driver
+makes a folder and enforces nothing, so a pod sees the free space of the
+whole pool: Immich showed about 900 GB on a 500 Gi claim.
+
+A real limit comes from a ZFS project quota. A folder and everything
+under it get a project ID, and the quota on `tank/k8s` caps that
+project. `df` inside the folder, and so over NFS, shows the quota, so
+Immich reports the right size. The rest of the pool stays free for other
+things.
+
+| Folder | Project | Quota |
+|--------|---------|-------|
+| `k8s/immich/immich-library` | 1 | 400G |
+
+The list is `nas_quotas` in the role's defaults. The role tags every file
+under the folder (`zfs project -s -r`), not only the folder itself: files
+written before the tag kept project 0 and did not count. It checks with
+`zfs project -c -r`, so a second run changes nothing. The claim is
+400 Gi to match. A claim cannot shrink, so changing it from 500 Gi meant
+deleting and recreating it; with `Retain` and the folder named after the
+claim, the files stayed where they were.
+
+```bash
+zfs projectspace tank/k8s
+```
+
 ## Shares
 
 | Share | For | Address | Login |
@@ -108,7 +136,7 @@ corrupt.
 |-------|--------|
 | One disk | No redundancy. A dead disk loses everything on it |
 | No backup | Nothing is copied off the pool yet. Keep originals elsewhere until a second disk or an off-site copy exists |
-| WiFi | 100 to 400 Mbps depending on signal, and the link can drop. Fine for files and photos, not for databases |
+| WiFi | A 433 Mbit/s link at -42 dBm, but about 9 MB/s from the laptop through the cluster. Fine for files and photos, not for databases |
 | Off when `pve` is off | Apps that mount it must wait for it at boot |
 
 ## Tailnet and firewall

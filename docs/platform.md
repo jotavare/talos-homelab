@@ -135,6 +135,23 @@ Things found on the way:
 Adding an app: its folder in `projects/`, an `HTTPRoute` with
 `<name>.home.${DOMAIN}`, and its name in `cluster_apps`.
 
+## Metrics
+
+[metrics-server](https://github.com/kubernetes-sigs/metrics-server)
+3.14.0 reads CPU and memory from each kubelet, so `kubectl top` works and
+memory limits can be checked against what pods really use. Without it,
+`kubectl top` fails with `Metrics API not available`.
+
+The kubelet serves a certificate that Talos signs itself, not the
+cluster CA, so metrics-server runs with `--kubelet-insecure-tls`. It only
+talks to the nodes inside the cluster. The proper way is in the README's
+POC trade-offs.
+
+```bash
+kubectl top nodes
+kubectl top pods -n immich
+```
+
 ## References
 
 - [Cilium on Talos](https://www.talos.dev/v1.14/kubernetes-guides/network/deploying-cilium/)
