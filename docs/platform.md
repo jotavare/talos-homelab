@@ -163,7 +163,7 @@ kept both workers near 100%.
 | Host | IOMMU is on by default; the iGPU is alone in IOMMU group 0. `vfio-pci` claims it at boot before `i915` or `xe` can | [proxmox/vfio/](../proxmox/vfio/), `proxmox_host` role |
 | Proxmox | A PCI resource mapping `igpu` (`0000:00:02.0`, `8086:4690`), attached to the VM as `hostpci0` with PCIe on | [iac/modules/talos/gpu.tf](../iac/modules/talos/gpu.tf), `gpu = true` on the node in `iac/main.tf` |
 | Talos | The `i915` extension, and the node label `intel-gpu=true` in a `KubeNodeConfig` | [talos/gpu.yaml](../talos/gpu.yaml), [Talos, Image](talos.md#image) |
-| Kubernetes | Intel's GPU device plugin, straight from its repository at a pinned tag, only on the labelled node, `-shared-dev-num=2` | `intel-gpu` and `intel-gpu-plugin` in [gitops/flux/infrastructure.yaml](../gitops/flux/infrastructure.yaml) |
+| Kubernetes | Intel's GPU device plugin, straight from its repository at a pinned tag, only on the labelled node, `-shared-dev-num=4` | `intel-gpu` and `intel-gpu-plugin` in [gitops/flux/infrastructure.yaml](../gitops/flux/infrastructure.yaml) |
 | Immich | `gpu.intel.com/i915: 1` on the server and machine learning | [Immich, Resources](immich.md#resources) |
 
 Full passthrough, not SR-IOV: the UHD 770 can split into 7 virtual GPUs,
@@ -182,8 +182,11 @@ already set in v1alpha1 config`).
 The plugin needs the host's `/dev/dri`, which Talos' default `baseline`
 pod security forbids, so it has its own namespace with
 `pod-security.kubernetes.io/enforce: privileged`. With
-`-shared-dev-num=2` the node offers `gpu.intel.com/i915: 2`, one for each
-Immich pod that uses it.
+`-shared-dev-num=4` the node offers `gpu.intel.com/i915: 4`. Two Immich
+pods use it, and a rolling update starts the new pod before it stops the
+old one, so each needs a spare slot: with 2, the new machine learning
+pod stayed `Pending` until the old one was gone, which never happened.
+The slots only limit scheduling, every pod shares the same GPU.
 
 ```bash
 talosctl -n 192.168.1.22 ls /dev/dri
