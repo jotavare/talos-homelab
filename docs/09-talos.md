@@ -151,7 +151,11 @@ Talos 1.14 splits the machine config into many small documents
 `KubeProxyConfig`, ...). The old `machine.install`,
 `machine.network.nameservers` and `machine.kubelet.nodeIP` fields are
 rejected next to them (`.machine.install is already set in v1alpha1
-config`), so the patches target the documents:
+config`), so the patches target the documents. They are plain Talos
+YAML in [talos/](../talos/), filled in by OpenTofu with `templatefile`:
+[common.yaml](../talos/common.yaml) for every node,
+[controlplane.yaml](../talos/controlplane.yaml) for control planes, and
+[tailscale.yaml](../talos/tailscale.yaml) with the auth key.
 
 | Patch | Nodes | Why |
 |-------|-------|-----|
@@ -198,14 +202,19 @@ from two parts:
 | Part | Where |
 |------|-------|
 | The secrets | `talos_machine_secrets`, in the encrypted state and in OpenBao `kv/talos/cluster` |
-| Everything else | The Talos defaults plus the patches in [config.tf](../iac/modules/talos/config.tf), in git |
+| Everything else | The Talos defaults plus the patches in [talos/](../talos/), in git |
 
 So the repo holds only what differs from the defaults. The full file is on
-each node:
+each node, in its encrypted `STATE` partition, read through the API:
 
 ```bash
 talosctl -n 192.168.1.15 get machineconfig -o yaml   # contains secrets, do not paste it anywhere
 ```
+
+To read every field with its documentation, generate a throwaway config
+outside the repo: `talosctl gen config test https://192.168.1.20:6443`
+writes `controlplane.yaml` with a comment above each field. The node
+stores its config without comments.
 
 ### Secrets and configs in OpenBao
 

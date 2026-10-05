@@ -4,51 +4,7 @@ locals {
   first_cp      = keys(local.controlplanes)[0]
   installer     = "factory.talos.dev/nocloud-installer/${talos_image_factory_schematic.this.id}:${var.talos_version}"
 
-  common = [
-    yamlencode({
-      machine = {
-        sysctls = {
-          "net.ipv6.conf.all.accept_ra"     = "0"
-          "net.ipv6.conf.all.autoconf"      = "0"
-          "net.ipv6.conf.default.accept_ra" = "0"
-          "net.ipv6.conf.default.autoconf"  = "0"
-        }
-      }
-    }),
-    yamlencode({
-      apiVersion = "v1alpha1"
-      kind       = "UnattendedInstallConfig"
-      installer  = { image = local.installer }
-      provisioning = {
-        diskSelector = { match = "disk.dev_path == \"/dev/sda\"" }
-      }
-    }),
-    yamlencode({
-      apiVersion  = "v1alpha1"
-      kind        = "ResolverConfig"
-      nameservers = [{ address = "1.1.1.1" }]
-    }),
-    yamlencode({
-      apiVersion = "v1alpha1"
-      kind       = "KubeNodeConfig"
-      nodeIP     = { validSubnets = ["192.168.1.0/24"] }
-    }),
-    yamlencode({
-      apiVersion = "v1alpha1"
-      kind       = "KubeFlannelCNIConfig"
-      "$patch"   = "delete"
-    }),
-  ]
-
-  tailscale = yamlencode({
-    apiVersion = "v1alpha1"
-    kind       = "ExtensionServiceConfig"
-    name       = "tailscale"
-    environment = [
-      "TS_AUTHKEY=${var.tailscale_auth_key}",
-      "TS_ACCEPT_DNS=false",
-    ]
-  })
+  patches = "${path.root}/../talos"
 }
 
 resource "talos_machine_secrets" "this" {
@@ -67,32 +23,16 @@ data "talos_machine_configuration" "node" {
   examples         = false
 
   config_patches = concat(
-    local.common,
-    [local.tailscale],
+    [
+      templatefile("${local.patches}/common.yaml", { installer = local.installer }),
+      templatefile("${local.patches}/tailscale.yaml", { auth_key = var.tailscale_auth_key }),
+    ],
     each.value.role == "controlplane" ? [
-      yamlencode({
-        machine = {
-          certSANs = [var.vip, each.value.ip, "${each.key}.${var.tailnet}"]
-        }
-        cluster = {
-          etcd = { advertisedSubnets = ["192.168.1.0/24"] }
-        }
-      }),
-      yamlencode({
-        apiVersion    = "v1alpha1"
-        kind          = "KubeAPIServerConfig"
-        certExtraSANs = [var.vip, each.value.ip, "${each.key}.${var.tailnet}"]
-      }),
-      yamlencode({
-        apiVersion = "v1alpha1"
-        kind       = "KubeProxyConfig"
-        enabled    = false
-      }),
-      yamlencode({
-        apiVersion = "v1alpha1"
-        kind       = "Layer2VIPConfig"
-        name       = var.vip
-        link       = "eth0"
+      templatefile("${local.patches}/controlplane.yaml", {
+        vip      = var.vip
+        ip       = each.value.ip
+        hostname = each.key
+        tailnet  = var.tailnet
       }),
     ] : []
   )

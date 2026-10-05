@@ -1,0 +1,25 @@
+machine:
+  certSANs:
+    - ${vip}
+    - ${ip}
+    - ${hostname}.${tailnet}
+cluster:
+  etcd:
+    advertisedSubnets:
+      - 192.168.1.0/24
+---
+apiVersion: v1alpha1
+kind: KubeAPIServerConfig
+certExtraSANs:
+  - ${vip}
+  - ${ip}
+  - ${hostname}.${tailnet}
+---
+apiVersion: v1alpha1
+kind: KubeProxyConfig
+enabled: false
+---
+apiVersion: v1alpha1
+kind: Layer2VIPConfig
+name: ${vip}
+link: eth0
