@@ -9,6 +9,7 @@ spec:
     - name: longhorn
     - name: external-secrets-config
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/projects/immich/database
   prune: true
   wait: true
@@ -28,6 +29,7 @@ spec:
     - name: nfs-config
     - name: gateway
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/projects/immich
   prune: true
   wait: true

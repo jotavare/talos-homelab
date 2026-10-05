@@ -5,6 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1h
+  retryInterval: 1m
   path: ./gitops/infrastructure/gateway-api
   prune: false
   sourceRef:
@@ -20,6 +21,7 @@ spec:
   dependsOn:
     - name: gateway-api
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/infrastructure/cilium
   prune: false
   wait: true
@@ -37,6 +39,7 @@ spec:
   dependsOn:
     - name: cilium
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/infrastructure/cilium/config
   prune: true
   sourceRef:
@@ -52,6 +55,7 @@ spec:
   dependsOn:
     - name: cilium
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/infrastructure/nfs
   prune: true
   wait: true
@@ -69,6 +73,7 @@ spec:
   dependsOn:
     - name: nfs
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/infrastructure/nfs/config
   prune: true
   sourceRef:
@@ -84,6 +89,7 @@ spec:
   dependsOn:
     - name: cilium
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/infrastructure/longhorn
   prune: true
   wait: true
@@ -101,6 +107,7 @@ spec:
   dependsOn:
     - name: cilium
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/infrastructure/cnpg
   prune: true
   wait: true
@@ -118,6 +125,7 @@ spec:
   dependsOn:
     - name: cilium
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/infrastructure/external-secrets
   prune: true
   wait: true
@@ -135,6 +143,7 @@ spec:
   dependsOn:
     - name: external-secrets
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/infrastructure/external-secrets/config
   prune: true
   wait: true
@@ -155,6 +164,7 @@ spec:
   dependsOn:
     - name: cilium
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/infrastructure/cert-manager
   prune: true
   wait: true
@@ -173,6 +183,7 @@ spec:
     - name: cert-manager
     - name: external-secrets-config
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/infrastructure/cert-manager/config
   prune: true
   wait: true
@@ -189,6 +200,7 @@ spec:
   dependsOn:
     - name: external-secrets-config
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/infrastructure/tailscale
   prune: true
   wait: true
@@ -208,6 +220,7 @@ spec:
     - name: cert-manager-config
     - name: tailscale
   interval: 10m
+  retryInterval: 1m
   path: ./gitops/infrastructure/gateway
   prune: true
   wait: true
