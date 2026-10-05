@@ -32,7 +32,15 @@ resource "docker_container" "tailscale" {
     "TS_EXTRA_ARGS=--advertise-tags=tag:services",
     "TS_TAILSCALED_EXTRA_ARGS=--port=41641",
     "TS_ACCEPT_DNS=false",
+    "TS_SERVE_CONFIG=/config/serve.json",
   ]
+
+  upload {
+    file = "/config/serve.json"
+    content = jsonencode({
+      TCP = { "443" = { TCPForward = "caddy:443" } }
+    })
+  }
 
   upload {
     file        = "/run/secrets/tailscale_auth_key"
@@ -54,11 +62,6 @@ resource "docker_container" "tailscale" {
   networks_advanced {
     name = docker_network.services.name
   }
-
-  networks_advanced {
-    name    = docker_network.backend.name
-    aliases = ["auth.home.${var.domain}"]
-  }
 }
 
 resource "docker_container" "caddy" {
@@ -66,7 +69,6 @@ resource "docker_container" "caddy" {
   image                 = docker_image.caddy.image_id
   restart               = "unless-stopped"
   destroy_grace_seconds = 30
-  network_mode          = "container:${docker_container.tailscale.id}"
 
   env = [
     "DOMAIN=${var.domain}",
@@ -92,5 +94,14 @@ resource "docker_container" "caddy" {
   volumes {
     volume_name    = docker_volume.caddy_config.name
     container_path = "/config"
+  }
+
+  networks_advanced {
+    name = docker_network.services.name
+  }
+
+  networks_advanced {
+    name    = docker_network.backend.name
+    aliases = ["auth.home.${var.domain}"]
   }
 }
