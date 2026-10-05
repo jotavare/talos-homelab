@@ -1,0 +1,91 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    ":dependencyDashboard",
+    ":semanticCommitTypeAll(chore)"
+  ],
+  "timezone": "Europe/Lisbon",
+  "schedule": ["before 9am on monday"],
+  "labels": ["dependencies"],
+  "pre-commit": {
+    "enabled": true
+  },
+  "flux": {
+    "managerFilePatterns": ["/^gitops/.+\\.ya?ml$/"]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Talos release in the OpenTofu root",
+      "managerFilePatterns": ["/^iac/main\\.tf$/"],
+      "matchStrings": ["talos_version\\s*=\\s*\"(?<currentValue>v[^\"]+)\""],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "siderolabs/talos"
+    },
+    {
+      "customType": "regex",
+      "description": "Cilium chart installed by OpenTofu",
+      "managerFilePatterns": ["/^iac/main\\.tf$/"],
+      "matchStrings": ["module \"cilium\"[\\s\\S]*?chart_version\\s*=\\s*\"(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "helm",
+      "registryUrlTemplate": "https://helm.cilium.io",
+      "depNameTemplate": "cilium"
+    },
+    {
+      "customType": "regex",
+      "description": "Flux Operator chart installed by OpenTofu",
+      "managerFilePatterns": ["/^iac/main\\.tf$/"],
+      "matchStrings": ["operator_version\\s*=\\s*\"(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/controlplaneio-fluxcd/charts/flux-operator"
+    },
+    {
+      "customType": "regex",
+      "description": "Container images pinned by digest in OpenTofu",
+      "managerFilePatterns": ["/^iac/modules/.+\\.tf$/"],
+      "matchStrings": ["name\\s*=\\s*\"(?<depName>[^\":@]+):(?<currentValue>[^\"@]+)@(?<currentDigest>sha256:[a-f0-9]+)\""],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Immich server image tag in the HelmRelease values",
+      "managerFilePatterns": ["/^gitops/projects/immich/release\\.yaml$/"],
+      "matchStrings": ["image:\\s*\\n\\s*tag:\\s*(?<currentValue>v[^\\s]+)"],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/immich-app/immich-server"
+    },
+    {
+      "customType": "regex",
+      "description": "VectorChord extension image for the Immich database",
+      "managerFilePatterns": ["/^gitops/projects/immich/database/cluster\\.yaml$/"],
+      "matchStrings": ["reference:\\s*(?<depName>[^\\s:]+):(?<currentValue>[^\\s]+)"],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "regex:^pg18-v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["terraform"],
+      "registryUrls": ["https://registry.opentofu.org"]
+    },
+    {
+      "description": "Cilium is pinned in OpenTofu and in Flux, update both together",
+      "matchPackageNames": ["cilium"],
+      "groupName": "cilium"
+    },
+    {
+      "matchManagers": ["terraform"],
+      "groupName": "opentofu providers"
+    },
+    {
+      "matchManagers": ["github-actions", "pre-commit"],
+      "groupName": "ci tools"
+    },
+    {
+      "matchPackageNames": ["siderolabs/talos"],
+      "groupName": "talos"
+    }
+  ]
+}
