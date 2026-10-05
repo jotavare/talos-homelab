@@ -16,6 +16,12 @@ spec:
         immich-config.yaml: |
           server:
             externalDomain: https://immich.home.${DOMAIN}
+            publicUsers: false
+          newVersionCheck:
+            enabled: false
+          storageTemplate:
+            enabled: true
+            template: "{{`{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}`}}"
           passwordLogin:
             enabled: true
           oauth:
