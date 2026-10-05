@@ -40,15 +40,27 @@ please tell me through a [private security report](.github/SECURITY.md).
 ## Diagrams
 
 <p align="center">
-  <img src="diagrams/overview.png" alt="Homelab overview: ISP router, Wi-Fi access point and a Proxmox host running a services VM with Caddy, OpenBao and Garage, and the planned Talos VMs, with admin access from a laptop or phone only over Tailscale">
+  <img src="diagrams/overview.png" alt="Homelab overview: ISP router and Wi-Fi access point on a flat LAN, the Proxmox host pve with the services VM and three Talos VMs on its bridge, the old desktop pve-desktop as the NAS over Wi-Fi, and a laptop or phone reaching each of them only over Tailscale, by port">
   <br>
-  <sub><b>Overview.</b> One flat LAN, a services VM and the planned Talos VMs bridged onto it, management over Tailscale only.</sub>
+  <sub><b>Overview.</b> One flat LAN, two Proxmox hosts, management and apps over Tailscale only.</sub>
 </p>
 
 <p align="center">
-  <img src="diagrams/proxmox.png" alt="Proxmox host plan: 32 GB of RAM split between the host, the services VM and the planned control plane and three workers on the vmbr0 bridge, and the NVMe split into VM disks, ISOs and swap">
+  <img src="diagrams/proxmox.png" alt="The Proxmox host pve: the services VM and three Talos VMs with their IDs, addresses and sizes, 32 GB of RAM split between the host, the VMs and about 6 GB free, and the 348 GB thin pool split into the VM disks and a Longhorn disk per worker">
   <br>
-  <sub><b>Proxmox.</b> Split of RAM and disk between the host, the services VM, and the planned control plane and three workers. Production needs three control planes for etcd quorum; one is used here to leave more room for apps (<a href="docs/01-proxmox.md#planned-vms">why</a>).</sub>
+  <sub><b>Proxmox.</b> The VMs on <code>pve</code>, and how RAM and disk are split. One control plane instead of three, to leave room for apps (<a href="docs/01-proxmox.md#planned-vms">why</a>).</sub>
+</p>
+
+<p align="center">
+  <img src="diagrams/request-path.png" alt="Request path: from the tailnet, cluster apps go through the Tailscale operator's gateway proxy, the Cilium Gateway with a wildcard certificate and an HTTPRoute; services outside the cluster go through the services VM's Tailscale container and Caddy">
+  <br>
+  <sub><b>Request path.</b> Cluster apps through the Gateway, everything else through Caddy (<a href="docs/09-talos.md#9-secrets-certificates-and-the-gateway">how</a>).</sub>
+</p>
+
+<p align="center">
+  <img src="diagrams/secrets.png" alt="Secrets flow: secrets generated into OpenBao with offline copies in Bitwarden; OpenTofu reads its tokens and writes the cluster secrets, Ansible applies host passwords, External Secrets logs in with the cluster's token and creates Kubernetes Secrets for the apps">
+  <br>
+  <sub><b>Secrets.</b> OpenBao is the source of truth; nothing secret is in git (<a href="docs/04-secrets.md">details</a>).</sub>
 </p>
 
 <p align="center">
@@ -241,16 +253,6 @@ phase page.
 
 - [ ] A second disk for a mirror, or a copy of `tank/files` off the host.
 - [ ] Scrub `tank` monthly and alert on errors.
-
-### Docs and diagrams
-
-- [ ] Diagrams: redraw `overview` (two hosts, the NAS, the real Talos VMs)
-      and `proxmox` (VM IDs, sizes, the data disks, RAM left).
-- [ ] New diagram: request path, tailnet to Gateway to app, next to the
-      Caddy path for services outside the cluster.
-- [ ] New diagram: GitOps, Flux steps and their `dependsOn` order.
-- [ ] New diagram: secrets flow, OpenBao to OpenTofu, Ansible and External
-      Secrets.
 
 ### Cluster follow-ups
 

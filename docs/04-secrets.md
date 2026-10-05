@@ -7,6 +7,8 @@ only an example in the repo.
 
 ## Where secrets live
 
+![Secrets flow: secrets generated into OpenBao with offline copies in Bitwarden; OpenTofu reads its tokens and writes the cluster secrets, Ansible applies host passwords, External Secrets creates Kubernetes Secrets for the apps](../diagrams/secrets.png)
+
 | Secret | Where | Why |
 |--------|-------|-----|
 | OpenTofu's tokens (Proxmox, Cloudflare, Tailscale) | **OpenBao** `kv/opentofu`, read by the `vault` provider as ephemeral values | Never written to the state or to disk |

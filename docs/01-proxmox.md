@@ -608,11 +608,10 @@ in `/etc/network/interfaces`. The extra CPU work is negligible at 1 Gbit.
 
 ## Planned VMs
 
-The plan for the Talos VMs and the services VM, drawn
-before they exist. It changes if the numbers turn out wrong once the
-cluster runs.
+The Talos VMs and the services VM. Planned before they existed, and
+changed once: two workers instead of three, so the RAM fits.
 
-![Proxmox host plan: 32 GB of RAM split between the host, the services VM and the planned control plane and three workers on the vmbr0 bridge, and the NVMe split into VM disks, ISOs and swap](../diagrams/proxmox.png)
+![The Proxmox host pve: the services VM and three Talos VMs with their IDs, addresses and sizes, and how RAM and the thin pool are split](../diagrams/proxmox.png)
 
 | VM | vCPU | RAM | Disk | IP |
 |----|------|-----|------|----|

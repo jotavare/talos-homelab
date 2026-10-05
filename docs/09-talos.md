@@ -417,6 +417,8 @@ Kept as they are:
 
 ### 9. Secrets, certificates and the Gateway
 
+![Request path: cluster apps through the Tailscale operator's gateway proxy, the Cilium Gateway and an HTTPRoute; services outside the cluster through the services VM's Tailscale container and Caddy](../diagrams/request-path.png)
+
 Apps are reached the way they would be in a company cluster: one Gateway,
 one `HTTPRoute` per app, certificates from cert-manager, secrets from the
 secret store. Nothing outside the cluster changes for a new app except
@@ -496,6 +498,8 @@ applies any of it, so a pool next to the release would block the release
 too. `config/` is its own Flux step that waits for the release.
 
 ### How Kustomize and Flux work here
+
+![GitOps order: Flux applies the Gateway API CRDs, then Cilium, then storage, CloudNativePG and External Secrets, then cert-manager, the Tailscale operator and the Gateway, and Immich last](../diagrams/gitops.png)
 
 For someone used to Argo CD and Helm:
 
