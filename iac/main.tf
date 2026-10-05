@@ -65,6 +65,14 @@ module "cilium" {
   depends_on = [module.talos]
 }
 
+module "flux" {
+  source           = "./modules/flux"
+  operator_version = "0.61.0"
+  instance_values  = file("${path.root}/../gitops/flux/instance.yaml")
+
+  depends_on = [module.cilium]
+}
+
 output "proxmox_version" {
   value = module.proxmox.version
 }

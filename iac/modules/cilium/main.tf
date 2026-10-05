@@ -7,4 +7,8 @@ resource "helm_release" "cilium" {
   values     = [var.values]
   wait       = true
   timeout    = 600
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
