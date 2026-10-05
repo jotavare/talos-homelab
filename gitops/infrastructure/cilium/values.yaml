@@ -33,3 +33,4 @@ l2announcements:
 k8sClientRateLimit:
   qps: 50
   burst: 100
+rollOutCiliumPods: true

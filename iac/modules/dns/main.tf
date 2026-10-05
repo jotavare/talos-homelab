@@ -4,6 +4,7 @@ locals {
     openbao = var.services_ip
     s3      = var.services_ip
     auth    = var.services_ip
+    immich  = var.services_ip
     proxmox = var.proxmox_ip
   }
 }
