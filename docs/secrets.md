@@ -137,19 +137,15 @@ policy reads only `kv/k8s/*` and `kv/config`
 
 ## Commit guard
 
-A versioned git hook, [.githooks/pre-commit](../.githooks/pre-commit),
+A pre-commit hook,
+[.github/scripts/check-encrypted.sh](../.github/scripts/check-encrypted.sh),
 refuses a `*.sops.yaml` file that is not encrypted, and an OpenTofu state
 without `encrypted_data` (the state is local and `*.tfstate` is ignored,
-so this is a second line of defence). It is enabled once
-per clone:
-
-```bash
-git config core.hooksPath .githooks
-```
+so this is a second line of defence). It runs with the other checks
+before each commit, together with gitleaks ([CI](ci.md#lint)).
 
 Tested by staging a plaintext `*.sops.yaml`: the commit is refused with
-the command to encrypt it. The CI secret scan in the Backlog adds a
-second check on GitHub.
+the command to encrypt it.
 
 ## Key management
 

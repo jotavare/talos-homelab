@@ -57,6 +57,7 @@ options chosen and why. The whole picture is in the
 | [Platform](docs/platform.md) | Cilium and its Gateway, Longhorn, NFS, CloudNativePG, External Secrets, cert-manager, the Tailscale operator | [Platform](diagrams/platform.png) |
 | [GitOps](docs/gitops.md) | Flux and Kustomize, the `gitops/` layout, the order and timing of the steps | [GitOps](diagrams/gitops.png) |
 | [Immich](docs/immich.md) | Database, photo library, settings as code, Pocket ID | [Immich](diagrams/immich.png) |
+| [CI](docs/ci.md) | pre-commit, secret scanning in three layers, manifest validation, Scorecard, Renovate | [CI](diagrams/ci.png) |
 
 ## Hardware
 
@@ -216,9 +217,8 @@ phase page.
 
 ### Repository
 
-- [ ] Security audit pipeline in CI: secret scanning of every push and
-      the full history, plus linting of the config files, before anything
-      reaches the public repo.
+- [ ] Run the CI workflows on every push to `main` once they are trusted,
+      not only on pull requests and by hand.
 - [ ] OpenBao auth for Flux and CI (Kubernetes auth, AppRole or JWT), each
       with its own narrow policy, instead of my own login.
 
