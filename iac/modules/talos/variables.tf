@@ -13,3 +13,24 @@ variable "nodes" {
     disk   = number
   }))
 }
+
+variable "cluster_name" {
+  description = "Kubernetes cluster name."
+  type        = string
+}
+
+variable "vip" {
+  description = "Shared IP for the Kubernetes API on the control planes."
+  type        = string
+}
+
+variable "tailnet" {
+  description = "MagicDNS suffix of the tailnet, for the API certificates."
+  type        = string
+}
+
+variable "tailscale_auth_key" {
+  description = "Reusable tag:talos auth key, pre-signed for Tailnet Lock."
+  type        = string
+  sensitive   = true
+}

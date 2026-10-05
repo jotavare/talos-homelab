@@ -43,8 +43,12 @@ module "tailscale" {
 }
 
 module "talos" {
-  source        = "./modules/talos"
-  talos_version = "v1.14.2"
+  source             = "./modules/talos"
+  talos_version      = "v1.14.2"
+  cluster_name       = "homelab"
+  vip                = "192.168.1.20"
+  tailnet            = local.config["tailnet"]
+  tailscale_auth_key = local.talos["tailscale_auth_key"]
 
   nodes = {
     talos-cp-1 = { role = "controlplane", ip = "192.168.1.15", cores = 2, memory = 4096, disk = 32 }
@@ -59,5 +63,15 @@ output "proxmox_version" {
 
 output "talos_auth_key" {
   value     = module.tailscale.talos_auth_key
+  sensitive = true
+}
+
+output "talosconfig" {
+  value     = module.talos.talosconfig
+  sensitive = true
+}
+
+output "kubeconfig" {
+  value     = module.talos.kubeconfig
   sensitive = true
 }

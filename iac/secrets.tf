@@ -14,7 +14,13 @@ data "vault_kv_secret_v2" "services" {
   name     = "services/${each.key}"
 }
 
+data "vault_kv_secret_v2" "talos" {
+  mount = "kv"
+  name  = "talos"
+}
+
 locals {
   config  = nonsensitive(data.vault_kv_secret_v2.config.data)
   secrets = { for k, v in data.vault_kv_secret_v2.services : k => v.data }
+  talos   = data.vault_kv_secret_v2.talos.data
 }
