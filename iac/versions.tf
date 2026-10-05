@@ -26,6 +26,14 @@ terraform {
       source  = "hashicorp/helm"
       version = "~> 3.3"
     }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 3.0"
+    }
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.1"
+    }
     pocketid = {
       source  = "trozz/pocketid"
       version = "~> 2.5"

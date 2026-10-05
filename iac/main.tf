@@ -35,6 +35,9 @@ module "openbao" {
   oidc_client_id     = module.pocketid.openbao_client_id
   oidc_client_secret = module.pocketid.openbao_client_secret
   admin_subject      = module.pocketid.admin_id
+
+  k8s_issuer                     = module.talos.service_account_issuer
+  k8s_service_account_public_key = module.talos.service_account_public_key
 }
 
 module "tailscale" {
@@ -71,6 +74,18 @@ module "flux" {
   instance_values  = file("${path.root}/../gitops/flux/instance.yaml")
 
   depends_on = [module.cilium]
+}
+
+module "k8s" {
+  source           = "./modules/k8s"
+  cloudflare_token = local.secrets["caddy"]["cloudflare_token"]
+
+  settings = {
+    DOMAIN  = var.domain
+    TAILNET = local.config["tailnet"]
+  }
+
+  depends_on = [module.flux, module.tailscale]
 }
 
 output "proxmox_version" {

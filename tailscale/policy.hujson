@@ -3,9 +3,16 @@
     "tag:server":   ["autogroup:admin"],
     "tag:talos":    ["autogroup:admin"],
     "tag:services": ["autogroup:admin"],
+    "tag:k8s-operator": ["autogroup:admin"],
+    "tag:k8s":          ["tag:k8s-operator"],
   },
 
   "grants": [
+    {
+      "src": ["jotavare@github"],
+      "dst": ["tag:k8s"],
+      "ip":  ["tcp:443"],
+    },
     {
       "src": ["jotavare@github"],
       "dst": ["tag:server"],
@@ -24,6 +31,11 @@
   ],
 
   "tests": [
+    {
+      "src":    "jotavare@github",
+      "accept": ["tag:k8s:443"],
+      "deny":   ["tag:k8s:22", "tag:k8s:80"],
+    },
     {
       "src":    "jotavare@github",
       "accept": ["tag:server:22", "tag:server:8006", "tag:server:445", "tag:talos:6443", "tag:talos:50000", "tag:services:443"],

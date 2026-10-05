@@ -24,3 +24,15 @@ output "kubernetes" {
   value     = merge(talos_cluster_kubeconfig.this.kubernetes_client_configuration, { host = "https://${local.api}:6443" })
   sensitive = true
 }
+
+data "tls_public_key" "service_account" {
+  private_key_pem = base64decode(talos_machine_secrets.this.machine_secrets.certs.k8s_serviceaccount.key)
+}
+
+output "service_account_issuer" {
+  value = local.endpoint
+}
+
+output "service_account_public_key" {
+  value = data.tls_public_key.service_account.public_key_pem
+}

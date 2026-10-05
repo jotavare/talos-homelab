@@ -18,3 +18,13 @@ variable "admin_subject" {
   description = "Pocket ID user ID that gets the admin policy."
   type        = string
 }
+
+variable "k8s_issuer" {
+  description = "Service account token issuer of the Talos cluster."
+  type        = string
+}
+
+variable "k8s_service_account_public_key" {
+  description = "Public key that signs the cluster's service account tokens."
+  type        = string
+}
