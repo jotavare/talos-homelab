@@ -92,10 +92,11 @@ set by Ansible with `smbpasswd`, never printed:
 bao kv get -mount=kv -field=smb_password nas
 ```
 
-The cluster will use
-[csi-driver-nfs](https://github.com/kubernetes-csi/csi-driver-nfs): a
-storage class on `192.168.1.11:/tank/k8s`, and each volume becomes a
-folder there. Immich keeps its photo library on it. Its database stays on
+The cluster uses
+[csi-driver-nfs](https://github.com/kubernetes-csi/csi-driver-nfs) with
+the storage class `nas` on `192.168.1.11:/tank/k8s`: each volume becomes
+a folder `<namespace>/<claim>` there
+([09. Talos, NFS storage](09-talos.md#6-nfs-storage)). Immich keeps its photo library on it. Its database stays on
 the cluster's own disks: a database over NFS on WiFi is slow and can
 corrupt.
 

@@ -255,6 +255,52 @@ kubectl get nodes   # all Ready
 kubectl -n kube-system exec ds/cilium -c cilium-agent -- cilium-dbg status --brief   # OK
 ```
 
+### 5. Flux
+
+Flux is installed by OpenTofu as the
+[Flux Operator](https://fluxcd.control-plane.io/operator/) plus a
+`FluxInstance` ([iac/modules/flux](../iac/modules/flux/)), both Helm
+charts. The instance values are in
+[gitops/flux/instance.yaml](../gitops/flux/instance.yaml):
+
+| Item | Value | Why |
+|------|-------|-----|
+| Flux | `2.9.x` | The operator keeps it on the latest patch |
+| Components | source, kustomize, helm, notification | No image automation yet |
+| Sync | `https://github.com/jotavare/talos-homelab.git`, `main`, `gitops/flux` | The repo is public, so Flux reads it without a token. `flux bootstrap` would need a GitHub token with write access to commit its own files |
+
+Taking Cilium over:
+
+1. OpenTofu installed Cilium first: Flux runs in pods, and pods need the
+   network.
+2. Flux's `HelmRelease` has the same name, namespace and values (the same
+   [values.yaml](../gitops/infrastructure/cilium/values.yaml) through a
+   ConfigMap). Its first run was a Helm upgrade to revision 2 of the
+   existing release, so nothing restarted.
+3. OpenTofu keeps its `helm_release` with `ignore_changes = all`: it only
+   matters on a fresh cluster, and never touches Cilium afterwards.
+
+The Cilium Kustomization has `prune: false`: removing the folder by
+mistake would otherwise uninstall the network of the whole cluster.
+
+### 6. NFS storage
+
+[gitops/infrastructure/nfs](../gitops/infrastructure/nfs/): the
+[csi-driver-nfs](https://github.com/kubernetes-csi/csi-driver-nfs) chart,
+then in `config/` the `nas` storage class:
+
+| Setting | Value | Why |
+|---------|-------|-----|
+| Server, share | `192.168.1.11`, `/tank/k8s` | The NAS ([08. NAS](08-nas.md)) |
+| `subDir` | `<namespace>/<pvc name>` | Readable folder names on the NAS instead of `pvc-<uuid>` |
+| `reclaimPolicy` | `Retain` | Deleting a claim never deletes the photos |
+| Mount options | `nfsvers=4.2`, `hard` | The NAS only serves 4.1 and 4.2. `hard` makes writes wait through a WiFi drop instead of failing |
+
+Tested with a claim and a non-root pod that wrote a file, read back on the
+NAS. The pod needs `runAsGroup` and `fsGroup`: the driver chowns the new
+folder to the `fsGroup`, and without a matching group the write is
+refused. The test volume and its folder were deleted afterwards.
+
 ## GitOps layout
 
 The Kubernetes manifests go in `gitops/`, read by Flux. One folder per
