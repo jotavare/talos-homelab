@@ -34,5 +34,5 @@ output "service_account_issuer" {
 }
 
 output "service_account_public_key" {
-  value = data.tls_public_key.service_account.public_key_pem
+  value = trimspace(data.tls_public_key.service_account.public_key_pem)
 }

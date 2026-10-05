@@ -120,14 +120,6 @@ resource "proxmox_virtual_environment_firewall_rules" "node" {
   rule {
     type   = "in"
     action = "ACCEPT"
-    proto  = "tcp"
-    source = "192.168.1.30"
-    dest   = "192.168.1.50-192.168.1.99"
-  }
-
-  rule {
-    type   = "in"
-    action = "ACCEPT"
     proto  = "icmp"
     source = "192.168.1.0/24"
   }

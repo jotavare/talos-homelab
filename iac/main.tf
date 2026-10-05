@@ -4,6 +4,9 @@ module "dns" {
   zone_id     = local.config["cloudflare_zone_id"]
   services_ip = local.config["services_tailnet_ip"]
   proxmox_ip  = var.proxmox_host
+
+  gateway_ip   = module.tailscale.gateway_ip
+  cluster_apps = ["immich"]
 }
 
 module "proxmox" {
