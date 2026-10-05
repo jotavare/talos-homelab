@@ -4,7 +4,7 @@ Checks for a public repository: secrets never reach GitHub, config files
 stay valid, and dependency updates arrive as pull requests. Each check
 lives in one place and does one thing, from the laptop to GitHub.
 
-![CI: pre-commit on the laptop, push protection on GitHub, and pull requests from Renovate or started by hand running the lint, secrets and manifests workflows, with Scorecard only by hand](../diagrams/ci.png)
+![CI: a commit on a branch runs the pre-commit hooks, GitHub push protection checks the push, the pull request is checked locally with check-all.sh and squash merged into the protected main, Renovate opens pull requests weekly, and the workflows and Scorecard run only by hand](../diagrams/ci.png)
 
 ## Layout
 
@@ -27,7 +27,7 @@ Three layers, each catching what the one before can miss:
 |-------|------|---------|
 | gitleaks in pre-commit | Before every commit on the laptop | 150+ patterns, before the secret exists in git |
 | GitHub push protection | Every push, on GitHub | Provider tokens (Cloudflare, GitHub, AWS…), even if pre-commit was skipped |
-| `secrets` workflow | Pull requests and by hand | gitleaks and TruffleHog over the full history, two sets of patterns |
+| `check-all.sh` and the `secrets` workflow | Before every merge, and by hand | gitleaks and TruffleHog over the full history, two sets of patterns |
 
 TruffleHog runs with `--no-verification`: by default it tries every key it
 finds against the provider to see if it still works, which sends the key
@@ -132,6 +132,11 @@ before merging. The `lint` workflow caches the pre-commit tool builds by
 the hash of `.pre-commit-config.yaml`; the first build takes most of a
 minute.
 
+`main` is protected by a ruleset: no deletion, no force push, and every
+change arrives through a pull request, squash merged. No checks are
+required on GitHub, since none run there on their own; `check-all.sh`
+passing is part of the pull request's `Testing` section.
+
 Every workflow starts with no permissions and each job asks only for
 what it needs, usually `contents: read`. Actions are pinned to a commit
 hash with the version next to it, so a moved tag cannot change what
@@ -170,9 +175,8 @@ Renovate then updates like any other dependency.
 
 GitHub cannot create a personal token through its API, so the token was
 made once on the website and stored straight into OpenBao. The workflow's
-own `GITHUB_TOKEN` would not do: pull requests it opens do not start
-other workflows, so `lint`, `secrets` and `manifests` would never check
-them, and it cannot change files in `.github/workflows/`.
+own `GITHUB_TOKEN` would not do: it cannot change files in
+`.github/workflows/`, so Renovate could not update the pinned actions.
 
 | What | Where | How Renovate finds it | Group |
 |------|-------|-----------------------|-------|

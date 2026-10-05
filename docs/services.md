@@ -5,7 +5,7 @@ managed by OpenTofu: OpenBao, Garage, Pocket ID, a Caddy reverse proxy
 and Tailscale. It replaced the OpenBao container (`130`) and the Garage
 container (`140`).
 
-![Services VM: Tailscale forwards port 443 to Caddy, which serves OpenBao, Pocket ID and Garage on an internal network and the Proxmox UI over the LAN](../diagrams/services.png)
+![Services VM: Tailscale forwards tailnet port 443 to a custom Caddy build, which gets certificates from Let's Encrypt and proxies to OpenBao, Pocket ID and Garage on an internal network and to the Proxmox UI on the LAN, while OpenTofu deploys the containers over SSH through pve](../diagrams/services.png)
 
 ## Why
 

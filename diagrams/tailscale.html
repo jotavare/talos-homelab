@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tailscale traffic paths</title>
+  <title>Tailscale access rules</title>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -15,77 +15,128 @@
 </head>
 <body>
   <div class="frame">
-    <svg viewBox="0 0 1000 508" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="tailscale-title tailscale-desc">
-      <title id="tailscale-title">Tailscale traffic paths</title>
-      <desc id="tailscale-desc">At home a laptop or phone reaches the Proxmox host directly over the LAN; away from home it reaches it directly over the internet through the ISP router without port forwarding, with a Tailscale DERP relay as an encrypted fallback; the coordination server only hands out keys, the device list and the policy.</desc>
-      <defs><marker id="tailscale-a-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#6fd3c1"/></marker></defs>
-
+    <svg viewBox="0 0 1200 712" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="tailscale-title tailscale-desc">
+      <title id="tailscale-title">Tailscale access rules</title>
+      <desc id="tailscale-desc">Tailscale access rules: my user's laptop and phone may reach the Gateway proxy on 443, pve and pve-desktop on 22, 8006 and 445, the Talos nodes on 6443 and 50000 and the services VM on 443, the Talos nodes and servers may reach only the services VM on 443, nothing may connect back to my devices, and under Tailnet Lock a device joins only when signed by the laptop or pve, so proxies the operator creates are signed by hand on pve.</desc>
+      <defs><marker id="tailscale-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker><marker id="tailscale-a-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#7ea6e6"/></marker><marker id="tailscale-a-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#6fd3c1"/></marker><marker id="tailscale-a-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#ef8354"/></marker></defs>
       <rect width="100%" height="100%" fill="#2d3142"/>
-
-      <rect x="24" y="24" width="952" height="112" rx="8" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
-      <rect x="40" y="17" width="128" height="14" rx="2" fill="#2d3142"/>
-      <text x="104.0" y="27.5" fill="#a3abbd" font-size="9.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">TAILSCALE CLOUD</text>
-      <rect x="24" y="176" width="480" height="264" rx="8" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
-      <rect x="184" y="169" width="196" height="14" rx="2" fill="#2d3142"/>
-      <text x="282.0" y="179.5" fill="#a3abbd" font-size="9.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">HOME LAN · 192.168.1.0/24</text>
-
-      <line x1="160" y1="122" x2="160" y2="214" stroke="#6fd3c1" stroke-width="1.2" stroke-dasharray="2,3" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
-
-      <line x1="160" y1="290" x2="160" y2="342" stroke="#6fd3c1" stroke-width="1.6" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
-
-      <line x1="274" y1="252" x2="312" y2="252" stroke="#6fd3c1" stroke-width="1.6" marker-start="url(#tailscale-a-tail)"/>
-      <line x1="488" y1="252" x2="782" y2="252" stroke="#6fd3c1" stroke-width="1.6" marker-end="url(#tailscale-a-tail)"/>
-
-      <line x1="880" y1="122" x2="880" y2="214" stroke="#6fd3c1" stroke-width="1.2" stroke-dasharray="5,4" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
-      <path d="M 816,122 V 148 Q 816,156 808,156 H 408 Q 400,156 400,164 V 214" fill="none" stroke="#6fd3c1" stroke-width="1.2" stroke-dasharray="5,4" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
-
-      <rect x="168" y="145" width="98" height="14" rx="2" fill="#2d3142"/>
-      <text x="174" y="155.5" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" letter-spacing="0.06em">KEYS · POLICY</text>
-      <rect x="168" y="309" width="177" height="14" rx="2" fill="#2d3142"/>
-      <text x="174" y="319.5" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" letter-spacing="0.06em">DIRECT · STAYS ON THE LAN</text>
-      <rect x="550.0" y="230" width="170" height="14" rx="2" fill="#2d3142"/>
-      <text x="635" y="240.5" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">DIRECT OVER THE INTERNET</text>
-      <rect x="888" y="161" width="45" height="14" rx="2" fill="#2d3142"/>
-      <text x="894" y="171.5" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" letter-spacing="0.06em">RELAY</text>
-
-      <rect x="48" y="48" width="224" height="72" rx="6" fill="#2d3142"/>
-      <rect x="48" y="48" width="224" height="72" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
-      <g transform="translate(62,72) scale(1.0)" aria-hidden="true"><path d="M24 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm-9 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm0-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm6-6a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM3 24a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm18 .5a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0-.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM6 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm9-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm-3 2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM6 3a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM3 5.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" fill="#f5f5f5"/></g>
-      <text x="96" y="81" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Coordination</text>
-      <text x="96" y="100" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">keys · no traffic</text>
-      <rect x="736" y="48" width="224" height="72" rx="6" fill="#2d3142"/>
-      <rect x="736" y="48" width="224" height="72" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
-      <g transform="translate(750,72) scale(1.0)" fill="none" stroke="#7ea6e6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878" /></g>
-      <text x="784" y="81" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">DERP relay</text>
-      <text x="784" y="100" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">fallback · encrypted</text>
-      <rect x="48" y="216" width="224" height="72" rx="6" fill="#2d3142"/>
-      <rect x="48" y="216" width="224" height="72" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
-      <g transform="translate(62,240) scale(1.0)" aria-hidden="true"><path d="M4.928 1.825c-1.09.553-1.09.64-.07 1.78 5.655 6.295 7.004 7.782 7.107 7.782.139.017 7.971-8.542 8.058-8.801.034-.07-.208-.312-.519-.536-.415-.312-.864-.433-1.712-.467-1.59-.104-2.144.242-4.115 2.455-.899 1.003-1.66 1.833-1.66 1.833-.017 0-.76-.813-1.642-1.798S8.473 2.1 8.127 1.91c-.796-.45-2.421-.484-3.2-.086zM1.297 4.367C.45 4.695 0 5.007 0 5.248c0 .121 1.331 1.678 2.94 3.459 1.625 1.78 2.939 3.268 2.939 3.302 0 .035-1.331 1.522-2.94 3.303C1.314 17.11.017 18.683.035 18.822c.086.467 1.504 1.055 2.541 1.055 1.678-.018 2.058-.312 5.603-4.202 1.78-1.954 3.233-3.614 3.233-3.666 0-.069-1.435-1.694-3.199-3.63-2.3-2.508-3.423-3.632-3.96-3.874-.812-.398-2.126-.467-2.956-.138zm18.467.12c-.502.26-1.764 1.505-3.943 3.891-1.763 1.937-3.199 3.562-3.199 3.631 0 .07 1.453 1.712 3.234 3.666 3.544 3.89 3.925 4.184 5.602 4.202 1.038 0 2.455-.588 2.542-1.055.017-.156-1.28-1.712-2.905-3.493-1.608-1.78-2.94-3.285-2.94-3.32 0-.034 1.332-1.539 2.94-3.32C22.72 6.91 24.017 5.352 24 5.214c-.087-.45-1.366-.968-2.473-1.038-.795-.034-1.21.035-1.763.312zM7.954 16.973c-2.144 2.369-3.908 4.374-3.943 4.46-.034.07.208.312.52.537.414.311.864.432 1.711.467 1.574.103 2.161-.26 4.15-2.508.864-.968 1.608-1.78 1.625-1.78s.761.812 1.643 1.798c2.023 2.248 2.559 2.576 4.132 2.49.848-.035 1.297-.156 1.712-.467.311-.225.553-.467.519-.536-.087-.26-7.92-8.819-8.058-8.801-.069 0-1.867 1.954-4.011 4.34z" fill="#E57000"/></g>
-      <text x="96" y="249" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">pve</text>
-      <text x="96" y="268" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">tag:server · lock signer</text>
-      <rect x="312" y="216" width="176" height="72" rx="6" fill="#2d3142"/>
-      <rect x="312" y="216" width="176" height="72" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
-      <g transform="translate(326,240) scale(1.0)" fill="none" stroke="#f5f5f5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -4" /> <path d="M17 17l0 .01" /> <path d="M13 17l0 .01" /> <path d="M15 13l0 -2" /> <path d="M11.75 8.75a4 4 0 0 1 6.5 0" /> <path d="M8.5 6.5a8 8 0 0 1 13 0" /></g>
-      <text x="360" y="249" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">ISP Router</text>
-      <text x="360" y="268" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">no port forwards</text>
-      <rect x="48" y="344" width="224" height="72" rx="6" fill="#2d3142"/>
-      <rect x="48" y="344" width="224" height="72" rx="6" fill="#2d3142" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4"/>
-      <g transform="translate(62,368) scale(1.0)" fill="none" stroke="#6fd3c1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 9a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-10z" /> <path d="M18 8v-3a1 1 0 0 0 -1 -1h-13a1 1 0 0 0 -1 1v12a1 1 0 0 0 1 1h9" /> <path d="M16 9h2" /></g>
-      <text x="96" y="377" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Laptop / Phone</text>
-      <text x="96" y="396" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">at home · Wi-Fi or LAN</text>
-      <rect x="784" y="216" width="192" height="72" rx="6" fill="#2d3142"/>
-      <rect x="784" y="216" width="192" height="72" rx="6" fill="#2d3142" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4"/>
-      <g transform="translate(798,240) scale(1.0)" fill="none" stroke="#6fd3c1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 9a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-10z" /> <path d="M18 8v-3a1 1 0 0 0 -1 -1h-13a1 1 0 0 0 -1 1v12a1 1 0 0 0 1 1h9" /> <path d="M16 9h2" /></g>
-      <text x="832" y="249" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Laptop / Phone</text>
-      <text x="832" y="268" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">away · any network</text>
-
-      <line x1="24" y1="460" x2="976" y2="460" stroke="rgba(245,245,245,0.14)" stroke-width="0.8"/>
-      <line x1="24" y1="482" x2="52" y2="482" stroke="#6fd3c1" stroke-width="1.4" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
-      <text x="60" y="486" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Direct (WireGuard)</text>
-      <line x1="381.0" y1="482" x2="409.0" y2="482" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
-      <text x="417.0" y="486" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Relay fallback (still encrypted)</text>
-      <line x1="804.0" y1="482" x2="832.0" y2="482" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="2,3" marker-start="url(#tailscale-a-tail)" marker-end="url(#tailscale-a-tail)"/>
-      <text x="840.0" y="486" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Keys, device list, policy</text>
+      <rect x="24" y="176" width="1152" height="456" rx="8" fill="rgba(245,245,245,0.02)" stroke="#ef8354" stroke-width="1" stroke-dasharray="6,4"/>
+      <rect x="40" y="169" width="183.0" height="14" rx="2" fill="#2d3142"/>
+      <text x="46" y="179.5" fill="#ef8354" font-size="9.5" font-family="'Geist Mono', monospace" letter-spacing="0.12em">TAILNET · TAILNET LOCK ON</text>
+      <rect x="480" y="208" width="680" height="368" rx="8" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <rect x="496" y="201" width="374.5" height="14" rx="2" fill="#2d3142"/>
+      <text x="502" y="211.5" fill="#a3abbd" font-size="9.5" font-family="'Geist Mono', monospace" letter-spacing="0.12em">TAGGED DEVICES · OWNED BY THE TAILNET · NO KEY EXPIRY</text>
+      <path d="M 600,120 V 166" fill="none" stroke="#7ea6e6" stroke-width="1.4" stroke-dasharray="3,3"/>
+      <line x1="588" y1="168" x2="612" y2="168" stroke="#7ea6e6" stroke-width="2"/>
+      <path d="M 304,268 H 510" fill="none" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#tailscale-a-tail)"/>
+      <path d="M 304,388 H 510" fill="none" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#tailscale-a-tail)"/>
+      <path d="M 304,508 H 510" fill="none" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#tailscale-a-tail)"/>
+      <path d="M 288,528 V 592 Q 288,600 296,600 H 1008 Q 1016,600 1016,592 V 514" fill="none" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#tailscale-a-tail)"/>
+      <path d="M 752,404 H 816 Q 824,404 824,412 V 440 Q 824,448 832,448 H 894" fill="none" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#tailscale-a-tail)"/>
+      <path d="M 752,508 H 840 Q 848,508 848,500 V 488 Q 848,480 856,480 H 894" fill="none" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#tailscale-a-tail)"/>
+      <path d="M 896,268 H 754" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#tailscale-a)"/>
+      <path d="M 632,352 V 306" fill="none" stroke="#ef8354" stroke-width="1.6" marker-end="url(#tailscale-a-accent)"/>
+      <rect x="602.0" y="135.5" width="203.4" height="14" rx="2" fill="#2d3142"/>
+      <text x="608" y="146" fill="#7ea6e6" font-size="10" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">NEW DEVICE, UNSIGNED: BLOCKED</text>
+      <rect x="388.8" y="245.5" width="38.4" height="14" rx="2" fill="#2d3142"/>
+      <text x="408" y="256" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">:443</text>
+      <rect x="342.6" y="365.5" width="130.8" height="14" rx="2" fill="#2d3142"/>
+      <text x="408" y="376" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">:22 · :8006 · :445</text>
+      <rect x="355.8" y="485.5" width="104.4" height="14" rx="2" fill="#2d3142"/>
+      <text x="408" y="496" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">:6443 · :50000</text>
+      <rect x="632.8" y="577.5" width="38.4" height="14" rx="2" fill="#2d3142"/>
+      <text x="652" y="588" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">:443</text>
+      <rect x="768.8" y="381.5" width="38.4" height="14" rx="2" fill="#2d3142"/>
+      <text x="788" y="392" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">:443</text>
+      <rect x="776.8" y="485.5" width="38.4" height="14" rx="2" fill="#2d3142"/>
+      <text x="796" y="496" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">:443</text>
+      <rect x="794.9" y="245.5" width="58.2" height="14" rx="2" fill="#2d3142"/>
+      <text x="824" y="256" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">CREATES</text>
+      <rect x="634.0" y="322.5" width="130.8" height="14" rx="2" fill="#2d3142"/>
+      <text x="640" y="333" fill="#ef8354" font-size="10" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">LOCK SIGN, BY HAND</text>
+      <rect x="480" y="48" width="240" height="72" rx="6" fill="#2d3142"/>
+      <rect x="480" y="48" width="240" height="72" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <image href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZjVmNWY1IiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+VGFpbHNjYWxlPC90aXRsZT48cGF0aCBkPSJNMjQgMTJhMyAzIDAgMSAxLTYgMCAzIDMgMCAwIDEgNiAwem0tOSA5YTMgMyAwIDEgMS02IDAgMyAzIDAgMCAxIDYgMHptMC05YTMgMyAwIDEgMS02IDAgMyAzIDAgMCAxIDYgMHptNi02YTMgMyAwIDEgMSAwLTYgMyAzIDAgMCAxIDAgNnptMC0uNWEyLjUgMi41IDAgMSAwIDAtNSAyLjUgMi41IDAgMCAwIDAgNXpNMyAyNGEzIDMgMCAxIDEgMC02IDMgMyAwIDAgMSAwIDZ6bTAtLjVhMi41IDIuNSAwIDEgMCAwLTUgMi41IDIuNSAwIDAgMCAwIDV6bTE4IC41YTMgMyAwIDEgMSAwLTYgMyAzIDAgMCAxIDAgNnptMC0uNWEyLjUgMi41IDAgMSAwIDAtNSAyLjUgMi41IDAgMCAwIDAgNXpNNiAxMmEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6bTktOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6bS0zIDIuNWEyLjUgMi41IDAgMSAwIDAtNSAyLjUgMi41IDAgMCAwIDAgNXpNNiAzYTMgMyAwIDEgMS02IDAgMyAzIDAgMCAxIDYgMHpNMyA1LjVhMi41IDIuNSAwIDEgMCAwLTUgMi41IDIuNSAwIDAgMCAwIDV6Ii8+PC9zdmc+" x="494" y="54" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>
+      <text x="524" y="70" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Coordination server</text>
+      <text x="524" y="88" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">keys · policy · no traffic</text>
+      <text x="524" y="104" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">policy file from OpenTofu</text>
+      <rect x="64" y="248" width="240" height="280" rx="6" fill="#2d3142"/>
+      <rect x="64" y="248" width="240" height="280" rx="6" fill="#2d3142" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4"/>
+      <g transform="translate(78,264)"><g fill="none" stroke="#6fd3c1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 9a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-10z" /> <path d="M18 8v-3a1 1 0 0 0 -1 -1h-13a1 1 0 0 0 -1 1v12a1 1 0 0 0 1 1h9" /> <path d="M16 9h2" /></g></g>
+      <rect x="263.6" y="256" width="32.4" height="13" rx="2" fill="none" stroke="#6fd3c1" stroke-opacity="0.5" stroke-width="0.8"/>
+      <text x="279.8" y="265.5" fill="#6fd3c1" fill-opacity="0.85" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.1em">USER</text>
+      <text x="112" y="276" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">My devices</text>
+      <text x="112" y="294" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">laptop · phone</text>
+      <text x="112" y="310" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">my user, not a tag</text>
+      <text x="112" y="326" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">key expiry 30 days</text>
+      <rect x="80" y="344" width="208" height="20" rx="4" fill="rgba(245,245,245,0.05)" stroke="#a3abbd" stroke-width="0.8"/>
+      <text x="184.0" y="358" fill="#f5f5f5" font-size="11" font-weight="500" font-family="'Geist', sans-serif" text-anchor="middle">Laptop: lock signer</text>
+      <text x="80" y="484" fill="#bfc0c0" font-size="14" font-style="italic" font-family="'Instrument Serif', serif">Nothing on the tailnet may</text>
+      <text x="80" y="502" fill="#bfc0c0" font-size="14" font-style="italic" font-family="'Instrument Serif', serif">start a connection to them.</text>
+      <rect x="512" y="232" width="240" height="72" rx="6" fill="#2d3142"/>
+      <rect x="512" y="232" width="240" height="72" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <image href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjRjhDNTE3IiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+Q2lsaXVtPC90aXRsZT48cGF0aCBkPSJNMTMuNjA3IDE0LjU4M2gtMy4yMTVsLTEuNjI2LTIuNzY0IDEuNjI2LTIuODAyaDMuMjE1bDEuNjI2IDIuODAyLTEuNjI2IDIuNzY0Wk0xNC4xODYgOEg5Ljc5OWwtMi4yIDMuODEzIDIuMiAzLjc4N2g0LjM4N2wyLjIxMy0zLjc4N0wxNC4xODYgOFptLTQuMzg3IDguNC0yLjIgMy44MTNMOS43OTkgMjRoNC4zODdsMi4yMTMtMy43ODctMi4yMTMtMy44MTNIOS43OTlabS0xLjAzNCAzLjgxOSAxLjYyNy0yLjgwMmgzLjIxNWwxLjYyNiAyLjgwMi0xLjYyNiAyLjc2NWgtMy4yMTVsLTEuNjI3LTIuNzY1Wk05Ljc5OSAwbC0yLjIgMy44MTMgMi4yIDMuNzg3aDQuMzg3bDIuMjEzLTMuNzg3TDE0LjE4NiAwSDkuNzk5Wk04Ljc2NSAzLjgxOWwxLjYyNy0yLjgwMmgzLjIxNWwxLjYyNiAyLjgwMi0xLjYyNiAyLjc2NGgtMy4yMTVMOC43NjUgMy44MTlabTguMjM0IDguNTgxLTIuMiAzLjgxMyAyLjIgMy43ODdoNC4zODhsMi4yMTMtMy43ODctMi4yMTMtMy44MTNoLTQuMzg4Wm0tMS4wMzQgMy44MTkgMS42MjctMi44MDJoMy4yMTVsMS42MjYgMi44MDItMS42MjYgMi43NjVoLTMuMjE1bC0xLjYyNy0yLjc2NVpNMTYuOTk5IDRsLTIuMiAzLjgxMyAyLjIgMy43ODdoNC4zODhMMjMuNiA3LjgxMyAyMS4zODcgNGgtNC4zODhabS0xLjAzNCAzLjgxOSAxLjYyNy0yLjgwMmgzLjIxNWwxLjYyNiAyLjgwMi0xLjYyNiAyLjc2NGgtMy4yMTVsLTEuNjI3LTIuNzY0Wk0yLjU5OSAxMi40bC0yLjIgMy44MTNMMi41OTkgMjBoNC4zODdsMi4yMTMtMy43ODdMNi45ODYgMTIuNEgyLjU5OVptLTEuMDM0IDMuODE5IDEuNjI3LTIuODAyaDMuMjE0bDEuNjI3IDIuODAyLTEuNjI3IDIuNzY1SDMuMTkybC0xLjYyNy0yLjc2NVpNMi41OTkgNGwtMi4yIDMuODEzIDIuMiAzLjc4N2g0LjM4N2wyLjIxMy0zLjc4N0w2Ljk4NiA0SDIuNTk5Wk0xLjU2NSA3LjgxOWwxLjYyNy0yLjgwMmgzLjIxNGwxLjYyNyAyLjgwMi0xLjYyNyAyLjc2NEgzLjE5MkwxLjU2NSA3LjgxOVoiLz48L3N2Zz4=" x="526" y="240" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>
+      <rect x="717.2" y="240" width="26.8" height="13" rx="2" fill="none" stroke="#f5f5f5" stroke-opacity="0.5" stroke-width="0.8"/>
+      <text x="730.6" y="249.5" fill="#f5f5f5" fill-opacity="0.85" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.1em">POD</text>
+      <text x="556" y="256" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Gateway proxy</text>
+      <text x="556" y="274" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">tag:k8s</text>
+      <text x="556" y="290" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">Cilium Gateway, the apps</text>
+      <rect x="896" y="232" width="240" height="72" rx="6" fill="#2d3142"/>
+      <rect x="896" y="232" width="240" height="72" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <image href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZjVmNWY1IiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+VGFpbHNjYWxlPC90aXRsZT48cGF0aCBkPSJNMjQgMTJhMyAzIDAgMSAxLTYgMCAzIDMgMCAwIDEgNiAwem0tOSA5YTMgMyAwIDEgMS02IDAgMyAzIDAgMCAxIDYgMHptMC05YTMgMyAwIDEgMS02IDAgMyAzIDAgMCAxIDYgMHptNi02YTMgMyAwIDEgMSAwLTYgMyAzIDAgMCAxIDAgNnptMC0uNWEyLjUgMi41IDAgMSAwIDAtNSAyLjUgMi41IDAgMCAwIDAgNXpNMyAyNGEzIDMgMCAxIDEgMC02IDMgMyAwIDAgMSAwIDZ6bTAtLjVhMi41IDIuNSAwIDEgMCAwLTUgMi41IDIuNSAwIDAgMCAwIDV6bTE4IC41YTMgMyAwIDEgMSAwLTYgMyAzIDAgMCAxIDAgNnptMC0uNWEyLjUgMi41IDAgMSAwIDAtNSAyLjUgMi41IDAgMCAwIDAgNXpNNiAxMmEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6bTktOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6bS0zIDIuNWEyLjUgMi41IDAgMSAwIDAtNSAyLjUgMi41IDAgMCAwIDAgNXpNNiAzYTMgMyAwIDEgMS02IDAgMyAzIDAgMCAxIDYgMHpNMyA1LjVhMi41IDIuNSAwIDEgMCAwLTUgMi41IDIuNSAwIDAgMCAwIDV6Ii8+PC9zdmc+" x="910" y="240" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>
+      <rect x="1101.2" y="240" width="26.8" height="13" rx="2" fill="none" stroke="#f5f5f5" stroke-opacity="0.5" stroke-width="0.8"/>
+      <text x="1114.6" y="249.5" fill="#f5f5f5" fill-opacity="0.85" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.1em">POD</text>
+      <text x="940" y="256" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Tailscale operator</text>
+      <text x="940" y="274" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">tag:k8s-operator</text>
+      <text x="940" y="290" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">OAuth client from OpenTofu</text>
+      <rect x="512" y="352" width="240" height="96" rx="6" fill="#2d3142"/>
+      <rect x="512" y="352" width="240" height="96" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <image href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjRTU3MDAwIiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+UHJveG1veDwvdGl0bGU+PHBhdGggZD0iTTQuOTI4IDEuODI1Yy0xLjA5LjU1My0xLjA5LjY0LS4wNyAxLjc4IDUuNjU1IDYuMjk1IDcuMDA0IDcuNzgyIDcuMTA3IDcuNzgyLjEzOS4wMTcgNy45NzEtOC41NDIgOC4wNTgtOC44MDEuMDM0LS4wNy0uMjA4LS4zMTItLjUxOS0uNTM2LS40MTUtLjMxMi0uODY0LS40MzMtMS43MTItLjQ2Ny0xLjU5LS4xMDQtMi4xNDQuMjQyLTQuMTE1IDIuNDU1LS44OTkgMS4wMDMtMS42NiAxLjgzMy0xLjY2IDEuODMzLS4wMTcgMC0uNzYtLjgxMy0xLjY0Mi0xLjc5OFM4LjQ3MyAyLjEgOC4xMjcgMS45MWMtLjc5Ni0uNDUtMi40MjEtLjQ4NC0zLjItLjA4NnpNMS4yOTcgNC4zNjdDLjQ1IDQuNjk1IDAgNS4wMDcgMCA1LjI0OGMwIC4xMjEgMS4zMzEgMS42NzggMi45NCAzLjQ1OSAxLjYyNSAxLjc4IDIuOTM5IDMuMjY4IDIuOTM5IDMuMzAyIDAgLjAzNS0xLjMzMSAxLjUyMi0yLjk0IDMuMzAzQzEuMzE0IDE3LjExLjAxNyAxOC42ODMuMDM1IDE4LjgyMmMuMDg2LjQ2NyAxLjUwNCAxLjA1NSAyLjU0MSAxLjA1NSAxLjY3OC0uMDE4IDIuMDU4LS4zMTIgNS42MDMtNC4yMDIgMS43OC0xLjk1NCAzLjIzMy0zLjYxNCAzLjIzMy0zLjY2NiAwLS4wNjktMS40MzUtMS42OTQtMy4xOTktMy42My0yLjMtMi41MDgtMy40MjMtMy42MzItMy45Ni0zLjg3NC0uODEyLS4zOTgtMi4xMjYtLjQ2Ny0yLjk1Ni0uMTM4em0xOC40NjcuMTJjLS41MDIuMjYtMS43NjQgMS41MDUtMy45NDMgMy44OTEtMS43NjMgMS45MzctMy4xOTkgMy41NjItMy4xOTkgMy42MzEgMCAuMDcgMS40NTMgMS43MTIgMy4yMzQgMy42NjYgMy41NDQgMy44OSAzLjkyNSA0LjE4NCA1LjYwMiA0LjIwMiAxLjAzOCAwIDIuNDU1LS41ODggMi41NDItMS4wNTUuMDE3LS4xNTYtMS4yOC0xLjcxMi0yLjkwNS0zLjQ5My0xLjYwOC0xLjc4LTIuOTQtMy4yODUtMi45NC0zLjMyIDAtLjAzNCAxLjMzMi0xLjUzOSAyLjk0LTMuMzJDMjIuNzIgNi45MSAyNC4wMTcgNS4zNTIgMjQgNS4yMTRjLS4wODctLjQ1LTEuMzY2LS45NjgtMi40NzMtMS4wMzgtLjc5NS0uMDM0LTEuMjEuMDM1LTEuNzYzLjMxMnpNNy45NTQgMTYuOTczYy0yLjE0NCAyLjM2OS0zLjkwOCA0LjM3NC0zLjk0MyA0LjQ2LS4wMzQuMDcuMjA4LjMxMi41Mi41MzcuNDE0LjMxMS44NjQuNDMyIDEuNzExLjQ2NyAxLjU3NC4xMDMgMi4xNjEtLjI2IDQuMTUtMi41MDguODY0LS45NjggMS42MDgtMS43OCAxLjYyNS0xLjc4cy43NjEuODEyIDEuNjQzIDEuNzk4YzIuMDIzIDIuMjQ4IDIuNTU5IDIuNTc2IDQuMTMyIDIuNDkuODQ4LS4wMzUgMS4yOTctLjE1NiAxLjcxMi0uNDY3LjMxMS0uMjI1LjU1My0uNDY3LjUxOS0uNTM2LS4wODctLjI2LTcuOTItOC44MTktOC4wNTgtOC44MDEtLjA2OSAwLTEuODY3IDEuOTU0LTQuMDExIDQuMzR6Ii8+PC9zdmc+" x="526" y="360" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>
+      <rect x="711.6" y="360" width="32.4" height="13" rx="2" fill="none" stroke="#f5f5f5" stroke-opacity="0.5" stroke-width="0.8"/>
+      <text x="727.8" y="369.5" fill="#f5f5f5" fill-opacity="0.85" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.1em">HOST</text>
+      <text x="556" y="376" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">pve · pve-desktop</text>
+      <text x="556" y="394" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">tag:server</text>
+      <text x="556" y="410" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">Proxmox UI, SSH, SMB</text>
+      <rect x="512" y="472" width="240" height="72" rx="6" fill="#2d3142"/>
+      <rect x="512" y="472" width="240" height="72" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <image href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjRkY3MzAwIiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+VGFsb3M8L3RpdGxlPjxwYXRoIGQ9Ik05LjY3OCAxMS45OGMwLTIuNjY0LTEuMTMtNi44OTYtMi44NjctMTAuODA0YTEyIDEyIDAgMCAwLTEuNTg1LjkxN2MxLjYwOCAzLjY2OCAyLjY0NyA3LjU1MyAyLjY0NyA5Ljg4NiAwIDIuMjU0LTEuMDggNi4xNDUtMi43MzUgOS44NjVhMTIgMTIgMCAwIDAgMS41NzYuOTNjMS43OS0zLjk3NiAyLjk2NC04LjIyOSAyLjk2NC0xMC43OTVtNi40NDIgMGMwLTIuMzM2IDEuMDQyLTYuMjIgMi42NDYtOS44OWExMiAxMiAwIDAgMC0xLjYwOC0uOTIyYy0xLjc1NiAzLjk1Ny0yLjg0MyA4LjE2Ni0yLjg0MyAxMC44MTYgMCAyLjU2NCAxLjE3NyA2LjgxOSAyLjk2NSAxMC43OTdhMTIgMTIgMCAwIDAgMS41NzUtLjkzMWMtMS42NTUtMy43MjMtMi43MzUtNy42MTYtMi43MzUtOS44N201LjQ1IDYuNTI1LjMxLjMwN2ExMiAxMiAwIDAgMCAuOTM2LTEuNjEyYy0xLjg2Ni0xLjg5My0zLjQ1Ny0zLjkzOC0zLjQ3LTUuMjMzLS4wMTItMS4yNjQgMS41Ny0zLjMwOCAzLjQ0Ni01LjIyMmExMiAxMiAwIDAgMC0uOTQ1LTEuNjAzbC0uMjU5LjI1OGMtMi43MzkgMi43NjYtNC4wNjMgNC45Mi00LjA0NyA2LjU4My4wMTYgMS42NjIgMS4zMzIgMy44MSA0LjAyOCA2LjUyMk0yLjQxMSA1LjQwNWwtLjI2LS4yNTlhMTIgMTIgMCAwIDAtLjk0NiAxLjYwOGMzLjEyMyAzLjE3MyAzLjQ1MiA0LjcwNCAzLjQ0OCA1LjIxNy0uMDEyIDEuMy0xLjYwMyAzLjM0LTMuNDcgNS4yMjlhMTIgMTIgMCAwIDAgLjkzOSAxLjYwOGMuMTA2LS4xMDYuMjA3LS4yMDQuMzEtLjMwOCAyLjY5NC0yLjcxMSA0LjAxLTQuODQyIDQuMDI2LTYuNTE2cy0xLjMwOC0zLjgwOS00LjA0Ny02LjU4TTEyLjAwMiAyNGMuMzAzIDAgLjYwMi0uMDE2Ljg5OC0uMDM3Vi4wMzdBMTIgMTIgMCAwIDAgMTIgMGMtLjMwNCAwLS42MDUuMDE1LS45MDUuMDM3djIzLjkyNXEuNDQ4LjAzNS45MDMuMDM4eiIvPjwvc3ZnPg==" x="526" y="480" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>
+      <rect x="722.8" y="480" width="21.2" height="13" rx="2" fill="none" stroke="#f5f5f5" stroke-opacity="0.5" stroke-width="0.8"/>
+      <text x="733.4" y="489.5" fill="#f5f5f5" fill-opacity="0.85" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.1em">VM</text>
+      <text x="556" y="496" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Talos nodes</text>
+      <text x="556" y="514" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">tag:talos</text>
+      <text x="556" y="530" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">auth key signed on pve</text>
+      <rect x="896" y="416" width="240" height="96" rx="6" fill="#2d3142"/>
+      <rect x="896" y="416" width="240" height="96" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <image href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMjQ5NkVEIiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+RG9ja2VyPC90aXRsZT48cGF0aCBkPSJNMTMuOTgzIDExLjA3OGgyLjExOWEuMTg2LjE4NiAwIDAwLjE4Ni0uMTg1VjkuMDA2YS4xODYuMTg2IDAgMDAtLjE4Ni0uMTg2aC0yLjExOWEuMTg1LjE4NSAwIDAwLS4xODUuMTg1djEuODg4YzAgLjEwMi4wODMuMTg1LjE4NS4xODVtLTIuOTU0LTUuNDNoMi4xMThhLjE4Ni4xODYgMCAwMC4xODYtLjE4NlYzLjU3NGEuMTg2LjE4NiAwIDAwLS4xODYtLjE4NWgtMi4xMThhLjE4NS4xODUgMCAwMC0uMTg1LjE4NXYxLjg4OGMwIC4xMDIuMDgyLjE4NS4xODUuMTg1bTAgMi43MTZoMi4xMThhLjE4Ny4xODcgMCAwMC4xODYtLjE4NlY2LjI5YS4xODYuMTg2IDAgMDAtLjE4Ni0uMTg1aC0yLjExOGEuMTg1LjE4NSAwIDAwLS4xODUuMTg1djEuODg3YzAgLjEwMi4wODIuMTg1LjE4NS4xODZtLTIuOTMgMGgyLjEyYS4xODYuMTg2IDAgMDAuMTg0LS4xODZWNi4yOWEuMTg1LjE4NSAwIDAwLS4xODUtLjE4NUg4LjFhLjE4NS4xODUgMCAwMC0uMTg1LjE4NXYxLjg4N2MwIC4xMDIuMDgzLjE4NS4xODUuMTg2bS0yLjk2NCAwaDIuMTE5YS4xODYuMTg2IDAgMDAuMTg1LS4xODZWNi4yOWEuMTg1LjE4NSAwIDAwLS4xODUtLjE4NUg1LjEzNmEuMTg2LjE4NiAwIDAwLS4xODYuMTg1djEuODg3YzAgLjEwMi4wODQuMTg1LjE4Ni4xODZtNS44OTMgMi43MTVoMi4xMThhLjE4Ni4xODYgMCAwMC4xODYtLjE4NVY5LjAwNmEuMTg2LjE4NiAwIDAwLS4xODYtLjE4NmgtMi4xMThhLjE4NS4xODUgMCAwMC0uMTg1LjE4NXYxLjg4OGMwIC4xMDIuMDgyLjE4NS4xODUuMTg1bS0yLjkzIDBoMi4xMmEuMTg1LjE4NSAwIDAwLjE4NC0uMTg1VjkuMDA2YS4xODUuMTg1IDAgMDAtLjE4NC0uMTg2aC0yLjEyYS4xODUuMTg1IDAgMDAtLjE4NC4xODV2MS44ODhjMCAuMTAyLjA4My4xODUuMTg1LjE4NW0tMi45NjQgMGgyLjExOWEuMTg1LjE4NSAwIDAwLjE4NS0uMTg1VjkuMDA2YS4xODUuMTg1IDAgMDAtLjE4NC0uMTg2aC0yLjEyYS4xODYuMTg2IDAgMDAtLjE4Ni4xODZ2MS44ODdjMCAuMTAyLjA4NC4xODUuMTg2LjE4NW0tMi45MiAwaDIuMTJhLjE4NS4xODUgMCAwMC4xODQtLjE4NVY5LjAwNmEuMTg1LjE4NSAwIDAwLS4xODQtLjE4NmgtMi4xMmEuMTg1LjE4NSAwIDAwLS4xODQuMTg1djEuODg4YzAgLjEwMi4wODIuMTg1LjE4NS4xODVNMjMuNzYzIDkuODljLS4wNjUtLjA1MS0uNjcyLS41MS0xLjk1NC0uNTEtLjMzOC4wMDEtLjY3Ni4wMy0xLjAxLjA4Ny0uMjQ4LTEuNy0xLjY1My0yLjUzLTEuNzE2LTIuNTY2bC0uMzQ0LS4xOTktLjIyNi4zMjdjLS4yODQuNDM4LS40OS45MjItLjYxMiAxLjQzLS4yMy45Ny0uMDkgMS44ODIuNDAzIDIuNjYxLS41OTUuMzMyLTEuNTUuNDEzLTEuNzQ0LjQySC43NTFhLjc1MS43NTEgMCAwMC0uNzUuNzQ4IDExLjM3NiAxMS4zNzYgMCAwMC42OTIgNC4wNjJjLjU0NSAxLjQyOCAxLjM1NSAyLjQ4IDIuNDEgMy4xMjQgMS4xOC43MjMgMy4xIDEuMTM3IDUuMjc1IDEuMTM3Ljk4My4wMDMgMS45NjMtLjA4NiAyLjkzLS4yNjZhMTIuMjQ4IDEyLjI0OCAwIDAwMy44MjMtMS4zODljLjk4LS41NjcgMS44Ni0xLjI4OCAyLjYxLTIuMTM2IDEuMjUyLTEuNDE4IDEuOTk4LTIuOTk3IDIuNTUzLTQuNGguMjIxYzEuMzcyIDAgMi4yMTUtLjU0OSAyLjY4LTEuMDA5LjMwOS0uMjkzLjU1LS42NS43MDctMS4wNDZsLjA5OC0uMjg4WiIvPjwvc3ZnPg==" x="910" y="428" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>
+      <rect x="1106.8" y="424" width="21.2" height="13" rx="2" fill="none" stroke="#f5f5f5" stroke-opacity="0.5" stroke-width="0.8"/>
+      <text x="1117.4" y="433.5" fill="#f5f5f5" fill-opacity="0.85" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.1em">VM</text>
+      <text x="940" y="444" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Services VM</text>
+      <text x="940" y="462" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">tag:services</text>
+      <text x="940" y="478" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">OpenBao · Pocket ID</text>
+      <text x="940" y="494" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">through Caddy</text>
+      <rect x="528" y="420" width="208" height="20" rx="4" fill="rgba(245,245,245,0.05)" stroke="#a3abbd" stroke-width="0.8"/>
+      <text x="632.0" y="434" fill="#f5f5f5" font-size="11" font-weight="500" font-family="'Geist', sans-serif" text-anchor="middle">pve: lock signer</text>
+      <line x1="24" y1="656" x2="1176" y2="656" stroke="rgba(245,245,245,0.14)" stroke-width="0.8"/>
+      <rect x="24" y="673" width="28" height="18" rx="4" fill="#2d3142"/>
+      <rect x="24" y="673" width="28" height="18" rx="4" fill="#2d3142" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4"/>
+      <text x="60" y="686" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">My devices</text>
+      <rect x="141.0" y="673" width="28" height="18" rx="4" fill="#2d3142"/>
+      <rect x="141.0" y="673" width="28" height="18" rx="4" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="177.0" y="686" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Tagged device</text>
+      <rect x="275.1" y="673" width="28" height="18" rx="4" fill="#2d3142"/>
+      <rect x="275.1" y="673" width="28" height="18" rx="4" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="311.1" y="686" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Tailscale</text>
+      <rect x="386.40000000000003" y="673" width="28" height="18" rx="4" fill="rgba(245,245,245,0.02)" stroke="#ef8354" stroke-width="1.2" stroke-dasharray="6,4"/>
+      <text x="422.40000000000003" y="686" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Tailnet Lock</text>
+      <line x1="514.8000000000001" y1="682" x2="542.8000000000001" y2="682" stroke="#6fd3c1" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#tailscale-a-tail)"/>
+      <text x="550.8000000000001" y="686" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Grant, by port</text>
+      <line x1="654.6000000000001" y1="682" x2="682.6000000000001" y2="682" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#tailscale-a)"/>
+      <text x="690.6000000000001" y="686" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Creates</text>
+      <line x1="754.5000000000001" y1="682" x2="782.5000000000001" y2="682" stroke="#ef8354" stroke-width="1.4" marker-end="url(#tailscale-a-accent)"/>
+      <text x="790.5000000000001" y="686" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Signs</text>
+      <line x1="843.0000000000001" y1="682" x2="867.0000000000001" y2="682" stroke="#7ea6e6" stroke-width="1.4" stroke-dasharray="3,3"/>
+      <line x1="869.0000000000001" y1="675" x2="869.0000000000001" y2="689" stroke="#7ea6e6" stroke-width="2"/>
+      <text x="879.0000000000001" y="686" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Blocked</text>
     </svg>
   </div>
 </body>

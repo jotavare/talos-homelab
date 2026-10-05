@@ -4,7 +4,7 @@ A file server on the second Proxmox host, `pve-desktop`, an old desktop
 PC: a ZFS pool on its hard drive, shared over SMB for my devices and over
 NFS for the cluster. Apps on Talos, Immich first, keep their files here.
 
-![NAS: the ZFS pool tank on one disk, tank/files over SMB to my devices, tank/k8s over NFS to the Talos nodes for Immich's library](../diagrams/nas.png)
+![NAS: the ZFS pool tank on one disk, tank/files over SMB to my devices, tank/k8s over NFS only to the Talos nodes with a 400G quota on the Immich library, and the host firewall dropping the rest of the LAN](../diagrams/nas.png)
 
 ## Hardware
 

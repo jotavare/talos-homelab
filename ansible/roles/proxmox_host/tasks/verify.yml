@@ -44,7 +44,7 @@
       - proxmox_host_s.sshd is search('(?m)^kbdinteractiveauthentication no$')
       - proxmox_host_s.sshd is search('(?m)^maxauthtries 3$')
     quiet: true
-    fail_msg: sshd allows more than key-only root login, see docs/01-proxmox.md#access
+    fail_msg: sshd allows more than key-only root login, see docs/proxmox.md#access
 
 - name: Check the firewall is on and management is tailnet only
   ansible.builtin.assert:
@@ -54,7 +54,7 @@
       - proxmox_host_s.mgmt4.split('Members:')[1].split() == ['100.64.0.0/10']
       - proxmox_host_s.mgmt6.split('Members:')[1].split() == ['fd7a:115c:a1e0::/48']
     quiet: true
-    fail_msg: firewall off or management set wider than the tailnet, see docs/01-proxmox.md#firewall
+    fail_msg: firewall off or management set wider than the tailnet, see docs/proxmox.md#firewall
 
 - name: Check web UI 2FA for root
   ansible.builtin.assert:
@@ -62,7 +62,7 @@
       - "'totp' in (proxmox_host_s.tfa | from_json | map(attribute='type') | list)"
       - "'recovery' in (proxmox_host_s.tfa | from_json | map(attribute='type') | list)"
     quiet: true
-    fail_msg: root@pam is missing TOTP or recovery keys, see docs/01-proxmox.md#access
+    fail_msg: root@pam is missing TOTP or recovery keys, see docs/proxmox.md#access
 
 - name: Check Tailscale (lock, tag, DNS, auto-update)
   ansible.builtin.assert:
@@ -73,7 +73,7 @@
       - (proxmox_host_s.prefs | from_json).AutoUpdate.Apply
       - proxmox_host_s.resolv is search('(?m)^nameserver 1\.1\.1\.1$')
     quiet: true
-    fail_msg: Tailscale drifted from docs/02-tailscale.md
+    fail_msg: Tailscale drifted from docs/tailscale.md
 
 - name: Check IPv6 autoconf is off and alerts go out by SMTP
   ansible.builtin.assert:
@@ -81,7 +81,7 @@
       - proxmox_host_s.sysctl.split() == ['0', '0']
       - "proxmox_host_s.notify is search('(?ms)^matcher: default-matcher.*?^\\s+target gmail$')"
     quiet: true
-    fail_msg: IPv6 autoconf is on or alerts do not use the SMTP target, see docs/01-proxmox.md
+    fail_msg: IPv6 autoconf is on or alerts do not use the SMTP target, see docs/proxmox.md
 
 - name: Read the OpenTofu user, role and token
   ansible.builtin.command: "{{ item }}"
@@ -115,7 +115,7 @@
         | selectattr('roleid', 'equalto', proxmox_host_tofu_realm_role) | list | length == 1
       - proxmox_host_tofu_tokens | selectattr('tokenid', 'equalto', 'opentofu') | list | length == 1
     quiet: true
-    fail_msg: OpenTofu user, role or token drifted, see docs/05-opentofu.md
+    fail_msg: OpenTofu user, role or token drifted, see docs/opentofu.md
 
 - name: Read the ACME account
   ansible.builtin.command: pvesh get /cluster/acme/account/{{ proxmox_host_acme_account }} --output-format json
@@ -131,7 +131,7 @@
       - (proxmox_host_acme_state.stdout | from_json).directory == proxmox_host_acme_directory
       - (proxmox_host_acme_state.stdout | from_json).account.status == 'valid'
     quiet: true
-    fail_msg: ACME account missing or drifted, see docs/01-proxmox.md
+    fail_msg: ACME account missing or drifted, see docs/proxmox.md
 
 - name: Check for pending upgrades and reboots
   ansible.builtin.shell: |

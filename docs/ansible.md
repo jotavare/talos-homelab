@@ -7,7 +7,7 @@ a freshly installed host to the state described in
 Ansible only does what lives on a host and needs `root`; what an API can
 create is in OpenTofu.
 
-![Ansible: proxmox.yml applies proxmox_base to both hosts and proxmox_host to pve, nas.yml applies the nas role to pve-desktop, with values from OpenBao](../diagrams/ansible.png)
+![Ansible: proxmox.yml applies proxmox_base to both hosts and proxmox_host to pve, nas.yml applies nas to pve-desktop, with values from OpenBao and read-only checks at the end, and a firewall change goes through a dead-man switch](../diagrams/ansible.png)
 
 ## Why Ansible
 
@@ -44,8 +44,8 @@ ansible-galaxy collection install -r requirements.yml
 | [ansible/nas.yml](../ansible/nas.yml) | The NAS on `pve-desktop` ([NAS](nas.md)) |
 | [ansible/requirements.yml](../ansible/requirements.yml) | The `community.proxmox` and `community.hashi_vault` collections |
 | [ansible/roles/proxmox_base/](../ansible/roles/proxmox_base/) | What every Proxmox host gets: repositories, unattended upgrades, SSH hardening, IPv6 autoconf off, Tailscale, the root password from OpenBao, the firewall behind the dead-man switch |
-| [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | What only `pve` gets: smartd for the NVMe, the NIC offload fix, the OpenTofu user and roles, the ACME account, the SSO admin, and the compliance checks (`tasks/verify.yml`) |
-| [ansible/roles/nas/](../ansible/roles/nas/) | The NAS: ZFS pool, Samba, NFS, WiFi power saving, and its own checks |
+| [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | What only `pve` gets: smartd for the NVMe, the NIC offload fix, the iGPU bound to `vfio-pci`, the OpenTofu user and roles, the ACME account, the SSO admin, and the compliance checks (`tasks/verify.yml`) |
+| [ansible/roles/nas/](../ansible/roles/nas/) | The NAS: ZFS pool, the Immich library quota, Samba, NFS, WiFi power saving, and its own checks |
 | [proxmox/](../proxmox/), [nas/](../nas/) | The config files the roles copy. Each file lives in one place and is explained in [Proxmox](proxmox.md) or [NAS](nas.md) |
 
 ## What it covers

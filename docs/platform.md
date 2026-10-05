@@ -5,7 +5,7 @@ point, certificates, secrets from OpenBao, and storage. All of it is
 applied by Flux ([GitOps](gitops.md)) except Cilium's first install,
 which OpenTofu does so a new cluster has a network.
 
-![Platform layers: entry, certificates, secrets, databases, storage and network, each with the outside system it depends on](../diagrams/platform.png)
+![Platform: a request from the tailnet passes the Tailscale operator, the Cilium Gateway with the cert-manager wildcard certificate and an HTTPRoute to the app, External Secrets copies secrets from OpenBao, and data lands on Longhorn over the workers' disks, CloudNativePG and the NAS, on Talos nodes with Cilium as the network](../diagrams/platform.png)
 
 ## Cilium
 

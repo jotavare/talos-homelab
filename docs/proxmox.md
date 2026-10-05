@@ -611,7 +611,7 @@ in `/etc/network/interfaces`. The extra CPU work is negligible at 1 Gbit.
 The Talos VMs and the services VM. Planned before they existed, and
 changed once: two workers instead of three, so the RAM fits.
 
-![The Proxmox host pve: the services VM and three Talos VMs with their IDs, addresses and sizes, and how RAM and the thin pool are split](../diagrams/proxmox.png)
+![The Proxmox host pve: management reached only over the tailnet through its firewall, the services VM and three Talos VMs on the vmbr0 bridge, the iGPU passed through to talos-w-2, daily backups of VM 130 to local, and how RAM and the thin pool are split](../diagrams/proxmox.png)
 
 | VM | vCPU | RAM | Disk | IP |
 |----|------|-----|------|----|
@@ -622,14 +622,15 @@ changed once: two workers instead of three, so the RAM fits.
 | Cilium LoadBalancer pool | | | | `192.168.1.50` to `.99` |
 
 - **RAM:** 2.5 GB stays with the host, 1.5 GB goes to the services VM
-  and 20 GB to the Talos VMs, which leaves about 6 GB free for a third
+  and 20 GB to the Talos VMs, which leaves about 8 GB free for a third
   worker or another VM. No overcommit, so a busy VM never pushes the host
   into swap. The first plan had three workers, 28 GB in all: over what
   the host has once Proxmox and the services VM are counted.
 - **vCPU:** 10 on 12 threads. CPU overcommit is fine, the VMs are rarely
   all busy at once.
-- **Disk:** 192 GB of the 348 GB `local-lvm` thin pool, leaving room for
-  snapshots and more VMs. `local` (96 GB) keeps the Talos image.
+- **Disk:** 324 GB of the 348 GB `local-lvm` thin pool, the system disks
+  and the two 50 GB Longhorn disks. The pool is thin, so only what is
+  written uses space. `local` (96 GB) keeps the Talos image.
 - **API VIP:** with a single control plane the VIP is not needed yet, but
   pointing clients at it from day one means a second or third control
   plane can join later without new certificates or kubeconfigs.

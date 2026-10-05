@@ -7,7 +7,7 @@ only an example in the repo.
 
 ## Where secrets live
 
-![Secrets flow: secrets generated into OpenBao with offline copies in Bitwarden; OpenTofu reads its tokens and writes the cluster secrets, Ansible applies host passwords, External Secrets creates Kubernetes Secrets for the apps](../diagrams/secrets.png)
+![Secrets: every caller reaches OpenBao over the tailnet, the laptop's one login serves the bao CLI, OpenTofu and Ansible, External Secrets logs in with a JWT and reads only kv/k8s/* and kv/config, Bitwarden and paper hold the offline copies, and the commit guard refuses plaintext](../diagrams/secrets.png)
 
 | Secret | Where | Why |
 |--------|-------|-----|

@@ -6,7 +6,7 @@ Proxmox, built with OpenTofu. Sizes and IPs are in
 [Proxmox, Planned VMs](proxmox.md#planned-vms). What runs on top is in
 [Platform](platform.md), [GitOps](gitops.md) and [Immich](immich.md).
 
-![Talos: the machine config is built from the machine secrets, the Talos defaults and the patches, applied to the nodes booted from the Image Factory image, and the admin configs go to OpenBao](../diagrams/talos.png)
+![Talos: OpenTofu builds one machine config per node from the machine secrets, the Talos defaults and the patches in talos/, applies it to the three VMs booted from the Image Factory image with five extensions, bootstraps etcd on talos-cp-1, and keeps the admin configs, the full configs and the Tailscale auth key in OpenBao](../diagrams/talos.png)
 
 ## Design
 
@@ -156,7 +156,7 @@ already loaded:
 
 ```bash
 talosctl -n 192.168.1.15 get extensions --insecure
-# iscsi-tools, qemu-guest-agent, tailscale, util-linux-tools, schematic 077514df…
+# i915, iscsi-tools, qemu-guest-agent, tailscale, util-linux-tools, schematic 3db570be…
 ```
 
 `--insecure` is only possible in maintenance mode: there are no

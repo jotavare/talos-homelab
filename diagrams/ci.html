@@ -15,80 +15,109 @@
 </head>
 <body>
   <div class="frame">
-    <svg viewBox="0 0 1200 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ci-title ci-desc">
+      <svg viewBox="0 0 1200 548" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ci-title ci-desc">
       <title id="ci-title">Checks</title>
-      <desc id="ci-desc">pre-commit runs the linters and gitleaks on the laptop before each commit, GitHub push protection checks every push to main, and pull requests from Renovate or started by hand run the lint, secrets and manifests workflows; Scorecard runs only by hand.</desc>
-      <defs><marker id="ci-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker><marker id="ci-a-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#7ea6e6"/></marker><marker id="ci-a-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#6fd3c1"/></marker><marker id="ci-a-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse"><polygon points="0 0, 8 3, 0 6" fill="#ef8354"/></marker></defs>
+      <desc id="ci-desc">A change is committed on a branch with pre-commit hooks, pushed through GitHub push protection, opened as a pull request, checked locally with check-all.sh and squash merged into the protected main branch; Renovate opens pull requests weekly, and the workflows and Scorecard run only by hand.</desc>
+      <defs><marker id="ci-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker><marker id="ci-a-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#7ea6e6"/></marker><marker id="ci-a-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#6fd3c1"/></marker><marker id="ci-a-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#ef8354"/></marker></defs>
       <rect width="100%" height="100%" fill="#2d3142"/>
-      <rect x="820" y="112" width="356" height="336" rx="8" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
-      <rect x="836" y="105" width="104.2" height="14" rx="2" fill="#2d3142"/>
-      <text x="888.1" y="115.5" fill="#a3abbd" font-size="9.5" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">GITHUB ACTIONS</text>
-      <path d="M 224,88 L 296,88" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ci-a)"/>
-      <path d="M 496,88 L 568,88" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ci-a)"/>
-      <path d="M 224,248 L 296,248" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#ci-a-link)"/>
-      <path d="M 496,248 L 820,248" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ci-a)"/>
-      <path d="M 224,368 L 820,368" fill="none" stroke="#bfc0c0" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#ci-a)"/>
-      <rect x="554.0" y="227" width="181.0" height="14" rx="2" fill="#2d3142"/>
-      <text x="560" y="237.5" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">lint · secrets · manifests</text>
-      <rect x="554.0" y="347" width="90.0" height="14" rx="2" fill="#2d3142"/>
-      <text x="560" y="357.5" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">any workflow</text>
-      <rect x="24" y="40" width="200" height="96" rx="6" fill="#2d3142"/>
-      <rect x="24" y="40" width="200" height="96" rx="6" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
-      <text x="40" y="74.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">pre-commit</text>
-      <text x="40" y="93.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">laptop, every commit</text>
-      <text x="40" y="110.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">linters + gitleaks</text>
-      <rect x="296" y="40" width="200" height="96" rx="6" fill="#2d3142"/>
-      <rect x="296" y="40" width="200" height="96" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
-      <text x="312" y="74.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Push protection</text>
-      <text x="312" y="93.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">GitHub, every push</text>
-      <text x="312" y="110.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">provider tokens</text>
-      <rect x="568" y="40" width="200" height="96" rx="6" fill="#2d3142"/>
-      <rect x="568" y="40" width="200" height="96" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
-      <text x="584" y="74.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">main</text>
-      <text x="584" y="93.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">jotavare/talos-homelab</text>
-      <text x="584" y="110.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">public</text>
-      <rect x="24" y="208" width="200" height="80" rx="6" fill="#2d3142"/>
-      <rect x="24" y="208" width="200" height="80" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
-      <text x="40" y="243.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Renovate</text>
-      <text x="40" y="262.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">workflow, Mondays</text>
-      <rect x="296" y="208" width="200" height="80" rx="6" fill="#2d3142"/>
-      <rect x="296" y="208" width="200" height="80" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
-      <text x="312" y="243.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Pull request</text>
-      <text x="312" y="262.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">merged by hand</text>
-      <rect x="24" y="328" width="200" height="80" rx="6" fill="#2d3142"/>
-      <rect x="24" y="328" width="200" height="80" rx="6" fill="rgba(191,192,192,0.30)" stroke="#a3abbd" stroke-width="1.4"/>
-      <text x="40" y="363.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">By hand</text>
-      <text x="40" y="382.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">workflow_dispatch</text>
-      <rect x="844" y="136" width="308" height="64" rx="6" fill="#2d3142"/>
-      <rect x="844" y="136" width="308" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
-      <text x="860" y="163.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">lint</text>
-      <text x="860" y="182.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">pre-commit, all files</text>
-      <rect x="844" y="216" width="308" height="64" rx="6" fill="#2d3142"/>
-      <rect x="844" y="216" width="308" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
-      <text x="860" y="243.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">secrets</text>
-      <text x="860" y="262.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">gitleaks + TruffleHog, full history</text>
-      <rect x="844" y="296" width="308" height="64" rx="6" fill="#2d3142"/>
-      <rect x="844" y="296" width="308" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
-      <text x="860" y="323.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">manifests</text>
-      <text x="860" y="342.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">flux-schema on gitops/</text>
-      <rect x="844" y="376" width="308" height="64" rx="6" fill="#2d3142"/>
-      <rect x="844" y="376" width="308" height="64" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
-      <text x="860" y="403.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">scorecard</text>
-      <text x="860" y="422.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">OpenSSF, by hand only</text>
-      <line x1="24" y1="478" x2="1176" y2="478" stroke="rgba(245,245,245,0.14)" stroke-width="0.8"/>
-      <rect x="24" y="494" width="18" height="13" rx="2" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
-      <text x="50" y="504" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Before git</text>
-      <rect x="144.0" y="494" width="18" height="13" rx="2" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
-      <text x="170.0" y="504" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Opens PRs</text>
-      <rect x="257.6" y="494" width="18" height="13" rx="2" fill="rgba(191,192,192,0.30)" stroke="#a3abbd" stroke-width="1.4"/>
-      <text x="283.6" y="504" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Me</text>
-      <rect x="326.40000000000003" y="494" width="18" height="13" rx="2" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
-      <text x="352.40000000000003" y="504" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Repository</text>
-      <line x1="446.40000000000003" y1="500" x2="474.40000000000003" y2="500" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ci-a)"/>
-      <text x="482.40000000000003" y="504" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Runs</text>
-      <line x1="538.0" y1="500" x2="566.0" y2="500" stroke="#bfc0c0" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#ci-a)"/>
-      <text x="574.0" y="504" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">On demand</text>
-    </svg>
+      <text x="36" y="103.5" fill="#a3abbd" font-size="9.5" font-family="'Geist Mono', monospace" letter-spacing="0.12em">LAPTOP</text>
+      <text x="36" y="255.5" fill="#a3abbd" font-size="9.5" font-family="'Geist Mono', monospace" letter-spacing="0.12em">GITHUB</text>
+      <text x="36" y="407.5" fill="#a3abbd" font-size="9.5" font-family="'Geist Mono', monospace" letter-spacing="0.12em">GITHUB ACTIONS</text>
+      <line x1="24" y1="24" x2="1176" y2="24" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <line x1="24" y1="176" x2="1176" y2="176" stroke="rgba(245,245,245,0.1)" stroke-width="1"/>
+      <line x1="24" y1="328" x2="1176" y2="328" stroke="rgba(245,245,245,0.1)" stroke-width="1"/>
+      <line x1="24" y1="480" x2="1176" y2="480" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <line x1="152" y1="24" x2="152" y2="480" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <path d="M 392,100 H 532 Q 540,100 540,108 V 204" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ci-a)"/>
+      <path d="M 640,252 H 712" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ci-a)"/>
+      <path d="M 860,204 V 148" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ci-a)"/>
+      <path d="M 1100,148 V 204" fill="none" stroke="#ef8354" stroke-width="1.4" marker-end="url(#ci-a-accent)"/>
+      <path d="M 408,404 H 752 Q 760,404 760,396 V 300" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#ci-a-link)"/>
+      <path d="M 844,356 V 300" fill="none" stroke="#bfc0c0" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#ci-a)"/>
+      <path d="M 1100,356 V 300" fill="none" stroke="#bfc0c0" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#ci-a)"/>
+      <rect x="442.8" y="77.5" width="38.4" height="14" rx="2" fill="#2d3142"/>
+      <text x="462" y="88" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">PUSH</text>
+      <rect x="646.9" y="229.5" width="58.2" height="14" rx="2" fill="#2d3142"/>
+      <text x="676" y="240" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">OPEN PR</text>
+      <rect x="780.6" y="169.5" width="71.4" height="14" rx="2" fill="#2d3142"/>
+      <text x="846" y="180" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" text-anchor="end" letter-spacing="0.06em">CHECK OUT</text>
+      <rect x="1000.8" y="169.5" width="91.2" height="14" rx="2" fill="#2d3142"/>
+      <text x="1086" y="180" fill="#ef8354" font-size="10" font-family="'Geist Mono', monospace" text-anchor="end" letter-spacing="0.06em">SQUASH MERGE</text>
+      <rect x="547.6" y="381.5" width="64.8" height="14" rx="2" fill="#2d3142"/>
+      <text x="580" y="392" fill="#7ea6e6" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">OPENS PR</text>
+      <rect x="852.0" y="321.5" width="58.2" height="14" rx="2" fill="#2d3142"/>
+      <text x="858" y="332" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">BY HAND</text>
+      <rect x="1108.0" y="321.5" width="51.6" height="14" rx="2" fill="#2d3142"/>
+      <text x="1114" y="332" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">GRADES</text>
+      <rect x="168" y="52" width="224" height="96" rx="6" fill="#2d3142"/>
+      <rect x="168" y="52" width="224" height="96" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="212" y="87.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Commit on a branch</text>
+      <image href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjRkFCMDQwIiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+cHJlLWNvbW1pdDwvdGl0bGU+PHBhdGggZD0iTTEyIDBjLS41NjMgMC0xLjEyNy4yMTUtMS41NTcuNjQ1TC42NDUgMTAuNDQzYy0uODYuODYtLjg2IDIuMjU0IDAgMy4xMTRsOS43OTggOS43OThjLjg2Ljg2IDIuMjU0Ljg2IDMuMTE0IDBsOS43OTgtOS43OThjLjg2LS44Ni44Ni0yLjI1NCAwLTMuMTE0TDEzLjU1Ny42NDVBMi4xOTUgMi4xOTUgMCAwMDEyIDB6bTAgMS43NGMuNDkzIDAgLjk4Ny4xODYgMS4zNjEuNTZMMjEuNyAxMC42NGMuNzUuNzUuNzUgMS45NzMgMCAyLjcyMkwxMy4zNjEgMjEuN2MtLjM3NC4zNzUtLjg2OC41Ni0xLjM2MS41NnMtLjk4Ny0uMTg1LTEuMzYxLS41NkwyLjMgMTMuMzYxYTEuOTMgMS45MyAwIDAxMC0yLjcyMkwxMC42MzkgMi4zYy4zNzQtLjM3NS44NjgtLjU2IDEuMzYxLS41NnptMCAuNjJjLS4zMzMgMC0uNjY0LjEyNy0uOTIuMzgyTDIuNzQyIDExLjA4YTEuMjk1IDEuMjk1IDAgMDAwIDEuODRsOC4zMzggOC4zMzhhMS4yOTYgMS4yOTYgMCAwMDEuODQgMGw4LjMzOC04LjMzOGExLjI5NSAxLjI5NSAwIDAwMC0xLjg0TDEyLjkyIDIuNzQyQTEuMjk2IDEuMjk2IDAgMDAxMiAyLjM2ek05LjIwNyA3LjYyNGgzLjk1OWMuNTUgMCAxLjAxNS4wNzkgMS40LjIzOC4zODUuMTYuNy4zNzEuOTQyLjYzMy4yNDEuMjYyLjQxNy41NjEuNTI3Ljg5N2EzLjM0IDMuMzQgMCAwMTAgMi4wODRjLS4xMS4zNC0uMjg2LjY0LS41MjcuOTAyYTIuNjI4IDIuNjI4IDAgMDEtLjk0Mi42MzNjLS4zODUuMTYtLjg1LjIzOC0xLjQuMjM4aC0yLjA0M3YzLjE1Nkg5LjIwN3ptMS45MTYgMS40ODR2Mi42NTdoMS41MTRjLjIyMiAwIC40MzQtLjAxNi42NC0uMDUuMjA3LS4wMzIuMzktLjA5Ny41NDctLjE5My4xNTgtLjA5NS4yODQtLjIzLjM4LS40MDQuMDk0LS4xNzQuMTQyLS40MDEuMTQyLS42ODIgMC0uMjgtLjA0OC0uNTA3LS4xNDMtLjY4MWExLjA1MyAxLjA1MyAwIDAwLS4zNzktLjQwNCAxLjUxMyAxLjUxMyAwIDAwLS41NDctLjE5NCA0LjA1NiA0LjA1NiAwIDAwLS42NC0uMDQ5eiIvPjwvc3ZnPg==" x="184" y="72" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>
+      <text x="184" y="106.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">pre-commit hooks</text>
+      <text x="184" y="123.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">linters + gitleaks</text>
+      <rect x="832" y="52" width="320" height="96" rx="6" fill="#2d3142"/>
+      <rect x="832" y="52" width="320" height="96" rx="6" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
+      <text x="848" y="78.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">check-all.sh</text>
+      <text x="848" y="97.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">pre-commit, every file</text>
+      <text x="848" y="114.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">gitleaks + TruffleHog, full history</text>
+      <text x="848" y="131.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">flux-schema on gitops/</text>
+      <rect x="440" y="204" width="200" height="96" rx="6" fill="#2d3142"/>
+      <rect x="440" y="204" width="200" height="96" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="484" y="239.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Push protection</text>
+      <image href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZjVmNWY1IiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+R2l0SHViPC90aXRsZT48cGF0aCBkPSJNMTIgLjI5N2MtNi42MyAwLTEyIDUuMzczLTEyIDEyIDAgNS4zMDMgMy40MzggOS44IDguMjA1IDExLjM4NS42LjExMy44Mi0uMjU4LjgyLS41NzcgMC0uMjg1LS4wMS0xLjA0LS4wMTUtMi4wNC0zLjMzOC43MjQtNC4wNDItMS42MS00LjA0Mi0xLjYxQzQuNDIyIDE4LjA3IDMuNjMzIDE3LjcgMy42MzMgMTcuN2MtMS4wODctLjc0NC4wODQtLjcyOS4wODQtLjcyOSAxLjIwNS4wODQgMS44MzggMS4yMzYgMS44MzggMS4yMzYgMS4wNyAxLjgzNSAyLjgwOSAxLjMwNSAzLjQ5NS45OTguMTA4LS43NzYuNDE3LTEuMzA1Ljc2LTEuNjA1LTIuNjY1LS4zLTUuNDY2LTEuMzMyLTUuNDY2LTUuOTMgMC0xLjMxLjQ2NS0yLjM4IDEuMjM1LTMuMjItLjEzNS0uMzAzLS41NC0xLjUyMy4xMDUtMy4xNzYgMCAwIDEuMDA1LS4zMjIgMy4zIDEuMjMuOTYtLjI2NyAxLjk4LS4zOTkgMy0uNDA1IDEuMDIuMDA2IDIuMDQuMTM4IDMgLjQwNSAyLjI4LTEuNTUyIDMuMjg1LTEuMjMgMy4yODUtMS4yMy42NDUgMS42NTMuMjQgMi44NzMuMTIgMy4xNzYuNzY1Ljg0IDEuMjMgMS45MSAxLjIzIDMuMjIgMCA0LjYxLTIuODA1IDUuNjI1LTUuNDc1IDUuOTIuNDIuMzYuODEgMS4wOTYuODEgMi4yMiAwIDEuNjA2LS4wMTUgMi44OTYtLjAxNSAzLjI4NiAwIC4zMTUuMjEuNjkuODI1LjU3QzIwLjU2NSAyMi4wOTIgMjQgMTcuNTkyIDI0IDEyLjI5N2MwLTYuNjI3LTUuMzczLTEyLTEyLTEyIi8+PC9zdmc+" x="456" y="224" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>
+      <text x="456" y="258.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">every push</text>
+      <text x="456" y="275.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">provider tokens</text>
+      <rect x="712" y="204" width="180" height="96" rx="6" fill="#2d3142"/>
+      <rect x="712" y="204" width="180" height="96" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="756" y="247.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Pull request</text>
+      <image href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZjVmNWY1IiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+R2l0SHViPC90aXRsZT48cGF0aCBkPSJNMTIgLjI5N2MtNi42MyAwLTEyIDUuMzczLTEyIDEyIDAgNS4zMDMgMy40MzggOS44IDguMjA1IDExLjM4NS42LjExMy44Mi0uMjU4LjgyLS41NzcgMC0uMjg1LS4wMS0xLjA0LS4wMTUtMi4wNC0zLjMzOC43MjQtNC4wNDItMS42MS00LjA0Mi0xLjYxQzQuNDIyIDE4LjA3IDMuNjMzIDE3LjcgMy42MzMgMTcuN2MtMS4wODctLjc0NC4wODQtLjcyOS4wODQtLjcyOSAxLjIwNS4wODQgMS44MzggMS4yMzYgMS44MzggMS4yMzYgMS4wNyAxLjgzNSAyLjgwOSAxLjMwNSAzLjQ5NS45OTguMTA4LS43NzYuNDE3LTEuMzA1Ljc2LTEuNjA1LTIuNjY1LS4zLTUuNDY2LTEuMzMyLTUuNDY2LTUuOTMgMC0xLjMxLjQ2NS0yLjM4IDEuMjM1LTMuMjItLjEzNS0uMzAzLS41NC0xLjUyMy4xMDUtMy4xNzYgMCAwIDEuMDA1LS4zMjIgMy4zIDEuMjMuOTYtLjI2NyAxLjk4LS4zOTkgMy0uNDA1IDEuMDIuMDA2IDIuMDQuMTM4IDMgLjQwNSAyLjI4LTEuNTUyIDMuMjg1LTEuMjMgMy4yODUtMS4yMy42NDUgMS42NTMuMjQgMi44NzMuMTIgMy4xNzYuNzY1Ljg0IDEuMjMgMS45MSAxLjIzIDMuMjIgMCA0LjYxLTIuODA1IDUuNjI1LTUuNDc1IDUuOTIuNDIuMzYuODEgMS4wOTYuODEgMi4yMiAwIDEuNjA2LS4wMTUgMi44OTYtLjAxNSAzLjI4NiAwIC4zMTUuMjEuNjkuODI1LjU3QzIwLjU2NSAyMi4wOTIgMjQgMTcuNTkyIDI0IDEyLjI5N2MwLTYuNjI3LTUuMzczLTEyLTEyLTEyIi8+PC9zdmc+" x="728" y="232" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>
+      <text x="728" y="266.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">into main</text>
+      <rect x="976" y="204" width="200" height="96" rx="6" fill="#2d3142"/>
+      <rect x="976" y="204" width="200" height="96" rx="6" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="1020" y="230.5" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">main</text>
+      <image href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjZjVmNWY1IiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+R2l0SHViPC90aXRsZT48cGF0aCBkPSJNMTIgLjI5N2MtNi42MyAwLTEyIDUuMzczLTEyIDEyIDAgNS4zMDMgMy40MzggOS44IDguMjA1IDExLjM4NS42LjExMy44Mi0uMjU4LjgyLS41NzcgMC0uMjg1LS4wMS0xLjA0LS4wMTUtMi4wNC0zLjMzOC43MjQtNC4wNDItMS42MS00LjA0Mi0xLjYxQzQuNDIyIDE4LjA3IDMuNjMzIDE3LjcgMy42MzMgMTcuN2MtMS4wODctLjc0NC4wODQtLjcyOS4wODQtLjcyOSAxLjIwNS4wODQgMS44MzggMS4yMzYgMS44MzggMS4yMzYgMS4wNyAxLjgzNSAyLjgwOSAxLjMwNSAzLjQ5NS45OTguMTA4LS43NzYuNDE3LTEuMzA1Ljc2LTEuNjA1LTIuNjY1LS4zLTUuNDY2LTEuMzMyLTUuNDY2LTUuOTMgMC0xLjMxLjQ2NS0yLjM4IDEuMjM1LTMuMjItLjEzNS0uMzAzLS41NC0xLjUyMy4xMDUtMy4xNzYgMCAwIDEuMDA1LS4zMjIgMy4zIDEuMjMuOTYtLjI2NyAxLjk4LS4zOTkgMy0uNDA1IDEuMDIuMDA2IDIuMDQuMTM4IDMgLjQwNSAyLjI4LTEuNTUyIDMuMjg1LTEuMjMgMy4yODUtMS4yMy42NDUgMS42NTMuMjQgMi44NzMuMTIgMy4xNzYuNzY1Ljg0IDEuMjMgMS45MSAxLjIzIDMuMjIgMCA0LjYxLTIuODA1IDUuNjI1LTUuNDc1IDUuOTIuNDIuMzYuODEgMS4wOTYuODEgMi4yMiAwIDEuNjA2LS4wMTUgMi44OTYtLjAxNSAzLjI4NiAwIC4zMTUuMjEuNjkuODI1LjU3QzIwLjU2NSAyMi4wOTIgMjQgMTcuNTkyIDI0IDEyLjI5N2MwLTYuNjI3LTUuMzczLTEyLTEyLTEyIi8+PC9zdmc+" x="992" y="215" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>
+      <text x="992" y="249.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">ruleset, PR required</text>
+      <text x="992" y="266.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">squash merge only</text>
+      <text x="992" y="283.5" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">no force push or delete</text>
+      <rect x="168" y="356" width="240" height="96" rx="6" fill="#2d3142"/>
+      <rect x="168" y="356" width="240" height="96" rx="6" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="212" y="391.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Renovate</text>
+      <image href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMzA4QkUzIiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+UmVub3ZhdGU8L3RpdGxlPjxwYXRoIGQ9Ik03LjU5OCAwQTEuNyAxLjcgMCAwIDAgNi4zNy40NjVhMS43MSAxLjcxIDAgMCAwLS4wNzIgMi40MjFsLjAwMi4wMDJMOC45MSA1LjY1YS42MjMuNjIzIDAgMCAxLS4wMjUuODkxLjYyNS42MjUgMCAwIDEtLjg5LS4wMjdsLTEuMjYtMS4zMzJhMS43MjcgMS43MjcgMCAwIDAtMi40MjgtLjA3MyAxLjcxIDEuNzEgMCAwIDAtLjA3NSAyLjQyMnYuMDAybDEuODggMS45ODhhLjYyNi42MjYgMCAwIDEtLjAyNi44OTEuNjIzLjYyMyAwIDAgMS0uODktLjAyN2gtLjAwM2wtLjY4NS0uNzI5LS4wMTQtLjAyYTEuNzMgMS43MyAwIDAgMC0yLjQyNy0uMDczIDEuNzEgMS43MSAwIDAgMC0uMDc0IDIuNDIzbDIuMjUzIDIuNDQ0LjAwNi4wMDguMzUyLjM2M3EuMDA0LS4wNi4wMTMtLjExN2ExLjc1IDEuNzUgMCAwIDAgLjQ4OCAxLjQ3bC4xNDEuMTQzIDEuMjkgMS4yOGMuNjguNjggMS43OTUuNjggMi40NzQgMGwuNTIzLS41MjIgMS41ODgtMS41ODIgMS4xMDItMS4wOSAxLjc3LTEuNzY2IDIuNTMyLTIuNTJ2LS4wMDNhMS43NDUgMS43NDUgMCAwIDAgMC0yLjQ2M2wtLjQ0My0uNDQyYTEuMjk1IDEuMjk1IDAgMCAxIDEuNTc2LjIwMmwxLjA1NyAxLjA1NGMuOTA0LjkwNS45MDUgMi4zNTMuMDAyIDMuMjQ4di4wMDJsLTMuNDk2IDMuNDhoLS4wMDJjLS41Ni41Ni0uNTYgMS40NzcuMDA0IDIuMDNsLjUwNC40OTgtLjY3Ni42NzRhLjUxLjUxIDAgMCAwLS4wMzEuNjlsLjE1LjE4NWguMDA4bDIuNDg4LTIuNDktLjE4NC0uMTVhLjUyLjUyIDAgMCAwLS4zNTctLjExNi41My41MyAwIDAgMC0uMzM0LjE1bC0uNjQ4LjY0Ny0uNTEtLjUwNGgtLjAwMmEuODQuODQgMCAwIDEgLjAwNC0xLjIwMWwzLjQ5NC0zLjQ4YTIuODggMi44OCAwIDAgMCAuMDAyLTQuMDc1bC0xLjA2LTEuMDU2YTEuODggMS44OCAwIDAgMC0xLjMzLS41NWMtLjM4IDAtLjc2LjExNi0xLjA4My4zNDNsLS41NjQtLjU2M2ExLjc0IDEuNzQgMCAwIDAtMS4yMzctLjUwOHYtLjAwMmEyIDIgMCAwIDAtLjIwNS4wMTRsLS45MzctMS4wMy0uMDA4LS4wMDUtMS4yOC0xLjM1OEw4LjguNTM4QTEuNzMgMS43MyAwIDAgMCA3LjYuMDAyWk03LjU4LjYzNWExLjA4IDEuMDggMCAwIDEgLjc1Ni4zNDRsMi42MyAyLjc3OCAxLjI3OCAxLjM1My43NDQuODJhMS43IDEuNyAwIDAgMC0uMzY3LjI3OGwtMy45MSAzLjg5NS0zLjYwNiAzLjU4N2ExLjggMS44IDAgMCAwLS4zMDguNDI2bC4wMS0uMDIxLS4wOTQtLjA5OC0yLjI1My0yLjQ0My0uMDA0LS4wMDJhMS4wNjMgMS4wNjMgMCAwIDEgLjA0Mi0xLjUyMmwuMDA0LS4wMDJhMS4wOCAxLjA4IDAgMCAxIDEuNTI3LjA0MWwuMDAyLjAxMi43MDEuNzRhMS4yNyAxLjI3IDAgMCAwIDEuNzkuMDU3IDEuMjcgMS4yNyAwIDAgMCAuMDU2LTEuNzloLS4wMDJsLTEuODgtMS45ODl2LS4wMDJhMS4wNiAxLjA2IDAgMCAxIC4wNDItMS41MjIgMS4wOCAxLjA4IDAgMCAxIDEuNTMzLjA0NWwxLjI1NiAxLjMzYTEuMjcgMS4yNyAwIDAgMCAxLjc5MS4wNTcgMS4yNyAxLjI3IDAgMCAwIC4wNTUtMS43OWgtLjAwMmwtMi42MS0yLjc2M2ExLjA2IDEuMDYgMCAwIDEgLjA0Mi0xLjUyQTEuMDggMS4wOCAwIDAgMSA3LjU4LjYzNW02LjI3NyA1LjY5NmMuMTQzIDAgLjI4NS4wMy40MTguMDg0YTEuMSAxLjEgMCAwIDAtLjQxOC0uMDg0bS40NC4wOTZxLjE5LjA4LjM0Ni4yMzJhMS4xIDEuMSAwIDAgMC0uMzQ2LS4yMzJtLTkuNTIgNy43MzJhMS44IDEuOCAwIDAgMC0uMTU0LjQ3MyAxLjcgMS43IDAgMCAxIC4xNTQtLjQ3M20xMy4zOTcgMy4wMzctMi41NTcgMi41NTcgMi44NDggMy40MzVxLjA2NS4wNzUuMTQuMTVjLjg3NS44NzMgMi4zMTcuODkgMy4yMDYgMGEyLjI1IDIuMjUgMCAwIDAtLjE1Mi0zLjMzeiIvPjwvc3ZnPg==" x="184" y="376" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>
+      <text x="184" y="410.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">Mondays 06:00 UTC, by hand</text>
+      <text x="184" y="427.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">grouped updates</text>
+      <rect x="808" y="356" width="200" height="96" rx="6" fill="#2d3142"/>
+      <rect x="808" y="356" width="200" height="96" rx="6" fill="rgba(245,245,245,0.02)" stroke="#a3abbd" stroke-width="1.4" stroke-dasharray="5,4"/>
+      <text x="852" y="391.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Workflows</text>
+      <image href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMjA4OEZGIiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+R2l0SHViIEFjdGlvbnM8L3RpdGxlPjxwYXRoIGQ9Ik0xMC45ODQgMTMuODM2YS41LjUgMCAwIDEtLjM1My0uMTQ2bC0uNzQ1LS43NDNhLjUuNSAwIDEgMSAuNzA2LS43MDhsLjM5Mi4zOTEgMS4xODEtMS4xOGEuNS41IDAgMCAxIC43MDguNzA3bC0xLjUzNSAxLjUzM2EuNTA0LjUwNCAwIDAgMS0uMzU0LjE0NnptOS4zNTMtLjE0N2wxLjUzNC0xLjUzMmEuNS41IDAgMCAwLS43MDctLjcwN2wtMS4xODEgMS4xOC0uMzkyLS4zOTFhLjUuNSAwIDEgMC0uNzA2LjcwOGwuNzQ2Ljc0M2EuNDk3LjQ5NyAwIDAgMCAuNzA2LS4wMDF6TTQuNTI3IDcuNDUybDIuNTU3LTEuNTg1QTEgMSAwIDAgMCA3LjA5IDQuMTdMNC41MzMgMi41NkExIDEgMCAwIDAgMyAzLjQwNnYzLjE5NmExLjAwMSAxLjAwMSAwIDAgMCAxLjUyNy44NXptMi4wMy0yLjQzNkw0IDYuNjAyVjMuNDA2bDIuNTU3IDEuNjF6TTI0IDEyLjVjMCAxLjkzLTEuNTcgMy41LTMuNSAzLjVhMy41MDMgMy41MDMgMCAwIDEtMy40Ni0zaC0yLjA4YTMuNTAzIDMuNTAzIDAgMCAxLTMuNDYgMyAzLjUwMiAzLjUwMiAwIDAgMS0zLjQ2LTNoLS41NThjLS45NzIgMC0xLjg1LS4zOTktMi40ODItMS4wNDJWMTdjMCAxLjY1NCAxLjM0NiAzIDMgM2guMDRjLjI0NC0xLjY5MyAxLjctMyAzLjQ2LTMgMS45MyAwIDMuNSAxLjU3IDMuNSAzLjVTMTMuNDMgMjQgMTEuNSAyNGEzLjUwMiAzLjUwMiAwIDAgMS0zLjQ2LTNIOGMtMi4yMDYgMC00LTEuNzk0LTQtNFY5Ljg5OUE1LjAwOCA1LjAwOCAwIDAgMSAwIDVjMC0yLjc1NyAyLjI0My01IDUtNXM1IDIuMjQzIDUgNWE1LjAwNSA1LjAwNSAwIDAgMS00Ljk1MiA0Ljk5OEEyLjQ4MiAyLjQ4MiAwIDAgMCA3LjQ4MiAxMmguNTU4Yy4yNDQtMS42OTMgMS43LTMgMy40Ni0zYTMuNTAyIDMuNTAyIDAgMCAxIDMuNDYgM2gyLjA4YTMuNTAzIDMuNTAzIDAgMCAxIDMuNDYtM2MxLjkzIDAgMy41IDEuNTcgMy41IDMuNXptLTE1IDhjMCAxLjM3OCAxLjEyMiAyLjUgMi41IDIuNXMyLjUtMS4xMjIgMi41LTIuNS0xLjEyMi0yLjUtMi41LTIuNVM5IDE5LjEyMiA5IDIwLjV6TTUgOWMyLjIwNiAwIDQtMS43OTQgNC00UzcuMjA2IDEgNSAxIDEgMi43OTQgMSA1czEuNzk0IDQgNCA0em05IDMuNWMwLTEuMzc4LTEuMTIyLTIuNS0yLjUtMi41UzkgMTEuMTIyIDkgMTIuNXMxLjEyMiAyLjUgMi41IDIuNSAyLjUtMS4xMjIgMi41LTIuNXptOSAwYzAtMS4zNzgtMS4xMjItMi41LTIuNS0yLjVTMTggMTEuMTIyIDE4IDEyLjVzMS4xMjIgMi41IDIuNSAyLjUgMi41LTEuMTIyIDIuNS0yLjV6bS0xMyA4YS41LjUgMCAxIDAgMSAwIC41LjUgMCAwIDAtMSAwem0yIDBhLjUuNSAwIDEgMCAxIDAgLjUuNSAwIDAgMC0xIDB6bTEyIDBjMCAxLjkzLTEuNTcgMy41LTMuNSAzLjVhMy41MDMgMy41MDMgMCAwIDEtMy40Ni0zLjAwMmMtLjAwNy4wMDEtLjAxMy4wMDUtLjAyMS4wMDVsLS41MDYuMDE3aC0uMDE3YS41LjUgMCAwIDEtLjAxNi0uOTk5bC41MDYtLjAxN2MuMDE4LS4wMDIuMDM1LjAwNi4wNTIuMDA3QTMuNTAzIDMuNTAzIDAgMCAxIDIwLjUgMTdjMS45MyAwIDMuNSAxLjU3IDMuNSAzLjV6bS0xIDBjMC0xLjM3OC0xLjEyMi0yLjUtMi41LTIuNVMxOCAxOS4xMjIgMTggMjAuNXMxLjEyMiAyLjUgMi41IDIuNSAyLjUtMS4xMjIgMi41LTIuNXoiLz48L3N2Zz4=" x="824" y="376" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>
+      <text x="824" y="410.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">lint, secrets, manifests</text>
+      <text x="824" y="427.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">same as check-all.sh</text>
+      <rect x="1032" y="356" width="144" height="96" rx="6" fill="#2d3142"/>
+      <rect x="1032" y="356" width="144" height="96" rx="6" fill="rgba(245,245,245,0.02)" stroke="#a3abbd" stroke-width="1.4" stroke-dasharray="5,4"/>
+      <text x="1048" y="391.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Scorecard</text>
+      <text x="1048" y="410.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">OpenSSF</text>
+      <text x="1048" y="427.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">Security tab</text>
+      <text x="576" y="78" fill="#a3abbd" font-size="15" font-style="italic" font-family="'Instrument Serif', serif" text-anchor="start">Pull requests start no workflow:</text>
+      <text x="576" y="96" fill="#a3abbd" font-size="15" font-style="italic" font-family="'Instrument Serif', serif" text-anchor="start">the same checks run here,</text>
+      <text x="576" y="114" fill="#a3abbd" font-size="15" font-style="italic" font-family="'Instrument Serif', serif" text-anchor="start">in under a minute</text>
+      <rect x="24" y="512" width="18" height="13" rx="2" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="50" y="522" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Step</text>
+      <rect x="102.8" y="512" width="18" height="13" rx="2" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
+      <text x="128.8" y="522" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Gate before merge</text>
+      <rect x="262.20000000000005" y="512" width="18" height="13" rx="2" fill="rgba(245,245,245,0.06)" stroke="#a3abbd" stroke-width="1.4"/>
+      <text x="288.20000000000005" y="522" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Protected branch</text>
+      <rect x="415.40000000000003" y="512" width="18" height="13" rx="2" fill="rgba(106,149,216,0.24)" stroke="#7ea6e6" stroke-width="1.4"/>
+      <text x="441.40000000000003" y="522" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Bot</text>
+      <rect x="488.00000000000006" y="512" width="18" height="13" rx="2" fill="rgba(245,245,245,0.02)" stroke="#a3abbd" stroke-width="1.4" stroke-dasharray="3,2"/>
+      <text x="514.0" y="522" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Run by hand</text>
+      <line x1="610.2" y1="518.5" x2="638.2" y2="518.5" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#ci-a)"/>
+      <text x="646.2" y="522" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Flow</text>
+      <line x1="699.0" y1="518.5" x2="727.0" y2="518.5" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#ci-a-link)"/>
+      <text x="735.0" y="522" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Opens a pull request</text>
+      <line x1="887.0" y1="518.5" x2="915.0" y2="518.5" stroke="#bfc0c0" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#ci-a)"/>
+      <text x="923.0" y="522" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">By hand</text>
+      <line x1="994.4" y1="518.5" x2="1022.4" y2="518.5" stroke="#ef8354" stroke-width="1.4" marker-end="url(#ci-a-accent)"/>
+      <text x="1030.4" y="522" fill="#bfc0c0" font-size="11" font-family="'Geist', sans-serif">Merge</text>
+      </svg>
   </div>
 </body>
 </html>

@@ -4,7 +4,7 @@ The photo library, the first app on the cluster: Immich v3 with its
 database on Longhorn and the photos on the NAS, reached at
 `https://immich.home.<domain>` and logged in through Pocket ID.
 
-![Immich: the Gateway routes to the server, which uses machine learning, Valkey, Postgres on Longhorn and the photo library on the NAS, with settings from OpenBao and login through Pocket ID](../diagrams/immich.png)
+![Immich: the laptop reaches the server over the tailnet through the Gateway, the server and machine learning share the Intel GPU on talos-w-2, Postgres on Longhorn is dumped nightly to the photo library on the NAS under a 400G ZFS quota, with login through Pocket ID and secrets from OpenBao](../diagrams/immich.png)
 
 ## Database
 
@@ -92,6 +92,7 @@ the defaults. Changed in [config.yaml](../gitops/projects/immich/config.yaml):
 | `server.publicUsers` | off | Users do not see the list of all users |
 | `newVersionCheck` | off | Versions are pinned in git; no calls to GitHub, as for Pocket ID |
 | `storageTemplate` | on, `{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}` | Files on the NAS by date with their own names, readable over SMB and easy to back up. The template braces are escaped in the `ExternalSecret`, which also uses `{{ }}` |
+| `ffmpeg.accel`, `ffmpeg.accelDecode` | `qsv`, on | Video is encoded and decoded on the Intel GPU ([Resources](#resources)) |
 
 Kept as they are:
 
@@ -99,7 +100,6 @@ Kept as they are:
 |---------|---------|------|
 | `backup.database` | every night at 02:00, keep 14 | Immich dumps its own database to `library/backups`, which is on the NAS: a database copy outside the cluster already |
 | `machineLearning` | CLIP `ViT-B-32__openai`, faces `buffalo_l`, OCR | The small models, enough for 8 GB workers |
-| `ffmpeg.accel` | disabled | No GPU |
 | `map` | tiles from `tiles.immich.cloud` | The browser fetches map tiles from Immich's servers |
 | `trash` | 30 days | |
 

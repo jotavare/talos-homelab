@@ -5,7 +5,7 @@ The VMs and containers on Proxmox as code, with
 [bpg/proxmox](https://registry.terraform.io/providers/bpg/proxmox/latest)
 provider.
 
-![OpenTofu: one root with an encrypted local state reads its tokens from OpenBao and drives Proxmox, Cloudflare, the services VM, OpenBao, Tailscale, Pocket ID and the cluster through its modules](../diagrams/opentofu.png)
+![OpenTofu: every change runs as plan, read, apply; one root on the laptop with an AES-GCM encrypted local state reads tokens from OpenBao, writes cluster secrets back, and configures one provider per system for its modules, with the Proxmox token limited to three roles](../diagrams/opentofu.png)
 
 ## Why OpenTofu
 

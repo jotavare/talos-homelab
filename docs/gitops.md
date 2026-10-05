@@ -3,7 +3,7 @@
 How the cluster's manifests get from git to the cluster: Flux, installed
 by OpenTofu, reads this public repo and applies `gitops/` in order.
 
-![GitOps order: Flux applies the Gateway API CRDs, then Cilium, then storage, CloudNativePG and External Secrets, then cert-manager, the Tailscale operator and the Gateway, and Immich last](../diagrams/gitops.png)
+![GitOps order: Flux fetches the repo and applies every Kustomization in dependsOn order, the Gateway API CRDs, then Cilium, then storage and CloudNativePG, External Secrets and the add-ons with the Intel GPU plugin from its own repo, then cert-manager, the Tailscale operator and the Gateway, and Immich last, database first](../diagrams/gitops.png)
 
 ## Flux install
 

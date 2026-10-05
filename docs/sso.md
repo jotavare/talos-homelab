@@ -4,7 +4,7 @@ One login for the lab's apps, with passkeys only:
 [Pocket ID](https://pocket-id.org/) on the services VM, and OpenBao,
 Proxmox and Immich as its OIDC clients, all made by OpenTofu.
 
-![SSO: OpenBao, Proxmox and Immich send me to Pocket ID, I log in with a passkey, and each app exchanges the code with Pocket ID; OpenTofu creates the clients](../diagrams/sso.png)
+![SSO login sequence: OpenTofu creates the OpenBao, Proxmox and Immich clients once, then each login redirects me to Pocket ID for a passkey and the app exchanges the code for an ID token before opening a session](../diagrams/sso.png)
 
 ## Pocket ID
 

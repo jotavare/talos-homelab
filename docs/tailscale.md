@@ -3,6 +3,8 @@
 Remote admin access to the homelab over a WireGuard mesh, with no ports
 opened on the router.
 
+![Tailscale access rules: my devices reach the Gateway, the servers, the Talos nodes and the services VM on their ports, the nodes and servers reach only the services VM, and under Tailnet Lock a new device joins only when the laptop or pve signs it](../diagrams/tailscale.png)
+
 ## Why Tailscale
 
 - **Free** for this use: the Personal plan covers 6 users, unlimited user
@@ -29,8 +31,6 @@ Directly on each node that needs remote access, not as a subnet router:
 | Talos VMs | Tailscale system extension, in the Talos phase |
 
 ## How traffic flows
-
-![Tailscale traffic: direct over the LAN at home, direct over the internet when away, DERP relay as a fallback, coordination server for keys and policy only](../diagrams/tailscale.png)
 
 The laptop and the phone can each be at home or away; the path depends on
 where the device is, not which device it is.

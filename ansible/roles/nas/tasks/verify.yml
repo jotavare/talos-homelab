@@ -26,4 +26,4 @@
       - nas_s.power == 'active'
       - nas_s.smbd == 'active'
     quiet: true
-    fail_msg: NAS drifted, see docs/09-nas.md
+    fail_msg: NAS drifted, see docs/nas.md
