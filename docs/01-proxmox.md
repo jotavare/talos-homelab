@@ -596,7 +596,7 @@ cluster runs.
 
 | VM | vCPU | RAM | Disk | IP |
 |----|------|-----|------|----|
-| Control plane | 2 | 4 GB | 32 GB | `192.168.1.11` |
+| Control plane | 2 | 4 GB | 32 GB | `192.168.1.12` |
 | Worker 1 to 3 | 4 each | 8 GB each | 80 GB each | `192.168.1.21` to `.23` |
 | Services VM (OpenBao, Caddy, Tailscale) | 2 | 1.5 GB | 32 GB | `192.168.1.30` |
 | Kubernetes API VIP | | | | `192.168.1.20` |

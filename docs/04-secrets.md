@@ -112,6 +112,7 @@ bao kv get -mount=kv config
 | `kv/opentofu` | The Proxmox API token, the two Cloudflare tokens, the Tailscale OAuth client |
 | `kv/services/caddy`, `tailscale`, `garage`, `pocket-id` | The stack's secrets |
 | `kv/services/opentofu` | The passphrase of the OpenTofu state (also in Bitwarden) |
+| `kv/nas` | The Samba user and password, read by Ansible ([08. NAS](08-nas.md#shares)) |
 
 ## Commit guard
 
@@ -245,6 +246,7 @@ shared outside Bitwarden and is replaced first.
 | Proxmox `root@pam` password and 2FA recovery keys | Bitwarden | Year | 2027-09 | Web UI, then new recovery keys |
 | Gmail app password (SMTP) | Bitwarden, the host | Year | 2027-09 | New app password, update the notification target |
 | Garage access keys | OpenBao | Year | | `garage key create`, update the client, delete the old key |
+| Samba password, user `nas` | OpenBao `kv/nas`, the host | Year | 2027-10 | `bao kv patch`, then `smbpasswd nas` on `pve-desktop` with the new value |
 | Pocket ID static API key | OpenBao `kv/services/pocket-id` | Year | 2027-10 | `bao kv patch` a new random value, `tofu apply` replaces Pocket ID with it |
 | Pocket ID client secrets (OpenBao, Proxmox) | OpenTofu state, OpenBao, Proxmox | Year | 2027-10 | Set `client_secret` on the client, raise both `_wo_version`s, apply |
 

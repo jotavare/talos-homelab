@@ -33,11 +33,13 @@ ansible-galaxy collection install -r requirements.yml
 | Path | What it is |
 |------|------------|
 | [ansible/ansible.cfg](../ansible/ansible.cfg) | Settings: inventory, roles path, YAML output |
-| [ansible/inventory.yml](../ansible/inventory.yml) | The host `pve` and the services VM. Addresses come from OpenBao, so the tailnet address stays out of the repo |
+| [ansible/inventory.yml](../ansible/inventory.yml) | The hosts `pve` and `pve-desktop`. The address of `pve` comes from OpenBao, so its tailnet address stays out of the repo |
 | [ansible/group_vars/all.yml](../ansible/group_vars/all.yml) | Reads `kv/config` from OpenBao with the `community.hashi_vault` lookup |
-| [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook for the host |
+| [ansible/proxmox.yml](../ansible/proxmox.yml) | The playbook for the hosts: `proxmox_base` on both, `proxmox_host` on `pve` only |
+| [ansible/nas.yml](../ansible/nas.yml) | The NAS on `pve-desktop` ([08. NAS](08-nas.md)) |
 | [ansible/requirements.yml](../ansible/requirements.yml) | The `community.proxmox` and `community.hashi_vault` collections |
-| [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | The tasks, handlers and compliance checks (`tasks/verify.yml`) |
+| [ansible/roles/proxmox_base/](../ansible/roles/proxmox_base/) | What every Proxmox host gets: repositories, unattended upgrades, SSH hardening, IPv6 autoconf off, Tailscale |
+| [ansible/roles/proxmox_host/](../ansible/roles/proxmox_host/) | What only `pve` gets, and the compliance checks (`tasks/verify.yml`) |
 | [proxmox/](../proxmox/) | The config files the role copies. Each file lives in one place and is explained in 01. Proxmox |
 
 ## What it covers

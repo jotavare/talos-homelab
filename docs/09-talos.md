@@ -57,7 +57,7 @@ together with tailnet-only access for admin UIs (Backlog).
 |------|-------|
 | VIP | `192.168.1.20`, the Talos built-in shared IP, used by the workers. With one control plane it is only an extra address, ready for more |
 | From my devices | The control plane's tailnet name, `talos-cp-1.<tailnet>.ts.net:6443`. The VIP is LAN only, so away from home the tailnet is the only way |
-| `certSANs` | `192.168.1.20`, `192.168.1.11`, and the control plane's tailnet name and IP |
+| `certSANs` | `192.168.1.20`, `192.168.1.12`, and the control plane's tailnet name and IP |
 | `talosconfig` | Endpoint: the control plane's tailnet name. Nodes: all four |
 
 ### Network and cluster

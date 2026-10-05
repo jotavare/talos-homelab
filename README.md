@@ -84,11 +84,12 @@ LAN `192.168.1.0/24`:
 |-------|------|-----|
 | `192.168.1.1` | Static | ISP router |
 | `192.168.1.2` | Static | Access point |
-| `192.168.1.10` | Static | Proxmox |
-| `192.168.1.11` to `.19` | Static | Talos control plane |
+| `192.168.1.10` | Static | Proxmox `pve` |
+| `192.168.1.11` | Static | Proxmox `pve-desktop`, the NAS (WiFi) |
+| `192.168.1.12` to `.19` | Static | Talos control plane |
 | `192.168.1.20` | Static | Kubernetes API VIP |
 | `192.168.1.21` to `.29` | Static | Talos workers |
-| `192.168.1.30` to `.49` | Static | Services outside the cluster (services VM `.30`, Garage `.40`) and other lab machines |
+| `192.168.1.30` to `.49` | Static | Services outside the cluster (services VM `.30`) and other lab machines |
 | `192.168.1.50` to `.99` | Static | Cilium LoadBalancer pool |
 | `192.168.1.100` to `.254` | Dynamic (DHCP) | Phones, laptops and other clients |
 
@@ -174,6 +175,7 @@ written down and the homelab knowingly does something simpler.
 | Secrets store | Vault or OpenBao as a cluster of three on dedicated machines, auto-unsealed by a cloud key service | One OpenBao in the services VM on the same host, unsealed by hand after a reboot. Survives a cluster rebuild, not the loss of the host |
 | OpenTofu state | Remote backend with locking and versioning (S3, GCS, Azure Blob) on separate infrastructure | One local state file on my laptop, encrypted with a passphrase. No locking, no history, no copy elsewhere; fine for one person on one laptop, and it can be rebuilt with imports ([details](docs/05-opentofu.md#how-the-state-got-here)) |
 | Object storage | Several nodes with replication, versioning and object lock, plus a copy off site | One Garage in the services VM on the same host, one copy of each object, no versioning. Survives a cluster rebuild, not the loss of the host or the drive ([details](docs/06-object-storage.md#limits)) |
+| File storage | A NAS on wired network with mirrored or RAID-Z disks, snapshots sent off site | ZFS on one HDD in an old desktop on WiFi. Checksums catch damage but cannot repair it, and nothing is copied off it yet ([details](docs/08-nas.md#limits)) |
 | Backups | Proxmox Backup Server on a separate machine, plus a copy off site | A daily backup job for the services VM to `local` now, Proxmox Backup Server as a VM on the same host later. Both protect against mistakes, not against losing the host ([details](docs/01-proxmox.md#container-backups)) |
 
 ## Work in progress
@@ -190,7 +192,8 @@ with the tools, the options chosen and why.
 | [05. OpenTofu](docs/05-opentofu.md) | Proxmox user and token, project, state encryption, OpenBao container |
 | [06. Object storage](docs/06-object-storage.md) | Garage for backups |
 | [07. Services VM](docs/07-services.md) | OpenBao, Garage, Caddy and Tailscale as containers, managed by a separate OpenTofu project |
-| [08. Talos](docs/08-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
+| [08. NAS](docs/08-nas.md) | ZFS on the second host, SMB for my devices, NFS for the cluster |
+| [09. Talos](docs/09-talos.md) | Design: image, VM settings, firewall, API access, Tailscale |
 
 ## Backlog
 
@@ -224,7 +227,20 @@ phase page.
 - [ ] OpenBao auth for Flux and CI (Kubernetes auth, AppRole or JWT), each
       with its own narrow policy, instead of my own login.
 
+### NAS
+
+- [ ] Tailscale on `pve-desktop` with `tag:server`, and grants for SMB from
+      my devices.
+- [ ] Proxmox firewall on `pve-desktop`: management over the tailnet,
+      SMB and NFS only from where they are used.
+- [ ] A second disk for a mirror, or a copy of `tank/files` off the host.
+- [ ] Scrub `tank` monthly and alert on errors.
+
 ### Before Talos
+
+- [ ] Caddy does not come back after a reboot of the services VM: Docker
+      starts it before the `tailscale` container whose network it shares,
+      fails once and never retries. Start it by hand until fixed.
 
 - [ ] Cloud-init for VM 130 (Docker, the guest agent, unattended upgrades,
       the `docker` group), so a rebuilt VM needs no manual step.
