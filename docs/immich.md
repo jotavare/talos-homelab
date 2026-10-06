@@ -93,6 +93,7 @@ the defaults. Changed in [config.yaml](../gitops/projects/immich/config.yaml):
 | `newVersionCheck` | off | Versions are pinned in git; no calls to GitHub, as for Pocket ID |
 | `storageTemplate` | on, `{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}` | Files on the NAS by date with their own names, readable over SMB and easy to back up. The template braces are escaped in the `ExternalSecret`, which also uses `{{ }}` |
 | `ffmpeg.accel`, `ffmpeg.accelDecode` | `qsv`, on | Video is encoded and decoded on the Intel GPU ([Resources](#resources)) |
+| `job.*.concurrency` | sidecar 10, metadataExtraction 8, thumbnailGeneration 4, faceDetection 3, smartSearch 3, ocr 2 | Faster large uploads. Sidecar and metadata mostly wait on the NAS over WiFi, so more of them in parallel helps; the CPU jobs are capped by `talos-w-2`'s 4 cores. `storageTemplateMigration` has no setting and runs one at a time |
 
 Kept as they are:
 

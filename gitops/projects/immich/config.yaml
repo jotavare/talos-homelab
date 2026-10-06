@@ -22,6 +22,19 @@ spec:
           storageTemplate:
             enabled: true
             template: "{{`{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}`}}"
+          job:
+            sidecar:
+              concurrency: 10
+            metadataExtraction:
+              concurrency: 8
+            thumbnailGeneration:
+              concurrency: 4
+            faceDetection:
+              concurrency: 3
+            smartSearch:
+              concurrency: 3
+            ocr:
+              concurrency: 2
           ffmpeg:
             accel: qsv
             accelDecode: true
