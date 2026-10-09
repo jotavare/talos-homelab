@@ -51,6 +51,10 @@ spec:
         app.kubernetes.io/name: immich-power-tools
     spec:
       automountServiceAccountToken: false
+      hostAliases:
+        - ip: 192.168.1.51
+          hostnames:
+            - immich.home.${DOMAIN}
       securityContext:
         runAsNonRoot: true
         runAsUser: 1001

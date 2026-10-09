@@ -119,6 +119,7 @@ photos missing either, and merging people. It runs next to Immich in
 | Database | Reads Immich's Postgres directly, as the role `power_tools` in `pg_read_all_data`, made by CloudNativePG `managed.roles`. It can read every table and write none; its own state is a SQLite file |
 | Secrets | `kv/k8s/immich-power-tools`: the role's password and the session signing key, through two `ExternalSecret`s |
 | Storage | 1 Gi on Longhorn for the SQLite file |
+| Reaching Immich | The login step calls Immich at `immich.home.<domain>`, which resolves to the Gateway's tailnet IP, and pods cannot reach the tailnet Gateway. A `hostAliases` entry points that name at the Gateway's LAN address, `192.168.1.51`, which serves the same certificate |
 
 The project's guide asks for an API key with every permission. Without
 one, anyone who could open the page would act as that key; signing in
