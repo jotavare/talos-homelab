@@ -4,7 +4,7 @@ The photo library, the first app on the cluster: Immich v3 with its
 database on Longhorn and the photos on the NAS, reached at
 `https://immich.home.<domain>` and logged in through Pocket ID.
 
-![Immich: the laptop reaches the server over the tailnet through the Gateway, the server and machine learning share the Intel GPU on talos-w-2, Postgres on Longhorn is dumped nightly to the photo library on the NAS under a 400G ZFS quota, with login through Pocket ID and secrets from OpenBao](../diagrams/immich.png)
+![Immich: the Gateway routes to the server and to Power Tools; the server uses machine learning on the GPU, Valkey, Postgres on Longhorn and the photo library on the NAS, Power Tools reads Postgres as a read-only role, with settings from OpenBao and login through Pocket ID](../diagrams/immich.png)
 
 ## Database
 
@@ -104,11 +104,32 @@ Kept as they are:
 | `map` | tiles from `tiles.immich.cloud` | The browser fetches map tiles from Immich's servers |
 | `trash` | 30 days | |
 
+## Power Tools
+
+[Immich Power Tools](https://github.com/immich-power-tools/immich-power-tools)
+adds bulk tools Immich lacks: dates and locations for many photos at once,
+photos missing either, and merging people. It runs next to Immich in
+[power-tools.yaml](../gitops/projects/immich/power-tools.yaml), at
+`https://power-tools.home.<domain>`.
+
+| Item | Value |
+|------|-------|
+| Image | v0.25.0, pinned by digest, as a non-root user |
+| Login | Through Immich, so through Pocket ID (`OAUTH_ENABLED`). No API key: each person acts with their own Immich permissions. The `immich` Pocket ID client allows its callback, `/api/auth/oauth/callback` |
+| Database | Reads Immich's Postgres directly, as the role `power_tools` in `pg_read_all_data`, made by CloudNativePG `managed.roles`. It can read every table and write none; its own state is a SQLite file |
+| Secrets | `kv/k8s/immich-power-tools`: the role's password and the session signing key, through two `ExternalSecret`s |
+| Storage | 1 Gi on Longhorn for the SQLite file |
+
+The project's guide asks for an API key with every permission. Without
+one, anyone who could open the page would act as that key; signing in
+through Immich avoids that.
+
 ## References
 
 - [Immich documentation](https://immich.app/docs/)
 - [Immich Helm chart](https://github.com/immich-app/immich-charts)
 - [Immich config file](https://immich.app/docs/install/config-file/)
+- [Immich Power Tools](https://github.com/immich-power-tools/immich-power-tools)
 - [CloudNativePG](https://cloudnative-pg.io/documentation/current/)
 
 [Back to the build log](../README.md#docs)

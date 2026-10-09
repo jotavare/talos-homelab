@@ -7,7 +7,7 @@ module "dns" {
   nas_ip      = local.config["nas_host"]
 
   gateway_ip   = module.tailscale.gateway_ip
-  cluster_apps = ["immich"]
+  cluster_apps = ["immich", "power-tools"]
 }
 
 module "proxmox" {

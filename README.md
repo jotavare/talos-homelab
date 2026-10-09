@@ -56,7 +56,7 @@ options chosen and why. The whole picture is in the
 | [Talos](docs/talos.md) | Image, VMs, machine config, bootstrap, Tailscale on the nodes | [Talos](diagrams/talos.png) |
 | [Platform](docs/platform.md) | Cilium and its Gateway, Longhorn, NFS, CloudNativePG, External Secrets, cert-manager, the Tailscale operator | [Platform](diagrams/platform.png) |
 | [GitOps](docs/gitops.md) | Flux and Kustomize, the `gitops/` layout, the order and timing of the steps | [GitOps](diagrams/gitops.png) |
-| [Immich](docs/immich.md) | Database, photo library, settings as code, Pocket ID | [Immich](diagrams/immich.png) |
+| [Immich](docs/immich.md) | Database, photo library, settings as code, Pocket ID, Power Tools | [Immich](diagrams/immich.png) |
 | [CI](docs/ci.md) | pre-commit, secret scanning in three layers, manifest validation, Scorecard, Renovate | [CI](diagrams/ci.png) |
 
 ## Hardware

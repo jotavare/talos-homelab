@@ -52,5 +52,6 @@ resource "pocketid_client" "immich" {
     "https://immich.home.${var.domain}/auth/login",
     "https://immich.home.${var.domain}/user-settings",
     "app.immich:///oauth-callback",
+    "https://power-tools.home.${var.domain}/api/auth/oauth/callback",
   ]
 }

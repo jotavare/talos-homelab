@@ -121,7 +121,7 @@ bao kv get -mount=kv config
 | `kv/talos` | The nodes' Tailscale key, pre-signed for Tailnet Lock |
 | `kv/talos/cluster` | Talos machine secrets, `talosconfig` and admin `kubeconfig`, written by OpenTofu |
 | `kv/talos/machine-configs` | The full machine config of each node, with Talos' field documentation, written by OpenTofu |
-| `kv/k8s/*` | Secrets for the cluster, read by External Secrets: `cert-manager` (Cloudflare DNS token), `tailscale-operator` (its OAuth client), `immich-database` (the Postgres user Immich logs in with), `immich-oauth` (its Pocket ID client). The cluster can read only these and `kv/config` |
+| `kv/k8s/*` | Secrets for the cluster, read by External Secrets: `cert-manager` (Cloudflare DNS token), `tailscale-operator` (its OAuth client), `immich-database` (the Postgres user Immich logs in with), `immich-oauth` (its Pocket ID client), `immich-power-tools` (the read-only database role and the session key of Power Tools). The cluster can read only these and `kv/config` |
 | `kv/nas` | The Samba user and password, read by Ansible ([NAS](nas.md#shares)) |
 | `kv/immich` | The Immich admin login |
 | `kv/github/renovate` | Renovate's fine-grained GitHub token, copied to the repo secret `RENOVATE_TOKEN` ([CI](ci.md#renovate)) |
@@ -276,6 +276,7 @@ shared outside Bitwarden and is replaced first.
 | Samba password, user `nas` | OpenBao `kv/nas`, the host | Year | 2027-10 | `bao kv patch`, then `smbpasswd nas` on `pve-desktop` with the new value |
 | Immich database password | OpenBao `kv/k8s/immich-database` | Year | 2027-10 | `bao kv patch`; External Secrets syncs it within an hour, CloudNativePG changes the role, then restart `immich-server` |
 | Pocket ID static API key | OpenBao `kv/services/pocket-id` | Year | 2027-10 | `bao kv patch` a new random value, `tofu apply` replaces Pocket ID with it |
+| Immich Power Tools database password and session key | OpenBao `kv/k8s/immich-power-tools` | Year | 2027-10 | `bao kv patch`; External Secrets syncs it within an hour, CloudNativePG changes the role, then restart `immich-power-tools` |
 | Pocket ID client secrets (OpenBao, Proxmox, Immich) | OpenTofu state, OpenBao, Proxmox, `kv/k8s/immich-oauth` | Year | 2027-10 | Set `client_secret` on the client, raise the `_wo_version`s, apply; restart `immich-server` |
 | Immich admin password | OpenBao `kv/immich`, Bitwarden | Year | 2027-10 | Change it in Immich, `bao kv patch` |
 | Talos machine secrets | OpenTofu state, OpenBao `kv/talos/cluster` | Only if leaked | | A new cluster CA means a rebuild; certificates inside it rotate on their own |

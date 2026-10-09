@@ -17,7 +17,7 @@
   <div class="frame">
       <svg viewBox="0 0 1200 664" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="immich-title immich-desc">
       <title id="immich-title">Immich</title>
-      <desc id="immich-desc">The laptop reaches Immich over the tailnet through the Gateway, from the browser and the mobile app; the server and machine learning run on talos-w-2 with its Intel GPU, the server uses Valkey and Postgres on Longhorn, keeps photos on the NAS under a 400G ZFS quota where the database is also dumped nightly, logs users in through Pocket ID and gets its settings and passwords from OpenBao.</desc>
+      <desc id="immich-desc">The laptop reaches Immich over the tailnet through the Gateway, from the browser and the mobile app, and Power Tools reads the database as a read-only role; the server and machine learning run on talos-w-2 with its Intel GPU, the server uses Valkey and Postgres on Longhorn, keeps photos on the NAS under a 400G ZFS quota where the database is also dumped nightly, logs users in through Pocket ID and gets its settings and passwords from OpenBao.</desc>
       <defs><marker id="immich-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker><marker id="immich-a-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#7ea6e6"/></marker><marker id="immich-a-tail" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#6fd3c1"/></marker><marker id="immich-a-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#ef8354"/></marker></defs>
       <rect width="100%" height="100%" fill="#2d3142"/>
       <rect x="232" y="152" width="728" height="448" rx="8" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
@@ -41,6 +41,11 @@
       <path d="M 928,544 H 1068 Q 1076,544 1076,536 V 328" fill="none" stroke="#bfc0c0" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#immich-a)"/>
       <path d="M 632,216 V 88 Q 632,80 624,80 H 416" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#immich-a-link)"/>
       <path d="M 720,80 H 668 Q 660,80 660,88 V 216" fill="none" stroke="#7ea6e6" stroke-width="1.4" marker-end="url(#immich-a-link)"/>
+      <path d="M 336,304 V 496" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#immich-a)"/>
+      <path d="M 416,512 H 428 Q 436,512 436,504 V 304 Q 436,296 444,296 H 456" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#immich-a)"/>
+      <path d="M 416,552 H 720" fill="none" stroke="#bfc0c0" stroke-width="1.4" marker-end="url(#immich-a)"/>
+      <rect x="530" y="532" width="76" height="14" rx="2" fill="#2d3142"/>
+      <text x="568" y="542.5" fill="#bfc0c0" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">READ ONLY</text>
       <rect x="182.9" y="241.5" width="58.2" height="14" rx="2" fill="#2d3142"/>
       <text x="212" y="252" fill="#6fd3c1" font-size="10" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">TAILNET</text>
       <rect x="787.1" y="217.5" width="97.8" height="14" rx="2" fill="#2d3142"/>
@@ -73,8 +78,13 @@
       <rect x="256" y="224" width="160" height="80" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
       <text x="300" y="251.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Gateway</text>
       <image href="data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjRjhDNTE3IiByb2xlPSJpbWciIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48dGl0bGU+Q2lsaXVtPC90aXRsZT48cGF0aCBkPSJNMTMuNjA3IDE0LjU4M2gtMy4yMTVsLTEuNjI2LTIuNzY0IDEuNjI2LTIuODAyaDMuMjE1bDEuNjI2IDIuODAyLTEuNjI2IDIuNzY0Wk0xNC4xODYgOEg5Ljc5OWwtMi4yIDMuODEzIDIuMiAzLjc4N2g0LjM4N2wyLjIxMy0zLjc4N0wxNC4xODYgOFptLTQuMzg3IDguNC0yLjIgMy44MTNMOS43OTkgMjRoNC4zODdsMi4yMTMtMy43ODctMi4yMTMtMy44MTNIOS43OTlabS0xLjAzNCAzLjgxOSAxLjYyNy0yLjgwMmgzLjIxNWwxLjYyNiAyLjgwMi0xLjYyNiAyLjc2NWgtMy4yMTVsLTEuNjI3LTIuNzY1Wk05Ljc5OSAwbC0yLjIgMy44MTMgMi4yIDMuNzg3aDQuMzg3bDIuMjEzLTMuNzg3TDE0LjE4NiAwSDkuNzk5Wk04Ljc2NSAzLjgxOWwxLjYyNy0yLjgwMmgzLjIxNWwxLjYyNiAyLjgwMi0xLjYyNiAyLjc2NGgtMy4yMTVMOC43NjUgMy44MTlabTguMjM0IDguNTgxLTIuMiAzLjgxMyAyLjIgMy43ODdoNC4zODhsMi4yMTMtMy43ODctMi4yMTMtMy44MTNoLTQuMzg4Wm0tMS4wMzQgMy44MTkgMS42MjctMi44MDJoMy4yMTVsMS42MjYgMi44MDItMS42MjYgMi43NjVoLTMuMjE1bC0xLjYyNy0yLjc2NVpNMTYuOTk5IDRsLTIuMiAzLjgxMyAyLjIgMy43ODdoNC4zODhMMjMuNiA3LjgxMyAyMS4zODcgNGgtNC4zODhabS0xLjAzNCAzLjgxOSAxLjYyNy0yLjgwMmgzLjIxNWwxLjYyNiAyLjgwMi0xLjYyNiAyLjc2NGgtMy4yMTVsLTEuNjI3LTIuNzY0Wk0yLjU5OSAxMi40bC0yLjIgMy44MTNMMi41OTkgMjBoNC4zODdsMi4yMTMtMy43ODdMNi45ODYgMTIuNEgyLjU5OVptLTEuMDM0IDMuODE5IDEuNjI3LTIuODAyaDMuMjE0bDEuNjI3IDIuODAyLTEuNjI3IDIuNzY1SDMuMTkybC0xLjYyNy0yLjc2NVpNMi41OTkgNGwtMi4yIDMuODEzIDIuMiAzLjc4N2g0LjM4N2wyLjIxMy0zLjc4N0w2Ljk4NiA0SDIuNTk5Wk0xLjU2NSA3LjgxOWwxLjYyNy0yLjgwMmgzLjIxNGwxLjYyNyAyLjgwMi0xLjYyNyAyLjc2NEgzLjE5MkwxLjU2NSA3LjgxOVoiLz48L3N2Zz4=" x="272" y="236" width="20" height="20" preserveAspectRatio="xMidYMid meet"/>
-      <text x="272" y="270.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">immich.home.&lt;domain&gt;</text>
-      <text x="272" y="287.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">HTTPRoute :2283</text>
+      <text x="272" y="270.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">immich, power-tools</text>
+      <text x="272" y="287.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">.home.&lt;domain&gt;</text>
+      <rect x="256" y="496" width="160" height="80" rx="6" fill="#2d3142"/>
+      <rect x="256" y="496" width="160" height="80" rx="6" fill="#2d3142" stroke="#f5f5f5" stroke-width="1.4"/>
+      <text x="272" y="523.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">Power Tools</text>
+      <text x="272" y="542.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">power-tools.home</text>
+      <text x="272" y="559.0" fill="#bfc0c0" font-size="11" font-family="'Geist Mono', monospace">v0.25.0, SQLite</text>
       <rect x="456" y="216" width="224" height="96" rx="6" fill="#2d3142"/>
       <rect x="456" y="216" width="224" height="96" rx="6" fill="rgba(239,131,84,0.16)" stroke="#ef8354" stroke-width="1.4"/>
       <text x="500" y="251.0" fill="#f5f5f5" font-size="14" font-weight="600" font-family="'Geist', sans-serif">immich-server</text>

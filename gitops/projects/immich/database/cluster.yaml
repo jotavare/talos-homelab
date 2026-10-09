@@ -15,6 +15,14 @@ spec:
         login: true
         passwordSecret:
           name: immich-database-credentials
+      - name: power_tools
+        ensure: present
+        login: true
+        inRoles:
+          - pg_read_all_data
+        connectionLimit: 5
+        passwordSecret:
+          name: immich-power-tools-database
   resources:
     requests:
       cpu: 100m
