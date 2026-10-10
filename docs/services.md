@@ -58,7 +58,7 @@ are also on `services`, a normal bridge, for the way out to the internet:
 | Service | Image | Does |
 |---------|-------|------|
 | `tailscale` | `tailscale/tailscale:v1.102.5`, pinned by digest | Joins the tailnet as one device, `services`, `tag:services`, and forwards tailnet port 443 to `caddy:443` with `tailscale serve` (`TS_SERVE_CONFIG`). Nothing else on the VM listens on the tailnet. Only on `services` |
-| `caddy` | Built from [caddy/Dockerfile](../iac/modules/services/caddy/Dockerfile): `caddy:2.11.4` plus `caddy-dns/cloudflare` v0.2.4 | Listens on 443 inside Docker, reached only through the Tailscale forward. Also on `backend` for the apps. Certificates for each name from Let's Encrypt through Cloudflare DNS-01 |
+| `caddy` | Built from [caddy/Dockerfile](../iac/modules/services/caddy/Dockerfile): `caddy:2.11.4` plus `caddy-dns/cloudflare` v0.2.4 | Listens on 443 inside Docker, reached only through the Tailscale forward. Also on `backend` for the apps. One wildcard certificate, `*.home.<domain>`, from Let's Encrypt through Cloudflare DNS-01, so service names stay out of the certificate transparency logs |
 | `openbao` | `openbao/openbao:2.7.0`, pinned by digest | The same OpenBao, on `backend` only, port `8200`. Only Caddy reaches it |
 | `pocket-id` | `pocketid/pocket-id:v2.16.0`, pinned by digest | Single sign-on with passkeys, reached as `auth.home.<domain>` ([SSO with Pocket ID](sso.md)) |
 | `garage` | `dxflrs/garage:v2.4.1`, pinned by digest | S3 API on `backend`, reached through Caddy as `s3.home.<domain>` ([Object storage](services.md#garage)) |
@@ -205,7 +205,7 @@ All in [iac/modules/services/](../iac/modules/services/):
 | [openbao.tf](../iac/modules/services/openbao.tf), [garage.tf](../iac/modules/services/garage.tf), [caddy.tf](../iac/modules/services/caddy.tf), [pocketid.tf](../iac/modules/services/pocketid.tf) | Images and containers |
 | [openbao/openbao.hcl](../iac/modules/services/openbao/openbao.hcl) | Raft storage, listener on `8200` without TLS (Caddy does TLS) |
 | [garage/garage.toml](../iac/modules/services/garage/garage.toml) | Garage, see [Object storage](services.md#garage-setup) |
-| [caddy/Caddyfile](../iac/modules/services/caddy/Caddyfile) | The four names, DNS-01 through Cloudflare |
+| [caddy/Caddyfile](../iac/modules/services/caddy/Caddyfile) | One `*.home.<domain>` site block that sends each name to its service and drops the rest, DNS-01 through Cloudflare |
 | [caddy/Dockerfile](../iac/modules/services/caddy/Dockerfile) | Caddy with the Cloudflare module, built on the VM's Docker (`use_legacy_builder`, since the laptop has no Docker) |
 
 The config files are copied in with `upload` blocks, so a changed file
