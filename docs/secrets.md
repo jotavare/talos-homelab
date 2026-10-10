@@ -180,7 +180,7 @@ down with it, and the Talos secrets could not be stored there at all.
 | Created by | OpenTofu for the VM, Ansible for the stack | Same as every other machine |
 | Listens on | `8200` on the internal Docker network `backend` only, plain HTTP | Nothing on the LAN or the tailnet reaches it directly |
 | Reached through | Caddy in the same stack, on `https://openbao.home.<domain>`, only over the tailnet | One name, no port, a real certificate |
-| Name and certificate | A public record pointing at the stack's tailnet IP, Let's Encrypt certificate from Caddy | Trusted everywhere, no root to install ([OpenTofu, DNS and certificates](opentofu.md#dns-and-certificates)) |
+| Name and certificate | A public record pointing at the stack's tailnet IP, Caddy's Let's Encrypt wildcard certificate `*.home.<domain>` | Trusted everywhere, no root to install ([OpenTofu, DNS and certificates](opentofu.md#dns-and-certificates)) |
 | Certificate renewal | Caddy, DNS-01 through Cloudflare, with a token that lives in OpenBao | Nothing exposed to the internet |
 | Storage | Integrated Raft, single node, in `/srv/openbao` on the VM. The VM is backed up daily by Proxmox | [Container backups](proxmox.md#container-backups); a Raft snapshot to Garage is optional ([Object storage](services.md#openbao-snapshots)) |
 | Unseal | One key share, threshold one, in Bitwarden plus the printed copy | Splitting a key only helps with several people |

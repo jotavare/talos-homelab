@@ -326,9 +326,15 @@ Public A records in Cloudflare point each name at its tailnet IP:
 They resolve for anyone, but the `100.x` addresses only answer inside the
 tailnet. The other options were split DNS on the tailnet (one more
 service to run, and nothing resolves when it is down) and `/etc/hosts`
-on every device (no phones). Public records reveal the host names, so Caddy's
-certificates are per host. The cluster uses one wildcard,
-`*.home.<domain>`, so a new app needs no new certificate.
+on every device (no phones).
+
+Caddy and the cluster each use one wildcard certificate,
+`*.home.<domain>`, ordered with DNS-01. Every certificate lands in the
+public certificate transparency logs, where anyone can list its names, so
+a per-host certificate would publish each new service. With the wildcard,
+a new name needs no new certificate and never shows up there. Caddy
+matches the host inside its one site block and drops any name it does
+not know.
 
 ### Cloudflare tokens
 
