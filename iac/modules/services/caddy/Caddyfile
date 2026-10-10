@@ -3,30 +3,41 @@
 	acme_dns cloudflare {file./run/secrets/cloudflare_token}
 }
 
-openbao.home.{$DOMAIN} {
-	reverse_proxy openbao:8200
-}
+*.home.{$DOMAIN} {
+	@openbao host openbao.home.{$DOMAIN}
+	handle @openbao {
+		reverse_proxy openbao:8200
+	}
 
-pve.home.{$DOMAIN} {
-	reverse_proxy https://192.168.1.10:8006 {
-		transport http {
-			tls_server_name pve.home.{$DOMAIN}
+	@pve host pve.home.{$DOMAIN}
+	handle @pve {
+		reverse_proxy https://192.168.1.10:8006 {
+			transport http {
+				tls_server_name pve.home.{$DOMAIN}
+			}
 		}
 	}
-}
 
-pve-desktop.home.{$DOMAIN} {
-	reverse_proxy https://192.168.1.11:8006 {
-		transport http {
-			tls_server_name pve-desktop.home.{$DOMAIN}
+	@pve-desktop host pve-desktop.home.{$DOMAIN}
+	handle @pve-desktop {
+		reverse_proxy https://192.168.1.11:8006 {
+			transport http {
+				tls_server_name pve-desktop.home.{$DOMAIN}
+			}
 		}
 	}
-}
 
-s3.home.{$DOMAIN} {
-	reverse_proxy garage:3900
-}
+	@s3 host s3.home.{$DOMAIN}
+	handle @s3 {
+		reverse_proxy garage:3900
+	}
 
-auth.home.{$DOMAIN} {
-	reverse_proxy pocket-id:1411
+	@auth host auth.home.{$DOMAIN}
+	handle @auth {
+		reverse_proxy pocket-id:1411
+	}
+
+	handle {
+		abort
+	}
 }
